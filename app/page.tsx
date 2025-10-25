@@ -68,26 +68,25 @@ export default function Home(): JSX.Element {
             </div>
           </div>
 
-        {/* Divider */}
-        <div className="dark:border-dark-outline border-t border-outline mt-10" />
+          {/* Divider */}
+          <div className="dark:border-dark-outline mt-10 border-t border-outline" />
 
-{/* Wallet Connection Section */}
-<div className="dark:border-dark-outline dark:bg-dark-surfaceAlt mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card">
-  <div className="space-y-4">
-    <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">
-      {t("tokenSection.walletConnection.title")}
-    </h3>
-    <p className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
-      {t("tokenSection.walletConnection.description")}
-    </p>
-    <div className="space-y-3">
-      <ConnectButton />
-      <WalletStatus />
-    </div>
-  </div>
-</div>
+          {/* Wallet Connection Section */}
+          <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card">
+            <div className="space-y-4">
+              <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">
+                {t("tokenSection.walletConnection.title")}
+              </h3>
+              <p className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
+                {t("tokenSection.walletConnection.description")}
+              </p>
+              <div className="space-y-3">
+                <ConnectButton />
+                <WalletStatus />
+              </div>
+            </div>
+          </div>
         </header>
-
 
         {/* Reviews Carousel Section */}
         <ReviewsCarousel />

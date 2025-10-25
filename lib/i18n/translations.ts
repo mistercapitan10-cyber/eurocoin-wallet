@@ -92,9 +92,9 @@ const translations: Messages = {
       },
     },
     eurocoin: {
-      sectionTitle: "Презентация EuroCoin",
+      sectionTitle: "Возврат средств от брокеров-мошенников",
       sectionDescription:
-        "Интерактивная 3D модель корпоративного токена с техническими характеристиками",
+        "Индивидуальный подход к восстановлению ваших активов на основе блокчейн-анализа",
       title: "EuroCoin — Корпоративный токен",
       description: "Интерактивная 3D модель золотой монеты с детальными характеристиками токена",
       features: {
@@ -477,8 +477,8 @@ const translations: Messages = {
       },
     },
     eurocoin: {
-      sectionTitle: "EuroCoin Presentation",
-      sectionDescription: "Interactive 3D model of corporate token with technical specifications",
+      sectionTitle: "Fund Recovery from Fraudulent Brokers",
+      sectionDescription: "Individual approach to restoring your assets based on blockchain analysis",
       title: "EuroCoin — Corporate Token",
       description: "Interactive 3D model of gold coin with detailed token specifications",
       features: {
