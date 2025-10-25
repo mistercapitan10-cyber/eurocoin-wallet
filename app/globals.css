@@ -1,26 +1,81 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    @apply bg-background;
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px; /* Offset for fixed header */
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* Enhanced smooth scrolling for all browsers */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  a {
+    @apply text-accent underline-offset-4 transition-colors hover:text-accentAlt;
+  }
+
+  * {
+    @apply border-outline;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .card {
+    @apply rounded-lg border bg-surface shadow-card;
+  }
+
+  .card-hover {
+    @apply transition-shadow duration-200 hover:shadow-card-hover;
+  }
+
+  .card-elevated {
+    @apply shadow-card-elevated;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent/90 focus:ring-2 focus:ring-accent/50;
+  }
+
+  .btn-secondary {
+    @apply border border-outline bg-surfaceAlt text-foreground hover:bg-surfaceAlt/80;
+  }
+
+  .status-success {
+    @apply border-success/20 bg-success/10 text-success;
+  }
+
+  .status-warning {
+    @apply border-warning/20 bg-warning/10 text-warning;
+  }
+
+  .status-danger {
+    @apply border-danger/20 bg-danger/10 text-danger;
+  }
+
+  .status-info {
+    @apply border-info/20 bg-info/10 text-info;
+  }
+
+  .display-title {
+    @apply font-display uppercase tracking-[0.18em] text-accent;
+  }
+
+  .pill {
+    @apply rounded-full border border-transparent bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-foreground shadow-sm;
+  }
 }
