@@ -33,12 +33,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} bg-background font-sans text-foreground antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} bg-background font-sans text-foreground antialiased dark:bg-dark-background dark:text-dark-foreground`}
       >
         <AppProviders>
-          <div className="flex min-h-screen flex-col">
+          <div className="flex min-h-screen flex-col dark:bg-dark-background">
             <SiteHeader />
             <div className="flex-1">{children}</div>
             <SiteFooter />

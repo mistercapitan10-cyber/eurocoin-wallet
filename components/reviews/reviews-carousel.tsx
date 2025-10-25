@@ -94,10 +94,10 @@ export function ReviewsCarousel(): JSX.Element {
       <section className="py-16">
         <div className="mx-auto max-w-4xl px-6">
           <div className="mb-8 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground">Отзывы команд</h2>
-            <p className="text-foregroundMuted">Что говорят наши коллеги о системе</p>
+            <h2 className="mb-4 text-3xl font-bold text-foreground dark:text-dark-foreground">Отзывы команд</h2>
+            <p className="text-foregroundMuted dark:text-dark-foregroundMuted">Что говорят наши коллеги о системе</p>
           </div>
-          <div className="h-64 animate-pulse rounded-lg bg-surfaceAlt" />
+          <div className="h-64 animate-pulse rounded-lg bg-surfaceAlt dark:bg-dark-surfaceAlt" />
         </div>
       </section>
     );
@@ -106,12 +106,12 @@ export function ReviewsCarousel(): JSX.Element {
   const currentReview = mockReviews[currentIndex];
 
   return (
-    <section id="reviews" className="bg-gradient-to-br from-surfaceAlt to-backgroundAlt py-16">
+    <section id="reviews" className="bg-gradient-to-br from-surfaceAlt to-backgroundAlt py-16 dark:from-dark-surfaceAlt dark:to-dark-backgroundAlt">
       <div className="mx-auto max-w-4xl px-6">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground">Отзывы команд</h2>
-          <p className="text-lg text-foregroundMuted">
+          <h2 className="mb-4 text-3xl font-bold text-foreground dark:text-dark-foreground">Отзывы команд</h2>
+          <p className="text-lg text-foregroundMuted dark:text-dark-foregroundMuted">
             Что говорят наши коллеги о системе управления токенами
           </p>
         </div>
@@ -128,7 +128,7 @@ export function ReviewsCarousel(): JSX.Element {
                     <svg
                       key={i}
                       className={`h-6 w-6 ${
-                        i < currentReview.rating ? "text-accentAlt" : "text-outline"
+                        i < currentReview.rating ? "text-accentAlt" : "text-outline dark:text-dark-outline"
                       }`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -139,7 +139,7 @@ export function ReviewsCarousel(): JSX.Element {
                 </div>
 
                 {/* Review Text */}
-                <blockquote className="mb-8 text-lg italic text-foregroundMuted">
+                <blockquote className="mb-8 text-lg italic text-foregroundMuted dark:text-dark-foregroundMuted">
                   "{currentReview.text}"
                 </blockquote>
 
@@ -154,9 +154,9 @@ export function ReviewsCarousel(): JSX.Element {
                     </span>
                   </div>
                   <div className="text-left">
-                    <h4 className="font-semibold text-foreground">{currentReview.author}</h4>
-                    <p className="text-sm text-foregroundMuted">{currentReview.department}</p>
-                    <p className="text-xs text-foregroundMuted">{currentReview.date}</p>
+                    <h4 className="font-semibold text-foreground dark:text-dark-foreground">{currentReview.author}</h4>
+                    <p className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">{currentReview.department}</p>
+                    <p className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">{currentReview.date}</p>
                   </div>
                 </div>
               </div>
@@ -184,7 +184,7 @@ export function ReviewsCarousel(): JSX.Element {
                   key={index}
                   onClick={() => goToReview(index)}
                   className={`h-3 w-3 rounded-full transition-colors ${
-                    index === currentIndex ? "bg-accent" : "bg-outline"
+                    index === currentIndex ? "bg-accent" : "bg-outline dark:bg-dark-outline"
                   }`}
                 />
               ))}
@@ -205,7 +205,7 @@ export function ReviewsCarousel(): JSX.Element {
 
           {/* Review Counter */}
           <div className="mt-4 text-center">
-            <span className="text-sm text-foregroundMuted">
+            <span className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
               {currentIndex + 1} из {mockReviews.length}
             </span>
           </div>
@@ -215,15 +215,15 @@ export function ReviewsCarousel(): JSX.Element {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           <div className="text-center">
             <div className="text-3xl font-bold text-accent">4.8</div>
-            <div className="text-sm text-foregroundMuted">Средняя оценка</div>
+            <div className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">Средняя оценка</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-accent">95%</div>
-            <div className="text-sm text-foregroundMuted">Довольных пользователей</div>
+            <div className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">Довольных пользователей</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-accent">24/7</div>
-            <div className="text-sm text-foregroundMuted">Техническая поддержка</div>
+            <div className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">Техническая поддержка</div>
           </div>
         </div>
       </div>

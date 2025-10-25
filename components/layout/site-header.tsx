@@ -5,13 +5,16 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "@/hooks/use-translation";
 import { useLanguage } from "@/components/providers/language-provider";
 
 const navItems = [
   { href: "/", key: "common.nav.dashboard" },
   { href: "/#exchange", key: "common.nav.exchange" },
+  { href: "/#contact", key: "common.nav.contact" },
   { href: "/#reviews", key: "common.nav.reviews" },
+  { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#faq", key: "common.nav.faq" },
 ];
 
@@ -44,7 +47,7 @@ function MobileLanguageSwitcher(): JSX.Element {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-outline bg-surface text-foreground transition hover:bg-surfaceAlt"
+        className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex h-10 w-10 items-center justify-center rounded-full border border-outline bg-surface text-foreground transition hover:bg-surfaceAlt"
         aria-label="Выбрать язык"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,14 +61,16 @@ function MobileLanguageSwitcher(): JSX.Element {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 z-50 rounded-lg border border-outline bg-surface shadow-lg">
+        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 rounded-lg border border-outline bg-surface shadow-lg">
           <div className="py-1">
             <button
               type="button"
               onClick={() => handleChange("ru")}
               className={cn(
                 "flex w-full items-center gap-2 px-4 py-2 text-sm transition",
-                locale === "ru" ? "bg-accent text-white" : "text-foreground hover:bg-surfaceAlt",
+                locale === "ru"
+                  ? "bg-accent text-white"
+                  : "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt text-foreground hover:bg-surfaceAlt",
               )}
             >
               <span className="text-xs">🇷🇺</span>
@@ -76,7 +81,9 @@ function MobileLanguageSwitcher(): JSX.Element {
               onClick={() => handleChange("en")}
               className={cn(
                 "flex w-full items-center gap-2 px-4 py-2 text-sm transition",
-                locale === "en" ? "bg-accent text-white" : "text-foreground hover:bg-surfaceAlt",
+                locale === "en"
+                  ? "bg-accent text-white"
+                  : "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt text-foreground hover:bg-surfaceAlt",
               )}
             >
               <span className="text-xs">🇺🇸</span>
@@ -97,7 +104,7 @@ export function SiteHeader(): JSX.Element {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["reviews", "exchange", "faq"];
+      const sections = ["exchange", "contact", "reviews", "token-balance", "faq"];
       const scrollPosition = window.scrollY + 100; // Offset for header
 
       for (const section of sections) {
@@ -136,7 +143,7 @@ export function SiteHeader(): JSX.Element {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-outline bg-surface/95 backdrop-blur">
+    <header className="dark:border-dark-outline dark:bg-dark-surface/95 sticky top-0 z-50 border-b border-outline bg-surface/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 md:px-10">
         <Link href="/" className="flex items-center gap-3">
           <img
@@ -144,20 +151,22 @@ export function SiteHeader(): JSX.Element {
             alt="EuroCoin Logo"
             className="h-10 w-10 rounded-2xl object-contain"
           />
-          <span className="font-display text-lg uppercase tracking-[0.32em] text-foreground">
+          <span className="dark:text-dark-foreground font-display text-lg uppercase tracking-[0.32em] text-foreground">
             EuroCoin
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-3 text-sm font-medium text-foregroundMuted md:flex">
+        <nav className="dark:text-dark-foregroundMuted hidden items-center gap-3 text-sm font-medium text-foregroundMuted md:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 "rounded-full px-4 py-2 transition",
-                isActive(item) ? "bg-accent text-white shadow" : "hover:bg-backgroundAlt",
+                isActive(item)
+                  ? "bg-accent text-white shadow"
+                  : "dark:hover:bg-dark-backgroundAlt hover:bg-backgroundAlt",
               )}
             >
               {t(item.key)}
@@ -167,36 +176,28 @@ export function SiteHeader(): JSX.Element {
 
         {/* Desktop Right Side */}
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <LanguageSwitcher />
-          <button
-            type="button"
-            className="rounded-full border border-outline px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition hover:border-accent hover:text-accent"
-          >
-            {t("common.brand.report")}
-          </button>
         </div>
 
         {/* Mobile Right Side */}
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <MobileLanguageSwitcher />
-          <button
-            type="button"
-            className="rounded-full border border-outline px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition hover:border-accent hover:text-accent"
-          >
-            {t("common.brand.report")}
-          </button>
         </div>
       </div>
 
       {/* Mobile Navigation */}
-      <nav className="mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto px-6 pb-3 text-xs font-semibold uppercase tracking-[0.18em] text-foregroundMuted md:hidden">
+      <nav className="dark:text-dark-foregroundMuted mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto px-6 pb-3 text-xs font-semibold uppercase tracking-[0.18em] text-foregroundMuted md:hidden">
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
               "rounded-full border px-3 py-2",
-              isActive(item) ? "border-accent text-accent" : "border-outline",
+              isActive(item)
+                ? "border-accent text-accent"
+                : "dark:border-dark-outline border-outline",
             )}
           >
             {t(item.key)}

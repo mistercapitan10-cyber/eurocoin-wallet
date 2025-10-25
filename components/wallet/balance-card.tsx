@@ -108,34 +108,34 @@ export function BalanceCard(): React.ReactElement {
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="rounded-2xl border border-outline bg-surfaceAlt p-6">
+        <div className="rounded-2xl border border-outline bg-surfaceAlt p-6 dark:border-dark-outline dark:bg-dark-surfaceAlt">
           {statusMessage ? (
-            <div className="flex flex-col gap-2 text-sm text-foregroundMuted">
-              <p className="text-base font-semibold text-foreground">{statusMessage.title}</p>
+            <div className="flex flex-col gap-2 text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
+              <p className="text-base font-semibold text-foreground dark:text-dark-foreground">{statusMessage.title}</p>
               <p>{statusMessage.description}</p>
             </div>
           ) : isLoading || isPriceLoading ? (
             <div className="flex flex-col gap-5">
-              <div className="h-8 w-1/3 animate-pulse rounded bg-white/40" />
-              <div className="h-4 w-1/2 animate-pulse rounded bg-white/40" />
-              <div className="h-4 w-1/3 animate-pulse rounded bg-white/40" />
+              <div className="h-8 w-1/3 animate-pulse rounded bg-white/40 dark:bg-white/20" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-white/40 dark:bg-white/20" />
+              <div className="h-4 w-1/3 animate-pulse rounded bg-white/40 dark:bg-white/20" />
             </div>
           ) : (
             <div className="flex flex-col gap-4">
               <div>
-                <span className="text-4xl font-semibold text-foreground md:text-5xl">
+                <span className="text-4xl font-semibold text-foreground dark:text-dark-foreground md:text-5xl">
                   {formatBalance(formattedBalance)}
                 </span>
-                <span className="ml-2 text-lg text-foregroundMuted">{symbol ?? TOKEN_CONFIG.symbol}</span>
+                <span className="ml-2 text-lg text-foregroundMuted dark:text-dark-foregroundMuted">{symbol ?? TOKEN_CONFIG.symbol}</span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted">
+                <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted dark:text-dark-foregroundMuted">
                   {t("wallet.balanceCard.usdLabel")}
                 </span>
                 <span className="text-2xl font-medium text-accent">
                   {formattedUsdValue ?? "—"}
                 </span>
-                <span className="text-xs text-foregroundMuted">
+                <span className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
                   {t("wallet.balanceCard.rate")}: {priceUsd ? priceUsd.toFixed(2) : "—"} USD · {" "}
                   {priceSource === "coingecko" ? "CoinGecko" : t("wallet.balanceCard.staticSource")}
                 </span>
@@ -145,7 +145,7 @@ export function BalanceCard(): React.ReactElement {
                   </span>
                 ) : null}
               </div>
-              <p className="text-sm text-foregroundMuted">
+              <p className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
                 {t("wallet.balanceCard.autoRefresh")}
               </p>
             </div>

@@ -1,65 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
-
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-const faqData: FAQItem[] = [
-  {
-    id: "min-amount",
-    question: "Какова минимальная сумма вывода?",
-    answer:
-      "Минимальная сумма вывода составляет 100 токенов. Это ограничение установлено для обеспечения экономической эффективности транзакций и покрытия комиссий сети.",
-  },
-  {
-    id: "processing-time",
-    question: "Сколько времени занимает обработка заявки?",
-    answer:
-      "Среднее время обработки заявки составляет 15 минут. В периоды высокой нагрузки время может увеличиться до 30 минут. Вы получите уведомление о статусе заявки.",
-  },
-  {
-    id: "documents",
-    question: "Какие документы нужны для обмена?",
-    answer:
-      "Для обмена токенов на фиатные средства необходимо предоставить паспортные данные и подтверждение адреса проживания. Все документы обрабатываются в соответствии с требованиями AML/KYC.",
-  },
-  {
-    id: "commission",
-    question: "Какая комиссия за обмен?",
-    answer:
-      "Комиссия за обмен составляет 1.5% от суммы транзакции. Комиссия автоматически вычитается из итоговой суммы и отображается в калькуляторе перед подтверждением заявки.",
-  },
-  {
-    id: "supported-networks",
-    question: "Какие сети поддерживаются?",
-    answer:
-      "В настоящее время поддерживаются Ethereum Mainnet и Sepolia Testnet. Планируется добавление поддержки Polygon и других Layer 2 решений в следующих версиях.",
-  },
-  {
-    id: "security",
-    question: "Как обеспечивается безопасность?",
-    answer:
-      "Все транзакции защищены криптографическими алгоритмами. Мы используем многоуровневую систему безопасности, включая холодное хранение средств и регулярные аудиты безопасности.",
-  },
-  {
-    id: "tax-reporting",
-    question: "Предоставляете ли вы налоговую отчетность?",
-    answer:
-      "Да, мы предоставляем детальные отчеты по всем транзакциям для целей налогового учета. Отчеты доступны в формате CSV и PDF в личном кабинете.",
-  },
-  {
-    id: "support",
-    question: "Как связаться с поддержкой?",
-    answer:
-      "Техническая поддержка доступна 24/7 через Telegram-бота @corporate_bot или по email treasury@company.io. Среднее время ответа составляет 2 часа.",
-  },
-];
 
 export function FAQSection(): JSX.Element {
   const t = useTranslation();
@@ -82,17 +25,19 @@ export function FAQSection(): JSX.Element {
     });
   };
 
+  const faqKeys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10"];
+
   if (!isMounted) {
     return (
-      <section className="py-16">
+      <section id="faq" className="py-16">
         <div className="mx-auto max-w-4xl px-6">
           <div className="mb-12 text-center">
-            <div className="mx-auto mb-4 h-8 w-48 animate-pulse rounded bg-surfaceAlt" />
-            <div className="h-4 w-full animate-pulse rounded bg-surfaceAlt" />
+            <div className="mx-auto mb-4 h-8 w-48 animate-pulse rounded bg-surfaceAlt dark:bg-dark-surfaceAlt" />
+            <div className="h-4 w-full animate-pulse rounded bg-surfaceAlt dark:bg-dark-surfaceAlt" />
           </div>
           <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 animate-pulse rounded-lg bg-surfaceAlt" />
+              <div key={i} className="h-20 animate-pulse rounded-lg bg-surfaceAlt dark:bg-dark-surfaceAlt" />
             ))}
           </div>
         </div>
@@ -105,34 +50,32 @@ export function FAQSection(): JSX.Element {
       <div className="mx-auto max-w-4xl px-6">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground">Часто задаваемые вопросы</h2>
-          <p className="text-lg text-foregroundMuted">
-            Ответы на самые популярные вопросы о работе с EuroCoin и системой обмена токенов
-          </p>
+          <h2 className="mb-4 text-3xl font-bold text-foreground dark:text-dark-foreground">{t("faq.title")}</h2>
+          <p className="text-lg text-foregroundMuted dark:text-dark-foregroundMuted">{t("faq.description")}</p>
         </div>
 
         {/* FAQ Items */}
         <div className="space-y-4">
-          {faqData.map((item) => {
-            const isOpen = openItems.has(item.id);
+          {faqKeys.map((key) => {
+            const isOpen = openItems.has(key);
+            const question = t(`faq.questions.${key}.question`);
+            const answer = t(`faq.questions.${key}.answer`);
 
             return (
               <Card
-                key={item.id}
+                key={key}
                 className="overflow-hidden transition-all duration-200 hover:shadow-card-hover"
               >
                 <CardContent className="p-0">
                   <button
-                    onClick={() => toggleItem(item.id)}
-                    className="w-full px-6 py-4 text-left transition-colors hover:bg-surfaceAlt"
+                    onClick={() => toggleItem(key)}
+                    className="w-full px-6 py-4 text-left transition-colors hover:bg-surfaceAlt dark:hover:bg-dark-surfaceAlt"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="pr-4 text-lg font-semibold text-foreground">
-                        {item.question}
-                      </h3>
+                      <h3 className="pr-4 text-lg font-semibold text-foreground dark:text-dark-foreground">{question}</h3>
                       <div className="flex-shrink-0">
                         <svg
-                          className={`h-5 w-5 text-foregroundMuted transition-transform duration-200 ${
+                          className={`h-5 w-5 text-foregroundMuted transition-transform duration-200 dark:text-dark-foregroundMuted ${
                             isOpen ? "rotate-180" : ""
                           }`}
                           fill="none"
@@ -156,8 +99,8 @@ export function FAQSection(): JSX.Element {
                     }`}
                   >
                     <div className="px-6 pb-4">
-                      <div className="border-t border-outline pt-4">
-                        <p className="leading-relaxed text-foregroundMuted">{item.answer}</p>
+                      <div className="border-t border-outline pt-4 dark:border-dark-outline">
+                        <p className="leading-relaxed text-foregroundMuted dark:text-dark-foregroundMuted">{answer}</p>
                       </div>
                     </div>
                   </div>
@@ -169,12 +112,12 @@ export function FAQSection(): JSX.Element {
 
         {/* Contact Section */}
         <div className="mt-12 text-center">
-          <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-accentAlt/5">
+          <Card className="border-accent/20 bg-gradient-to-r from-accent/5 to-accentAlt/5 dark:border-accent/30 dark:from-accent/10 dark:to-accentAlt/10">
             <CardContent className="p-8">
-              <h3 className="mb-4 text-xl font-semibold text-foreground">
-                Не нашли ответ на свой вопрос?
+              <h3 className="mb-4 text-xl font-semibold text-foreground dark:text-dark-foreground">
+                {t("faq.contact.title")}
               </h3>
-              <p className="mb-6 text-foregroundMuted">
+              <p className="mb-6 text-foregroundMuted dark:text-dark-foregroundMuted">
                 Свяжитесь с нашей службой поддержки, и мы поможем вам разобраться с любыми вопросами
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -191,7 +134,7 @@ export function FAQSection(): JSX.Element {
                 </a>
                 <a
                   href="mailto:treasury@company.io"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-outline bg-surface px-6 py-3 text-foreground transition-colors hover:bg-surfaceAlt"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-outline bg-surface px-6 py-3 text-foreground transition-colors hover:bg-surfaceAlt dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

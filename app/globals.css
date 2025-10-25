@@ -8,13 +8,13 @@
 
 @layer base {
   html {
-    @apply bg-background;
+    @apply bg-background dark:bg-dark-background;
     scroll-behavior: smooth;
     scroll-padding-top: 80px; /* Offset for fixed header */
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased dark:bg-dark-background dark:text-dark-foreground;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -30,13 +30,13 @@
   }
 
   * {
-    @apply border-outline;
+    @apply border-outline dark:border-dark-outline;
   }
 }
 
 @layer components {
   .card {
-    @apply rounded-lg border bg-surface shadow-card;
+    @apply rounded-lg border bg-surface shadow-card dark:bg-dark-surface;
   }
 
   .card-hover {
@@ -52,7 +52,7 @@
   }
 
   .btn-secondary {
-    @apply border border-outline bg-surfaceAlt text-foreground hover:bg-surfaceAlt/80;
+    @apply border border-outline bg-surfaceAlt text-foreground hover:bg-surfaceAlt/80 dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt/80;
   }
 
   .status-success {
@@ -76,6 +76,6 @@
   }
 
   .pill {
-    @apply rounded-full border border-transparent bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-foreground shadow-sm;
+    @apply rounded-full border border-transparent bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-foreground shadow-sm dark:bg-dark-surfaceAlt dark:text-dark-foreground;
   }
 }

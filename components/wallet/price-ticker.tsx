@@ -78,11 +78,11 @@ export function PriceTicker(): JSX.Element {
       <CardContent>
         {isLoading ? (
           <div className="flex flex-col gap-3">
-            <div className="h-6 w-24 animate-pulse rounded bg-white/40" />
-            <div className="h-4 w-36 animate-pulse rounded bg-white/40" />
+            <div className="h-6 w-24 animate-pulse rounded bg-white/40 dark:bg-white/20" />
+            <div className="h-4 w-36 animate-pulse rounded bg-white/40 dark:bg-white/20" />
           </div>
         ) : (
-          <div className="flex flex-col gap-2 text-sm text-foregroundMuted">
+          <div className="flex flex-col gap-2 text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
             <span className="text-2xl font-medium text-accent">{formatPrice(priceUsd)}</span>
             <span>{t("wallet.priceTicker.source", { source: sourceLabel })}</span>
             <span>{t("wallet.priceTicker.updated", { time: timestamp })}</span>

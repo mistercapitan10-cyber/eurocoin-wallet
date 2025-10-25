@@ -47,19 +47,19 @@ export function TaxCard() {
         </Button>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="rounded-2xl border border-outline bg-surfaceAlt p-4 text-sm text-foregroundMuted">
+        <div className="rounded-2xl border border-outline bg-surfaceAlt p-4 text-sm text-foregroundMuted dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted">
           {isLoading ? (
             <div className="flex flex-col gap-3">
-              <div className="h-5 w-24 animate-pulse rounded bg-white/40" />
-              <div className="h-4 w-40 animate-pulse rounded bg-white/40" />
+              <div className="h-5 w-24 animate-pulse rounded bg-white/40 dark:bg-white/20" />
+              <div className="h-4 w-40 animate-pulse rounded bg-white/40 dark:bg-white/20" />
             </div>
           ) : (
             <div className="flex flex-col gap-1">
-              <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted">
+              <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted dark:text-dark-foregroundMuted">
                 {t("wallet.taxCard.current")}
               </span>
               <span className="text-2xl font-semibold text-accent">{formattedTax}</span>
-              <span className="text-xs text-foregroundMuted">
+              <span className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
                 {t("wallet.priceTicker.source", { source: sourceLabel })}
               </span>
               {error ? (
@@ -71,7 +71,7 @@ export function TaxCard() {
 
         <div className="space-y-3">
           <label className="flex flex-col gap-2 text-sm">
-            <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted">
+            <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("wallet.taxCard.calculatorLabel")}
             </span>
             <input
@@ -79,7 +79,7 @@ export function TaxCard() {
               inputMode="decimal"
               min="0"
               step="0.0001"
-              className="w-full rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
+              className="w-full rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
               value={amountInput}
               onChange={(event) => setAmountInput(event.target.value)}
               placeholder={t("wallet.taxCard.placeholder")}
@@ -88,14 +88,14 @@ export function TaxCard() {
           {amountValue === null ? (
             <p className="text-xs text-accentAlt">{t("wallet.taxCard.invalid")}</p>
           ) : (
-            <div className="flex flex-col gap-2 rounded-2xl border border-outline bg-surfaceAlt p-4 text-sm text-foregroundMuted">
+            <div className="flex flex-col gap-2 rounded-2xl border border-outline bg-surfaceAlt p-4 text-sm text-foregroundMuted dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted">
               <div className="flex items-center justify-between">
                 <span>{t("wallet.taxCard.resultFee", { tax: formattedTax })}</span>
-                <span className="font-medium text-foreground">{taxAmount?.toFixed(4) ?? "0"}</span>
+                <span className="font-medium text-foreground dark:text-dark-foreground">{taxAmount?.toFixed(4) ?? "0"}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>{t("wallet.taxCard.resultNet")}</span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-foreground dark:text-dark-foreground">
                   {totalAfterTax !== null ? totalAfterTax.toFixed(4) : "0"}
                 </span>
               </div>

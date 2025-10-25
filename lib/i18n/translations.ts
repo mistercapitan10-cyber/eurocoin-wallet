@@ -14,11 +14,13 @@ const translations: Messages = {
       },
       nav: {
         dashboard: "Дашборд",
+        token: "Токен",
         requests: "Заявки",
         reviews: "Отзывы",
         admin: "Админ",
         exchange: "Обменник",
         faq: "FAQ",
+        contact: "Контакты",
       },
       footer: {
         contact: "Контакты: treasury@company.io",
@@ -284,6 +286,109 @@ const translations: Messages = {
       chatbotTitle: "Чат-бот",
       chatbotDescription: "Макет интерфейса общения с ботом.",
     },
+    faq: {
+      title: "❓ Часто задаваемые вопросы — возврат средств от брокера-мошенника",
+      description: "Ответы на основные вопросы о процедуре возврата средств",
+      questions: {
+        q1: {
+          question: "1. Как в целом проходит процедура возврата средств?",
+          answer:
+            "Мы проводим комплексное расследование: технический анализ блокчейн-транзакций, сбор доказательств и подача заявлений в регуляторные и правоохранительные органы. По результатам проверки мы инициируем процесс блокировки/перевода активов и юридического оформления возврата средств на ваш кошелёк.",
+        },
+        q2: {
+          question: "2. В какие органы вы подаёте заявления?",
+          answer:
+            "Мы направляем обращения и жалобы в профильные национальные и международные органы, включая (как пример): FCA (Financial Conduct Authority, Великобритания), CySEC (Cyprus Securities and Exchange Commission), BaFin (ФРГ), ASIC (Австралия), SEC (США), FINMA (Швейцария), MAS (Сингапур), CNMV / CONSOB (Испания / Италия), FinCEN (США, финансовая разведка), Интерпол / подразделения по финансовым киберпреступлениям. (Перечень носит иллюстративный характер и может расширяться в зависимости от юрисдикции мошенника и места проживания клиента.)",
+        },
+        q3: {
+          question:
+            '3. Вы говорите, что работаете "напрямую с Ethereum и MetaMask" — что это значит?',
+          answer:
+            "Наша платформа работает в экосистеме Ethereum и интегрирована с MetaMask — это позволяет нам отслеживать транзакции в сети, взаимодействовать с адресами-источниками и безопасно переводить подтверждённые активы на ваш персональный MetaMask-кошелёк в эфире (ETH) или в токенах стандарта ERC.",
+        },
+        q4: {
+          question: '4. Как именно "замораживаются" деньги у мошенников?',
+          answer:
+            "При сборе доказательств и взаимодействии с партнёрами и регуляторами мы инициируем комплекс действий по блокировке подозрительных адресов и транзакций на уровне смарт-контрактов и записей в блокчейне. После юридического подтверждения факта мошенничества средства изолируются для последующей передачи клиенту в рамках правового механизма (возможность и скорость зависят от конкретного случая и юрисдикции).",
+        },
+        q5: {
+          question: "5. Что такое смарт-контракт и зачем вы его создаёте?",
+          answer:
+            "Для безопасного и прозрачного перевода восстановленных средств мы создаём индивидуальный смарт-контракт в сети Ethereum. Смарт-контракт обеспечивает условный автоматический перевод средств на ваш кошелёк и фиксирует условия дальнейшего вывода/конвертации. При необходимости мы проводим юридическую верификацию активов, после чего средства могут быть переведены на ваш банковский счёт в соответствии с AML/KYC требованиями.",
+        },
+        q6: {
+          question: "6. Можно ли «легализовать» средства и вывести их на банковский счёт?",
+          answer:
+            "Да — после прохождения юридической проверки и соответствующей процедуры конвертации (включая соблюдение требований AML/KYC и налогового учёта) средства переводятся с вашего MetaMask-кошелька на банковский счёт. Смарт-контракт и юридические документы подтверждают происхождение средств и обеспечивают «белый» статус переводимых сумм.",
+        },
+        q7: {
+          question: "7. Когда и как вы берёте оплату за свои услуги?",
+          answer:
+            "Мы работаем по успех-модели: оплата услуг производится только после успешного поступления средств на ваш кошелёк. Нет предварительных платы или скрытых комиссий — только прозрачный процент/фиксированная сумма по согласованию.",
+        },
+        q8: {
+          question: "8. Возможно ли вернуть средства, если деньги были потеряны 2–3 года назад?",
+          answer:
+            "Да, это реально. Мы уже имели кейсы возврата активов, потерянных более 5 лет назад. Ключевое условие успешной проверки — чтобы исходные транзакции могли быть подтверждены в сети Ethereum и имелась возможность проследить цепочку движений средств.",
+        },
+        q9: {
+          question: "9. Какие документы и доказательства мне нужно предоставить?",
+          answer:
+            "После регистрации необходимо заполнить заявку и загрузить все доступные подтверждающие документы: чеки и квитанции; банковские/платёжные выписки; скриншоты переписок с брокером; договоры и счета; иные документы, подтверждающие деловые отношения с компанией-противником. Чем больше данных вы предоставите — тем выше шансы на успешную проверку и возврат средств.",
+        },
+        q10: {
+          question: "10. Сколько времени занимает весь процесс?",
+          answer:
+            "Сроки зависят от сложности дела, юрисдикции мошенника и скорости взаимодействия регуляторов и партнёров. Некоторые дела решаются в течение недель, сложные международные кейсы — в несколько месяцев. (Примечание: сроки приведены ориентировочно.)",
+        },
+      },
+      contact: {
+        title: "🧾 Контакт и начало процедуры",
+        description:
+          "Зарегистрируйтесь в личном кабинете и отправьте заявку с документами — наши специалисты начнут предварительный анализ сразу после получения информации.",
+      },
+    },
+    tokenSection: {
+      mainTitle: "Возврат средств и защита ваших цифровых активов",
+      walletConnection: {
+        title: "Подключение кошелька",
+        description:
+          "MetaMask + wagmi v2. После подключения доступны операции токена и мониторинг.",
+      },
+      recovery: {
+        p1: "Работаем на основе инфраструктуры Ethereum и интеграции с MetaMask",
+        p2: "Наша платформа помогает клиентам вернуть средства, потерянные у брокеров-мошенников, и замораживает до 90% подозрительных транзакций для проведения юридической и технической проверки.",
+        p3: "Мы используем блокчейн-анализ и международные стандарты комплаенса, чтобы обеспечить прозрачность, безопасность и законность каждой операции.",
+      },
+      legal: {
+        title: "Юридическая защита и финансовая экспертиза",
+        p1: "Команда юристов и аналитиков проводит всесторонний анализ транзакций, чтобы выявить признаки мошенничества и инициировать процесс возврата средств.",
+        p2: "Мы действуем в соответствии с международными нормами AML/KYC, обеспечивая полную конфиденциальность персональных данных и сохранность предоставленной информации.",
+      },
+      process: {
+        title: "Как проходит процесс",
+        step1: "Регистрация — создайте личный кабинет для доступа к системе анализа.",
+        step2:
+          "Подача заявки — заполните форму и приложите чеки, квитанции, выписки или иные документы, подтверждающие отношения с брокером или платформой.",
+        step3:
+          "Проверка транзакций — наши специалисты проводят технический и юридический аудит всех операций.",
+        step4:
+          "Заморозка и возврат — при подтверждении мошеннических действий средства блокируются, после чего запускается процедура возврата.",
+      },
+      whyChooseUs: {
+        title: "Почему выбирают нас",
+        item1: "Работаем на основе Ethereum и интеграции с MetaMask",
+        item2: "Международная юридическая поддержка",
+        item3: "Современные методы блокчейн-аналитики",
+        item4: "Высокая вероятность возврата средств",
+        item5: "Полная конфиденциальность клиентов",
+      },
+      checkToday: {
+        title: "Проверьте возможность возврата уже сегодня",
+        p1: "Зарегистрируйтесь сейчас, чтобы пройти бесплатный предварительный анализ транзакций.",
+        p2: "Наши специалисты свяжутся с вами в течение 24 часов для начала процедуры проверки.",
+      },
+    },
   },
   en: {
     common: {
@@ -294,11 +399,13 @@ const translations: Messages = {
       },
       nav: {
         dashboard: "Dashboard",
+        token: "Token",
         requests: "Requests",
         reviews: "Reviews",
         admin: "Admin",
         exchange: "Exchange",
         faq: "FAQ",
+        contact: "Contact",
       },
       footer: {
         contact: "Contact: treasury@company.io",
@@ -559,6 +666,108 @@ const translations: Messages = {
       faqDescription: "Accordion will become interactive in the next phase.",
       chatbotTitle: "Chat bot",
       chatbotDescription: "Mock chat interface.",
+    },
+    faq: {
+      title: "✅ FAQ: Fund Recovery from Fraudulent Brokers",
+      description: "Answers to common questions about fund recovery procedures",
+      questions: {
+        q1: {
+          question: "1. What does the fund recovery procedure look like?",
+          answer:
+            "We conduct a comprehensive investigation — including blockchain transaction analysis, collection of evidence, and submission of claims to regulatory and law enforcement authorities. Based on the findings, we initiate the process of asset verification and legal fund recovery.",
+        },
+        q2: {
+          question: "2. Which regulators do you work with?",
+          answer:
+            "We submit claims and complaints to national and international authorities, such as: FCA (Financial Conduct Authority, UK), CySEC (Cyprus Securities and Exchange Commission), BaFin (Germany), ASIC (Australia), SEC (U.S. Securities and Exchange Commission), FINMA (Switzerland), MAS (Singapore), CNMV / CONSOB (Spain / Italy), FinCEN (U.S. Financial Crimes Enforcement Network), Interpol – Financial Cybercrime Division. (The list is illustrative and may vary depending on the jurisdiction of the fraudulent entity and the client's country of residence.)",
+        },
+        q3: {
+          question: '3. What does "working directly with Ethereum and MetaMask" mean?',
+          answer:
+            "Our platform operates within the Ethereum ecosystem and is integrated with MetaMask, enabling us to trace transactions, verify sources, and securely transfer confirmed assets to your personal MetaMask wallet in ETH or ERC tokens.",
+        },
+        q4: {
+          question: '4. How are fraudulent funds "frozen"?',
+          answer:
+            "Through technical analysis, evidence gathering, and communication with partners and regulators, we initiate actions aimed at isolating suspicious wallet addresses or transactions on the blockchain. Once fraud is verified, funds can be held for transfer to the rightful owner in accordance with applicable legal frameworks.",
+        },
+        q5: {
+          question: "5. What is a smart contract and why do you create one?",
+          answer:
+            "To ensure safe and transparent fund transfers, we develop a custom smart contract on the Ethereum network. It automates conditional fund delivery to your wallet and records all transaction terms, providing legal traceability and protection.",
+        },
+        q6: {
+          question: "6. Can recovered funds be transferred to a bank account?",
+          answer:
+            "Yes. After legal verification and AML/KYC compliance, recovered funds can be transferred from your MetaMask wallet to your personal bank account. The accompanying documentation and smart contract help verify the source and legitimacy of your assets.",
+        },
+        q7: {
+          question: "7. When do I pay for your services?",
+          answer:
+            "We operate on a success-based model — payment is due only after the recovered funds are deposited into your wallet. There are no upfront or hidden fees.",
+        },
+        q8: {
+          question: "8. Is it possible to recover funds lost 2–3 years ago?",
+          answer:
+            "Yes. We have successfully assisted clients in recovering assets lost over 5 years ago, provided that the original transactions were traceable within the Ethereum network.",
+        },
+        q9: {
+          question: "9. What documents do I need to provide?",
+          answer:
+            "After registration, please submit your claim and upload available supporting materials: receipts or payment confirmations; bank or crypto exchange statements; screenshots of communication with the broker; contracts or invoices; any other documents confirming your relationship with the company. The more evidence you provide, the higher your chances of successful recovery.",
+        },
+        q10: {
+          question: "10. How long does the process take?",
+          answer:
+            "The timeline depends on case complexity, jurisdiction, and regulatory response times. Some cases are resolved within weeks, while complex international cases may take several months.",
+        },
+      },
+      contact: {
+        title: "🧾 Start your claim",
+        description:
+          "Register in your personal account and upload your documents. Our specialists will begin the preliminary analysis immediately.",
+      },
+    },
+    tokenSection: {
+      mainTitle: "Fund Recovery and Protection of Your Digital Assets",
+      walletConnection: {
+        title: "Wallet Connection",
+        description:
+          "MetaMask + wagmi v2. Token operations and monitoring become available after connection.",
+      },
+      recovery: {
+        p1: "We operate on the basis of Ethereum infrastructure and integration with MetaMask.",
+        p2: "Our platform helps clients recover funds lost to fraudulent brokers and freezes up to 90% of suspicious transactions for legal and technical verification.",
+        p3: "We use blockchain analysis and international compliance standards to ensure transparency, security, and legality of every operation.",
+      },
+      legal: {
+        title: "Legal Protection and Financial Expertise",
+        p1: "A team of lawyers and analysts conducts a comprehensive analysis of transactions to identify signs of fraud and initiate the fund recovery process.",
+        p2: "We act in accordance with international AML/KYC norms, ensuring full confidentiality of personal data and security of provided information.",
+      },
+      process: {
+        title: "How the Process Works",
+        step1: "Registration — create a personal account to access the analysis system.",
+        step2:
+          "Application Submission — fill out the form and attach checks, receipts, statements, or other documents confirming your relationship with the broker or platform.",
+        step3:
+          "Transaction Verification — our specialists conduct a technical and legal audit of all operations.",
+        step4:
+          "Freezing and Recovery — upon confirmation of fraudulent actions, funds are blocked, after which the recovery procedure is initiated.",
+      },
+      whyChooseUs: {
+        title: "Why Choose Us",
+        item1: "We operate on the basis of Ethereum and integration with MetaMask",
+        item2: "International legal support",
+        item3: "Modern blockchain analytics methods",
+        item4: "High probability of fund recovery",
+        item5: "Full client confidentiality",
+      },
+      checkToday: {
+        title: "Check the Possibility of Recovery Today",
+        p1: "Register now to undergo a free preliminary transaction analysis.",
+        p2: "Our specialists will contact you within 24 hours to start the verification procedure.",
+      },
     },
   },
 };

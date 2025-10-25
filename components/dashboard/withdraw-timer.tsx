@@ -25,7 +25,7 @@ export function WithdrawTimer() {
           <CardTitle>{t("timer.title")}</CardTitle>
           <CardDescription>{t("timer.description")}</CardDescription>
         </div>
-        <span className="rounded-full bg-surfaceAlt px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-foregroundMuted">
+        <span className="rounded-full bg-surfaceAlt px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-foregroundMuted dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted">
           {t("timer.status")}
         </span>
       </CardHeader>
@@ -34,29 +34,29 @@ export function WithdrawTimer() {
           {segments.map((segment) => (
             <div
               key={segment.label}
-              className="rounded-2xl border border-outline bg-surfaceAlt p-4 text-center shadow-sm"
+              className="rounded-2xl border border-outline bg-surfaceAlt p-4 text-center shadow-sm dark:border-dark-outline dark:bg-dark-surfaceAlt"
             >
-              <span className="block text-3xl font-semibold text-foreground">
+              <span className="block text-3xl font-semibold text-foreground dark:text-dark-foreground">
                 {segment.value.toString().padStart(2, "0")}
               </span>
-              <span className="mt-2 text-xs uppercase tracking-[0.22em] text-foregroundMuted">
+              <span className="mt-2 text-xs uppercase tracking-[0.22em] text-foregroundMuted dark:text-dark-foregroundMuted">
                 {segment.label}
               </span>
             </div>
           ))}
         </div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-foregroundMuted">
+          <div className="flex items-center justify-between text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
             <span>{t("timer.progress")}</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-3 w-full rounded-full bg-outline">
+          <div className="h-3 w-full rounded-full bg-outline dark:bg-dark-outline">
             <div
               className="h-full rounded-full bg-accent transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-xs text-foregroundMuted">{t("timer.meta")}</p>
+          <p className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">{t("timer.meta")}</p>
         </div>
       </CardContent>
     </Card>

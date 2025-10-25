@@ -11,6 +11,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Light mode colors
         background: "#f8fafc",
         backgroundAlt: "#f1f5f9",
         surface: "#ffffff",
@@ -20,7 +21,15 @@ module.exports = {
         accent: "#3b82f6",
         accentAlt: "#f59e0b",
         outline: "#e2e8f0",
-        // Corporate status colors
+        // Dark mode colors (accessed via CSS variables or direct class names)
+        "dark-background": "#0f172a",
+        "dark-backgroundAlt": "#1e293b",
+        "dark-surface": "#1e293b",
+        "dark-surfaceAlt": "#334155",
+        "dark-foreground": "#f1f5f9",
+        "dark-foregroundMuted": "#94a3b8",
+        "dark-outline": "#334155",
+        // Corporate status colors (same for both themes)
         success: "#22c55e",
         warning: "#f59e0b",
         danger: "#ef4444",
