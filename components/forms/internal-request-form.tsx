@@ -52,7 +52,7 @@ export function InternalRequestForm() {
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'],
+      colors: ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
     });
 
     // Add a second burst after a short delay
@@ -61,7 +61,7 @@ export function InternalRequestForm() {
         particleCount: 50,
         spread: 60,
         origin: { y: 0.7 },
-        colors: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'],
+        colors: ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"],
       });
     }, 200);
   };
@@ -77,10 +77,10 @@ export function InternalRequestForm() {
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
-    
+
     // Trigger confetti effect
     triggerConfetti();
-    
+
     toast.success("Заявка успешно отправлена!");
     setForm(initialState);
   };
@@ -210,10 +210,10 @@ export function InternalRequestForm() {
               >
                 {t("internalForm.buttons.clear")}
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting}
-                className="relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:hover:scale-100 disabled:hover:shadow-none after:content-[''] after:absolute after:rounded-full after:inset-0 after:bg-accent/20 after:z-[-1] after:transition after:duration-500 hover:after:scale-150 hover:after:opacity-0"
+                className="relative overflow-hidden transition-all duration-300 after:absolute after:inset-0 after:z-[-1] after:rounded-full after:bg-accent/20 after:transition after:duration-500 after:content-[''] hover:scale-105 hover:shadow-lg hover:after:scale-150 hover:after:opacity-0 disabled:hover:scale-100 disabled:hover:shadow-none"
               >
                 {isSubmitting ? t("common.buttons.update") : t("internalForm.buttons.submit")}
               </Button>

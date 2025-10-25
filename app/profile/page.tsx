@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WalletStatus } from "@/components/wallet/wallet-status";
+import { DisconnectButton } from "@/components/wallet/disconnect-button";
 import { useTranslation } from "@/hooks/use-translation";
 
 export default function ProfilePage() {
@@ -65,6 +66,10 @@ export default function ProfilePage() {
               </div>
 
               <WalletStatus />
+              
+              <div className="flex justify-end pt-4 border-t border-outline dark:border-dark-outline">
+                <DisconnectButton />
+              </div>
             </CardContent>
           </Card>
 
