@@ -79,12 +79,12 @@ export function ProfileIcon() {
         <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 min-w-[200px] rounded-lg border border-outline bg-surface p-3 shadow-lg">
           {isConnected && address ? (
             <>
-              <div className="dark:text-dark-foreground mb-3 flex items-center gap-3 rounded-md bg-surfaceAlt px-3 py-2 text-sm">
+              <div className="dark:text-dark-foreground dark:bg-dark-surfaceAlt mb-3 flex items-center gap-3 rounded-md bg-surfaceAlt px-3 py-2 text-sm">
                 <div className="dark:bg-dark-surface flex h-8 w-8 items-center justify-center rounded-full bg-surface text-accent">
                   {address.slice(2, 4).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium">{formatAddress(address)}</div>
+                  <div className="font-medium text-foreground dark:text-dark-foreground">{formatAddress(address)}</div>
                   <div className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
                     MetaMask
                   </div>
