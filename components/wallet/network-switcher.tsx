@@ -1,14 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 import { useSupportedNetwork } from "@/hooks/use-supported-network";
 import { useTranslation } from "@/hooks/use-translation";
 
 export function NetworkSwitcher() {
   const { supportedChains, activeChainId, isSwitching, switchToChain, canSwitch, isConnected } =
     useSupportedNetwork();
-  const { show } = useToast();
   const t = useTranslation();
 
   if (!isConnected) {
@@ -24,18 +23,10 @@ export function NetworkSwitcher() {
       await switchToChain(targetChainId);
       const chainName =
         supportedChains.find((chain) => chain.id === targetChainId)?.name ?? "выбранная сеть";
-      show({
-        title: t("wallet.networkAlert.title"),
-        description: t("wallet.networkAlert.message", { chain: chainName }),
-        variant: "success",
-      });
+      toast.success(`Переключено на сеть: ${chainName}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Не удалось переключить сеть.";
-      show({
-        title: t("wallet.error"),
-        description: message,
-        variant: "error",
-      });
+      toast.error(message);
     }
   };
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 import { DEFAULT_CHAIN } from "@/config/chains";
 import { useSupportedNetwork } from "@/hooks/use-supported-network";
 import { useTranslation } from "@/hooks/use-translation";
@@ -10,7 +10,6 @@ import { useTranslation } from "@/hooks/use-translation";
 export function UnsupportedNetworkAlert() {
   const { isSupported, unsupportedChainName, switchToDefault, isSwitching, isConnected } =
     useSupportedNetwork();
-  const { show } = useToast();
   const t = useTranslation();
   const autoSwitchAttemptedRef = useRef(false);
 
@@ -23,22 +22,14 @@ export function UnsupportedNetworkAlert() {
 
     switchToDefault()
       .then(() => {
-        show({
-          title: t("wallet.networkAlert.title"),
-          description: t("wallet.networkAlert.message", { chain: DEFAULT_CHAIN.name }),
-          variant: "success",
-        });
+        toast.success(`Автоматически переключено на сеть: ${DEFAULT_CHAIN.name}`);
       })
       .catch((error) => {
         const message =
           error instanceof Error ? error.message : "Не удалось автоматически переключить сеть.";
-        show({
-          title: t("wallet.networkAlert.title"),
-          description: message,
-          variant: "error",
-        });
+        toast.error(message);
       });
-  }, [isConnected, isSupported, show, switchToDefault]);
+  }, [isConnected, isSupported, switchToDefault]);
 
   if (!isConnected || isSupported) {
     return null;
@@ -65,11 +56,7 @@ export function UnsupportedNetworkAlert() {
               switchToDefault().catch((error) => {
                 const message =
                   error instanceof Error ? error.message : "Не удалось переключить сеть.";
-                show({
-                  title: "Ошибка переключения",
-                  description: message,
-                  variant: "error",
-                });
+                toast.error(message);
               });
             }}
             disabled={isSwitching}

@@ -5,6 +5,7 @@ import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +44,17 @@ export default function RootLayout({
             <div className="flex-1">{children}</div>
             <SiteFooter />
           </div>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'var(--surface)',
+                color: 'var(--foreground)',
+                border: '1px solid var(--outline)',
+              },
+            }}
+          />
         </AppProviders>
       </body>
     </html>

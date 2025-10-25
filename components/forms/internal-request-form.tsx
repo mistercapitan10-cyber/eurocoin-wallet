@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/use-translation";
 
@@ -25,7 +25,6 @@ const initialState: FormState = {
 export function InternalRequestForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { show } = useToast();
   const t = useTranslation();
 
   const requestTypes = [
@@ -53,22 +52,14 @@ export function InternalRequestForm() {
     event.preventDefault();
 
     if (!form.requester || !form.department || !form.requestType || !form.description) {
-      show({
-        title: t("internalForm.validationTitle"),
-        description: t("internalForm.validationDescription"),
-        variant: "warning",
-      });
+      toast.error("Пожалуйста, заполните все обязательные поля");
       return;
     }
 
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
-    show({
-      title: t("internalForm.successTitle"),
-      description: t("internalForm.successDescription"),
-      variant: "success",
-    });
+    toast.success("Заявка успешно отправлена!");
     setForm(initialState);
   };
 

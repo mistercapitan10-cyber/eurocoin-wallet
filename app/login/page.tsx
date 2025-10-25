@@ -5,24 +5,19 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
-import { useToast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
   const { connect, isConnecting, isConnected } = useWalletConnection();
-  const { show } = useToast();
 
   const handleMetaMaskConnect = async () => {
     try {
       // If already connected, just set cookie and redirect
       if (isConnected) {
         Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
-        show({
-          title: "Кошелёк уже подключён",
-          description: "MetaMask уже подключён. Перенаправляем на главную страницу...",
-          variant: "success",
-        });
+        toast.success("Кошелёк уже подключён. Перенаправляем на главную страницу...");
         setTimeout(() => {
           router.push("/");
         }, 1500);
@@ -33,22 +28,14 @@ export default function LoginPage() {
       await connect();
       // Set cookie to indicate successful MetaMask connection
       Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
-      show({
-        title: "Кошелёк подключён",
-        description: "MetaMask успешно подключён. Перенаправляем на главную страницу...",
-        variant: "success",
-      });
+      toast.success("MetaMask успешно подключён. Перенаправляем на главную страницу...");
       // Redirect to home page after successful connection
       setTimeout(() => {
         router.push("/");
       }, 1500);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Не удалось подключить кошелёк";
-      show({
-        title: "Ошибка подключения",
-        description: message,
-        variant: "error",
-      });
+      toast.error(message);
     }
   };
 
@@ -64,14 +51,14 @@ export default function LoginPage() {
             Авторизация доступна через корпоративный SSO либо подключение MetaMask. Подключите
             кошелёк для доступа к функциям управления токенами и просмотра баланса.
           </p>
-                 <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-4 rounded-3xl border border-outline bg-surface p-6 shadow-card">
-                   <Button size="lg" fullWidth onClick={handleMetaMaskConnect} disabled={isConnecting}>
-                     {isConnecting 
-                       ? "Подключение..." 
-                       : isConnected 
-                         ? "Продолжить с MetaMask" 
-                         : "Подключить MetaMask"}
-                   </Button>
+          <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-4 rounded-3xl border border-outline bg-surface p-6 shadow-card">
+            <Button size="lg" fullWidth onClick={handleMetaMaskConnect} disabled={isConnecting}>
+              {isConnecting
+                ? "Подключение..."
+                : isConnected
+                  ? "Продолжить с MetaMask"
+                  : "Подключить MetaMask"}
+            </Button>
             <Button variant="outline" fullWidth disabled>
               Войти через корпоративный Email
             </Button>

@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { useTranslation } from "@/hooks/use-translation";
 
 export function ConnectButton() {
   const { isConnected, isConnecting, connect, canConnect, connectorName, connectError } =
     useWalletConnection();
-  const { show } = useToast();
   const [localError, setLocalError] = useState<string | null>(null);
   const t = useTranslation();
 
@@ -21,19 +20,11 @@ export function ConnectButton() {
     try {
       setLocalError(null);
       await connect();
-      show({
-        title: t("wallet.connectSuccessTitle"),
-        description: t("wallet.connectSuccessDescription"),
-        variant: "success",
-      });
+      toast.success("Кошелёк успешно подключён!");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Не удалось подключить кошелёк.";
       setLocalError(message);
-      show({
-        title: t("wallet.error"),
-        description: message,
-        variant: "error",
-      });
+      toast.error(message);
     }
   };
 
