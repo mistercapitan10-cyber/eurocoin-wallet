@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EuroCoin Web Wallet
+
+Internal dashboard for managing corporate ERC-20 tokens with MetaMask integration. Built with Next.js App Router, wagmi v2, and TailwindCSS.
+
+## Features
+
+- 🔐 MetaMask wallet integration
+- 💰 Real-time token balance tracking
+- 🌐 Multi-network support (Sepolia testnet & Ethereum mainnet)
+- 💱 USD price conversion
+- 🧮 Automatic tax calculation
+- 🌍 Internationalization (Russian & English)
+- 📱 Responsive design
+
+## Prerequisites
+
+- Node.js 20.17.0 (specified in `.nvmrc`)
+- pnpm package manager
+- MetaMask browser extension
 
 ## Getting Started
 
-First, run the development server:
+### Install dependencies
+
+**IMPORTANT:** This project uses `pnpm` exclusively. Do not use `npm` or `yarn`.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file in the root directory:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+# Token Configuration
+NEXT_PUBLIC_TOKEN_ADDRESS=0x...
+NEXT_PUBLIC_TOKEN_SYMBOL=COIN
+NEXT_PUBLIC_TOKEN_DECIMALS=18
 
-## Learn More
+# Pricing (fallback if API fails)
+NEXT_PUBLIC_TOKEN_PRICE_USD=1.50
 
-To learn more about Next.js, take a look at the following resources:
+# RPC (optional, has fallback)
+NEXT_PUBLIC_RPC_URL=https://sepolia.drpc.org
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Tax Configuration
+NEXT_PUBLIC_TOKEN_TAX_FUNCTION=tax
+NEXT_PUBLIC_TOKEN_TAX_BPS=200
+NEXT_PUBLIC_TOKEN_TAX_SCALE=10000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Development Server
 
-## Deploy on Vercel
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Build for Production
+
+```bash
+pnpm build
+pnpm start
+```
+
+## Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Web3:** wagmi v2 + viem
+- **Styling:** TailwindCSS
+- **Language:** TypeScript (strict mode)
+- **Package Manager:** pnpm
+
+## Project Structure
+
+```
+app/              # Next.js App Router pages
+components/       # React components (UI, wallet, forms, layout)
+lib/              # Core utilities and Web3 configuration
+config/           # Chain, token, and tax configuration
+hooks/            # Custom React hooks
+docs/             # Architecture and project documentation
+```
+
+## Documentation
+
+See the `/docs` folder for detailed documentation:
+
+- `architecture.md` - Detailed architecture overview
+- `arch-rules.md` - Project rules and conventions
+- `CLAUDE.md` - AI assistant guidelines
+
+## Deployment
+
+Recommended platforms:
+- Vercel (primary)
+- Netlify
+
+Build command: `pnpm build`
+Output directory: `.next`
+
+## License
+
+Internal use only
