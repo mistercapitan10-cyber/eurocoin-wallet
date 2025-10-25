@@ -5,18 +5,21 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   inset?: boolean;
 }
 
-export function Card({
-  className,
-  inset = false,
-  ...props
-}: CardProps) {
-  return <div className={cn("rounded-3xl border border-outline bg-surface shadow-card dark:border-dark-outline dark:bg-dark-surface", inset && "p-0", !inset && "p-6", className)} {...props} />;
+export function Card({ className, inset = false, ...props }: CardProps) {
+  return (
+    <div
+      className={cn(
+        "dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface shadow-card",
+        inset && "p-0",
+        !inset && "p-6",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
-export function CardHeader({
-  className,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("flex flex-col gap-2 pb-4", className)} {...props} />;
 }
 
@@ -24,26 +27,30 @@ export function CardTitle({
   className,
   children,
 }: HTMLAttributes<HTMLHeadingElement> & { children: ReactNode }) {
-  return <h2 className={cn("text-lg font-semibold text-foreground dark:text-dark-foreground", className)}>{children}</h2>;
+  return (
+    <h2
+      className={cn("dark:text-dark-foreground text-lg font-semibold text-foreground", className)}
+    >
+      {children}
+    </h2>
+  );
 }
 
 export function CardDescription({
   className,
   children,
 }: HTMLAttributes<HTMLParagraphElement> & { children: ReactNode }) {
-  return <p className={cn("text-sm text-foregroundMuted dark:text-dark-foregroundMuted", className)}>{children}</p>;
+  return (
+    <p className={cn("dark:text-dark-foregroundMuted text-sm text-foregroundMuted", className)}>
+      {children}
+    </p>
+  );
 }
 
-export function CardContent({
-  className,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("pt-4", className)} {...props} />;
 }
 
-export function CardFooter({
-  className,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("mt-6 pt-4", className)} {...props} />;
 }

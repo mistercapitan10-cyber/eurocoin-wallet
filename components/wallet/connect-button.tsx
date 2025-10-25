@@ -44,7 +44,7 @@ export function ConnectButton() {
       <Button onClick={handleConnect} disabled={!canConnect || isConnecting} fullWidth>
         {isConnecting ? t("wallet.connecting") : t("wallet.connect")}
       </Button>
-      <div className="flex flex-col gap-2 text-sm text-foregroundMuted">
+      <div className="flex flex-col gap-2 text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
         <span>{t("wallet.connector", { connector: connectorName ?? "—" })}</span>
         {!canConnect ? <span className="text-accentAlt">{t("wallet.install")}</span> : null}
         {errorMessage ? <span className="text-accentAlt">{errorMessage}</span> : null}

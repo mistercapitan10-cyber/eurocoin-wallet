@@ -45,11 +45,11 @@ export function UnsupportedNetworkAlert() {
   }
 
   return (
-    <div className="rounded-2xl border border-accentAlt/40 bg-accentAlt/10 px-5 py-4 text-sm text-foreground shadow-card">
+    <div className="rounded-2xl border border-accentAlt/40 bg-accentAlt/10 px-5 py-4 text-sm text-foreground shadow-card dark:border-accentAlt/60 dark:bg-accentAlt/20 dark:text-dark-foreground">
       <div className="flex flex-col gap-3">
         <div>
-          <p className="font-semibold text-foreground">{t("wallet.networkAlert.title")}</p>
-          <p className="mt-1 text-foregroundMuted">
+          <p className="font-semibold text-foreground dark:text-dark-foreground">{t("wallet.networkAlert.title")}</p>
+          <p className="mt-1 text-foregroundMuted dark:text-dark-foregroundMuted">
             {unsupportedChainName
               ? t("wallet.networkAlert.message", { chain: unsupportedChainName })
               : t("wallet.networkAlert.message", { chain: DEFAULT_CHAIN.name })}

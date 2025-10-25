@@ -75,7 +75,7 @@ export function Modal({
         aria-labelledby={title ? labelledBy : undefined}
         aria-describedby={description ? describedBy : undefined}
         className={cn(
-          "relative w-full rounded-2xl border border-outline bg-surface p-6 shadow-xl shadow-black/50 dark:border-dark-outline dark:bg-dark-surface",
+          "dark:border-dark-outline dark:bg-dark-surface relative w-full rounded-2xl border border-outline bg-surface p-6 shadow-xl shadow-black/50",
           sizeMap[size],
         )}
       >
@@ -83,13 +83,16 @@ export function Modal({
           {title ? (
             <h2
               id={labelledBy}
-              className="text-xl font-semibold text-foreground dark:text-dark-foreground"
+              className="dark:text-dark-foreground text-xl font-semibold text-foreground"
             >
               {title}
             </h2>
           ) : null}
           {description ? (
-            <p id={describedBy} className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
+            <p
+              id={describedBy}
+              className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted"
+            >
               {description}
             </p>
           ) : null}
@@ -101,7 +104,7 @@ export function Modal({
           <button
             type="button"
             aria-label="Закрыть"
-            className="absolute right-4 top-4 text-foregroundMuted transition-colors hover:text-foreground dark:text-dark-foregroundMuted dark:hover:text-dark-foreground"
+            className="dark:text-dark-foregroundMuted dark:hover:text-dark-foreground absolute right-4 top-4 text-foregroundMuted transition-colors hover:text-foreground"
             onClick={onClose}
           >
             <span aria-hidden="true">×</span>

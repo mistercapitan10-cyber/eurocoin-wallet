@@ -27,11 +27,14 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 const defaultDuration = 5000;
 
 const variantStyles: Record<ToastVariant, string> = {
-  default: "border-outline bg-surface/95 text-foreground shadow-lg shadow-black/40 dark:border-dark-outline dark:bg-dark-surface/95 dark:text-dark-foreground",
+  default:
+    "border-outline bg-surface/95 text-foreground shadow-lg shadow-black/40 dark:border-dark-outline dark:bg-dark-surface/95 dark:text-dark-foreground",
   success:
     "border-emerald-500/40 bg-emerald-500/15 text-emerald-100 shadow-lg shadow-emerald-500/30 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-100",
-  error: "border-red-500/40 bg-red-500/15 text-red-100 shadow-lg shadow-red-500/30 dark:border-red-400/40 dark:bg-red-500/20 dark:text-red-100",
-  warning: "border-amber-500/40 bg-amber-500/15 text-amber-50 shadow-lg shadow-amber-500/30 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-50",
+  error:
+    "border-red-500/40 bg-red-500/15 text-red-100 shadow-lg shadow-red-500/30 dark:border-red-400/40 dark:bg-red-500/20 dark:text-red-100",
+  warning:
+    "border-amber-500/40 bg-amber-500/15 text-amber-50 shadow-lg shadow-amber-500/30 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-50",
 };
 
 let toastIdCounter = 0;
