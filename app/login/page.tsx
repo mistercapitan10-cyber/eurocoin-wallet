@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { useToast } from "@/components/ui/toast";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function LoginPage() {
   const handleMetaMaskConnect = async () => {
     try {
       await connect();
+      // Set cookie to indicate successful MetaMask connection
+      Cookies.set('metamask_connected', 'true', { expires: 7 }); // 7 days
       show({
         title: "Кошелёк подключён",
         description: "MetaMask успешно подключён. Перенаправляем на главную страницу...",
