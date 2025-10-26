@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { ethers } from "ethers";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
-import { BalanceCard, PriceTicker, TaxCard } from "@/components/wallet";
+import { BalanceCard, PriceTicker, TaxCard, WalletStatistics } from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { WithdrawTimer } from "@/components/dashboard/withdraw-timer";
@@ -102,6 +102,11 @@ export default function Home() {
 
           {/* Divider */}
           <div className="dark:border-dark-outline mt-10 border-t border-outline" />
+
+          {/* Wallet Statistics Section */}
+          <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card">
+            <WalletStatistics />
+          </div>
 
           {/* Wallet Connection Section */}
           <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card">

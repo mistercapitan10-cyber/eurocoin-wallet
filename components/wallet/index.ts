@@ -2,6 +2,7 @@ export { ConnectButton } from "./connect-button";
 export { DisconnectButton } from "./disconnect-button";
 export { WalletAddress } from "./wallet-address";
 export { WalletStatus } from "./wallet-status";
+export { WalletStatistics } from "./wallet-statistics";
 export { NetworkSwitcher } from "./network-switcher";
 export { UnsupportedNetworkAlert } from "./unsupported-network-alert";
 export { BalanceCard } from "./balance-card";

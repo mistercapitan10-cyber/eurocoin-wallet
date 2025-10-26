@@ -219,6 +219,12 @@ const translations: Messages = {
         updated: "Обновлено: {time}",
         fallback: "Не удалось получить актуальные данные курса. Отображается резервное значение.",
       },
+      statistics: {
+        title: "Статистика кошелька",
+        totalSpent: "Всего потрачено",
+        cancelledAmount: "Заблокировано/Возвращено",
+        loading: "Загрузка...",
+      },
       taxCard: {
         title: "Комиссии (Tax)",
         description: "Процент комиссии при операциях с токеном и быстрый калькулятор.",
@@ -602,6 +608,12 @@ const translations: Messages = {
         source: "Source: {source}",
         updated: "Updated: {time}",
         fallback: "Failed to fetch latest price. Showing fallback value.",
+      },
+      statistics: {
+        title: "Wallet Statistics",
+        totalSpent: "Total Spent",
+        cancelledAmount: "Cancelled/Refunded",
+        loading: "Loading...",
       },
       taxCard: {
         title: "Fees (Tax)",
