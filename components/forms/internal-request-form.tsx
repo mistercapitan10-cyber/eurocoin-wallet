@@ -69,20 +69,41 @@ export function InternalRequestForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // Validate required fields
     if (!form.requester || !form.department || !form.requestType || !form.description) {
-      toast.error("Пожалуйста, заполните все обязательные поля");
+      toast.error(t("internalForm.validationTitle"));
       return;
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    setIsSubmitting(false);
 
-    // Trigger confetti effect
-    triggerConfetti();
+    try {
+      // Send request to API
+      const response = await fetch("/api/submit-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
 
-    toast.success("Заявка успешно отправлена!");
-    setForm(initialState);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit request");
+      }
+
+      // Trigger confetti effect
+      triggerConfetti();
+
+      toast.success(t("internalForm.successTitle"));
+      setForm(initialState);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error(error instanceof Error ? error.message : t("internalForm.validationDescription"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
