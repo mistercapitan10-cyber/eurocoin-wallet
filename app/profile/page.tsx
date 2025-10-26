@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { DisconnectButton } from "@/components/wallet/disconnect-button";
+import { UserRequests } from "@/components/profile/user-requests";
 import { useTranslation } from "@/hooks/use-translation";
 
 export default function ProfilePage() {
@@ -95,6 +96,9 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* My Requests */}
+          {address && <UserRequests walletAddress={address} />}
         </div>
       </div>
     </main>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Telegraf } from "telegraf";
 import { Resend } from "resend";
+import { createExchangeRequest } from "@/lib/database/queries";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -26,6 +27,26 @@ export async function POST(request: NextRequest) {
 
     // Generate request ID
     const requestId = `EX-${Date.now()}`;
+
+    // Save to database
+    try {
+      await createExchangeRequest({
+        id: requestId,
+        wallet_address: data.walletAddress,
+        email: data.email,
+        token_amount: data.tokenAmount,
+        fiat_amount: data.fiatAmount,
+        rate: data.rate,
+        commission: data.commission,
+        comment: data.comment,
+      });
+    } catch (dbError) {
+      console.error("Error saving to database:", dbError);
+      return NextResponse.json(
+        { error: "Failed to save request to database" },
+        { status: 500 }
+      );
+    }
 
     // Prepare message for manager
     const message = `

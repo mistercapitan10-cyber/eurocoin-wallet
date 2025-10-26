@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { createInternalRequest } from "@/lib/database/queries";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -18,6 +19,26 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!data.requester || !data.department || !data.requestType || !data.description) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Generate request ID
+    const requestId = `IR-${Date.now()}`;
+
+    // Save to database
+    try {
+      await createInternalRequest({
+        id: requestId,
+        requester: data.requester,
+        department: data.department,
+        request_type: data.requestType,
+        priority: data.priority,
+        description: data.description,
+        // Note: email and wallet_address are optional for internal requests
+        email: data.requester.includes("@") ? data.requester : undefined,
+      });
+    } catch (dbError) {
+      console.error("Error saving to database:", dbError);
+      return NextResponse.json({ error: "Failed to save request to database" }, { status: 500 });
     }
 
     // Get environment variables
