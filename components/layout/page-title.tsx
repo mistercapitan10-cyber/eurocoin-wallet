@@ -26,7 +26,12 @@ export function PageTitle({ title, description, enableSectionTracking = false }:
   console.log("[PageTitle] Current activeSection:", activeSection);
 
   const dynamicTitle = useMemo(() => {
-    console.log("[PageTitle] Computing dynamicTitle, enableSectionTracking:", enableSectionTracking, "activeSection:", activeSection);
+    console.log(
+      "[PageTitle] Computing dynamicTitle, enableSectionTracking:",
+      enableSectionTracking,
+      "activeSection:",
+      activeSection,
+    );
     if (enableSectionTracking && activeSection !== "home") {
       const sectionTitle = SECTION_TITLES[activeSection] || activeSection;
       const result = `${sectionTitle} - EuroCoin`;
