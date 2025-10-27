@@ -55,10 +55,6 @@ export function ChatMessage({ message, onTranslate }: ChatMessageProps) {
             </>
           )}
         </div>
-        {/* Online indicator - positioned outside the avatar */}
-        {!isUser && !isAutomatedMessage && (
-          <span className="absolute bottom-0 right-0 h-4 w-4 translate-x-1/2 translate-y-1/2 rounded-full border-2 border-white bg-green-500" />
-        )}
       </div>
 
       {/* Message bubble */}

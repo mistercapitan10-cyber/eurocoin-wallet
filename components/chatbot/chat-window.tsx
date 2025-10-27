@@ -144,18 +144,14 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b-2 border-blue-300 bg-blue-600 p-4">
         <div className="flex items-center gap-3">
-          {/* Avatar container with online indicator outside */}
-          <div className="relative">
-            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-blue-700">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/specialist.png"
-                alt="Support specialist"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            {/* Online indicator positioned outside the avatar */}
-            <span className="absolute bottom-0 right-0 h-5 w-5 translate-x-1/2 translate-y-1/2 rounded-full border-2 border-white bg-green-500" />
+          {/* Avatar */}
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-blue-700">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/specialist.png"
+              alt="Support specialist"
+              className="h-full w-full object-cover"
+            />
           </div>
           <div>
             <h3 className="font-bold text-white">Поддержка</h3>
