@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface Review {
   id: string;
@@ -15,7 +16,7 @@ interface Review {
   avatar?: string;
 }
 
-const mockReviews: Review[] = [
+const mockReviewsRu: Review[] = [
   {
     id: "1",
     author: "Анна Петрова",
@@ -58,16 +59,70 @@ const mockReviews: Review[] = [
   },
 ];
 
+const mockReviewsEn: Review[] = [
+  {
+    id: "1",
+    author: "Anna Petrova",
+    department: "Kyiv, Ukraine",
+    rating: 5,
+    text: "I can't believe it! They recovered 15,000 USD for me through this system. I was scammed by fraudsters, transferred all my money to a 0x address, thought I lost it forever. But thanks to the support service, they were able to track the transaction and recover the funds. Anonymous consultants worked for days, very professional!",
+    date: "20.01.2025",
+  },
+  {
+    id: "2",
+    author: "Mikhail Kozlov",
+    department: "Moscow, Russia",
+    rating: 5,
+    text: "I sent 8.5 ETH to a fake contract. The fraudsters stole the cryptocurrency in minutes. I contacted for help - within 2 weeks they recovered 100% of my funds. Specialists conducted a full blockchain investigation, found suspicious patterns and recovered my money. Grateful to the entire team!",
+    date: "18.01.2025",
+  },
+  {
+    id: "3",
+    author: "Elena Smirnova",
+    department: "Saint Petersburg, Russia",
+    rating: 5,
+    text: "I became a victim of a phishing site, 25,000 USDT was stolen. I thought the money was lost forever. But the support service literally saved me! They conducted a deep analysis of Ethereum transactions, tracked the fund movement and recovered all my tokens. Top-class professionals!",
+    date: "15.01.2025",
+  },
+  {
+    id: "4",
+    author: "Dmitry Volkov",
+    department: "Almaty, Kazakhstan",
+    rating: 5,
+    text: "Fraudsters stole 50,000 USD from me through a fake DeFi protocol. All funds went to an unknown 0x address... I contacted them in despair. Incredibly, they helped me! Specialists used direct integration with Ethereum and MetaMask for the investigation. They recovered 100% of the funds. Thank you!",
+    date: "12.01.2025",
+  },
+  {
+    id: "5",
+    author: "Olga Morozova",
+    department: "Minsk, Belarus",
+    rating: 5,
+    text: "Lost 32 ETH due to a fake NFT marketplace. The fraudsters stole everything through a malicious smart contract. The antifraud team conducted an investigation of suspicious transactions with direct access to the Ethereum network. Literally within a week, they returned all the ETH back to my MetaMask wallet. I'm amazed by this level of service!",
+    date: "10.01.2025",
+  },
+];
+
 export function ReviewsCarousel() {
   const t = useTranslation();
+  const { locale } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+
+  const mockReviews = useMemo(() => {
+    return locale === "en" ? mockReviewsEn : mockReviewsRu;
+  }, [locale]);
 
   useEffect(() => {
     setTimeout(() => {
       setIsMounted(true);
     }, 100);
   }, []);
+
+  // Reset to first review when language changes
+  useEffect(() => {
+    setCurrentIndex(0);
+    // eslint-disable-next-line react-compiler/react-compiler
+  }, [mockReviews]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -77,7 +132,7 @@ export function ReviewsCarousel() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isMounted]);
+  }, [isMounted, mockReviews.length]);
 
   const nextReview = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % mockReviews.length);
@@ -117,11 +172,11 @@ export function ReviewsCarousel() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h2 className="dark:text-dark-foreground mb-4 text-3xl font-bold text-foreground">
-              {t("reviews.title")}
-            </h2>
-            <p className="dark:text-dark-foregroundMuted text-lg text-foregroundMuted">
-              {t("reviews.subtitle")}
-            </p>
+            {t("reviews.title")}
+          </h2>
+          <p className="dark:text-dark-foregroundMuted text-lg text-foregroundMuted">
+            {t("reviews.subtitle")}
+          </p>
         </div>
 
         {/* Carousel */}
