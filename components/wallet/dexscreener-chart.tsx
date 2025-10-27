@@ -13,10 +13,22 @@ interface DexscreenerChartProps {
 export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   const t = useTranslation();
   const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(() => {
+    if (typeof window !== "undefined") {
+      return true;
+    }
+    return false;
+  });
 
   useEffect(() => {
-    setMounted(true);
+    if (!mounted) {
+      // Small delay to ensure theme is properly resolved
+      const timer = setTimeout(() => {
+        setMounted(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Use the token address from env or fallback
