@@ -860,16 +860,6 @@ const translations: Messages = {
       historyTitle: "Request history",
       historyDescription: "Demo table of statuses without API wiring.",
     },
-    reviews: {
-      title: "Team feedback",
-      description:
-        "Collect feedback from internal teams to prepare the backlog before integration phases. All entries below are placeholders.",
-      videoButton: "Watch playback",
-      formTitle: "Submit feedback",
-      formDescription: "Employee form. Functionality will arrive in later phases.",
-      moderationTitle: "Moderation",
-      moderationDescription: "Admin tools — placeholders for now.",
-    },
     login: {
       title: "MetaWallet login",
       description:
@@ -962,6 +952,36 @@ const translations: Messages = {
 
 <p><strong>Security:</strong></p>
 <p>All exchanges are conducted through Ethereum smart contracts, ensuring reliability and transparency of operations.</p>`,
+      },
+    },
+    metamask: {
+      download: {
+        title: "Download MetaMask",
+        subtitle: "Secure crypto wallet for blockchain operations",
+        feature1: {
+          title: "Security",
+          description: "Your keys under control",
+        },
+        feature2: {
+          title: "Mobile app",
+          description: "Install on your phone",
+        },
+        feature3: {
+          title: "Web3",
+          description: "DeFi and DApp support",
+        },
+        button: "Download MetaMask",
+        available: "Available for iOS, Android, Chrome, Firefox, Brave, Edge and Opera",
+      },
+    },
+    reviews: {
+      title: "Our Client Reviews",
+      subtitle: "Real stories of fund recovery for fraud victims",
+      counter: "{current} of {total}",
+      stats: {
+        success: "Successful recoveries",
+        recovered: "USD recovered",
+        support: "Online support",
       },
     },
     admin: {
