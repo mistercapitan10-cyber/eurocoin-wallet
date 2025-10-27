@@ -221,6 +221,11 @@ const translations: Messages = {
         updated: "Обновлено: {time}",
         fallback: "Не удалось получить актуальные данные курса. Отображается резервное значение.",
       },
+      dexscreener: {
+        title: "График токена",
+        description: "Интерактивный график цены в реальном времени",
+        openFull: "Открыть на Dexscreener",
+      },
       statistics: {
         title: "Статистика кошелька",
         totalSpent: "Всего потрачено",
@@ -828,6 +833,11 @@ const translations: Messages = {
         source: "Source: {source}",
         updated: "Updated: {time}",
         fallback: "Failed to fetch latest price. Showing fallback value.",
+      },
+      dexscreener: {
+        title: "Token Chart",
+        description: "Real-time interactive price chart",
+        openFull: "Open on Dexscreener",
       },
       statistics: {
         title: "Wallet Statistics",

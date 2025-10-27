@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { ethers } from "ethers";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
-import { BalanceCard, PriceTicker, TaxCard, WalletStatistics } from "@/components/wallet";
+import { BalanceCard, PriceTicker, TaxCard, WalletStatistics, DexscreenerChart } from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { InvestigationProgress } from "@/components/dashboard/investigation-progress";
@@ -117,6 +117,7 @@ export default function Home() {
           <div className="flex flex-col gap-6">
             <BalanceCard />
             <PriceTicker />
+            <DexscreenerChart />
           </div>
           <TaxCard />
         </section>

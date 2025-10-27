@@ -9,3 +9,4 @@ export { BalanceCard } from "./balance-card";
 export { PriceTicker } from "./price-ticker";
 export { TaxCard } from "./tax-card";
 export { WalletDashboard } from "./wallet-dashboard";
+export { DexscreenerChart } from "./dexscreener-chart";
