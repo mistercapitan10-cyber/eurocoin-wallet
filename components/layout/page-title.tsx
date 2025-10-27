@@ -5,7 +5,7 @@ import { useActiveSection } from "@/hooks/use-active-section";
 
 interface PageTitleProps {
   title: string;
-  description?: string;
+  description?: string; // Kept for interface consistency
   enableSectionTracking?: boolean;
 }
 
@@ -19,6 +19,7 @@ const SECTION_TITLES: Record<string, string> = {
   home: "Dashboard",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function PageTitle({ title, description, enableSectionTracking = false }: PageTitleProps) {
   console.log("[PageTitle] Component rendered, enableSectionTracking:", enableSectionTracking);
   const activeSection = useActiveSection();
