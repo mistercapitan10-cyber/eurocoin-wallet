@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
-import { useLanguage } from "@/components/providers/language-provider";
 
 interface InvestigationStage {
   id: string;
