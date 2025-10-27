@@ -278,6 +278,15 @@ const translations: Messages = {
         terms: "Пользовательское соглашение",
         exchange: "Telegram-обменник",
       },
+      badge: "Login",
+      heading: "Вход в MetaWallet",
+      descriptionText:
+        "Мы возвращаем утерянные деньги и возрождаем надежду. Подключите MetaMask для безопасного доступа к функциям восстановления средств и защиты от мошенников.",
+      connecting: "Подключение...",
+      continue: "Продолжить с MetaMask",
+      walletConnected: "Кошелёк уже подключён. Перенаправляем на главную страницу...",
+      walletConnectedSuccess: "MetaMask успешно подключён. Перенаправляем на главную страницу...",
+      connectError: "Не удалось подключить кошелёк",
     },
     info: {
       notFound: "Страница не найдена",
@@ -856,6 +865,15 @@ const translations: Messages = {
         terms: "Terms of Service",
         exchange: "Telegram Exchange",
       },
+      badge: "Login",
+      heading: "Login to MetaWallet",
+      descriptionText:
+        "We recover lost funds and restore hope. Connect MetaMask for secure access to fund recovery and fraud protection features.",
+      connecting: "Connecting...",
+      continue: "Continue with MetaMask",
+      walletConnected: "Wallet already connected. Redirecting to home page...",
+      walletConnectedSuccess: "MetaMask successfully connected. Redirecting to home page...",
+      connectError: "Failed to connect wallet",
     },
     info: {
       notFound: "Page not found",

@@ -22,7 +22,7 @@ export default function LoginPage() {
       // If already connected, just set cookie and redirect
       if (isConnected) {
         Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
-        toast.success("Кошелёк уже подключён. Перенаправляем на главную страницу...");
+        toast.success(t("login.walletConnected"));
         setTimeout(() => {
           router.push("/");
         }, 1500);
@@ -33,13 +33,13 @@ export default function LoginPage() {
       await connect();
       // Set cookie to indicate successful MetaMask connection
       Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
-      toast.success("MetaMask успешно подключён. Перенаправляем на главную страницу...");
+      toast.success(t("login.walletConnectedSuccess"));
       // Redirect to home page after successful connection
       setTimeout(() => {
         router.push("/");
       }, 1500);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Не удалось подключить кошелёк";
+      const message = error instanceof Error ? error.message : t("login.connectError");
       toast.error(message);
     }
   };
@@ -49,26 +49,24 @@ export default function LoginPage() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-12 md:flex-row md:items-center md:justify-between md:gap-10 md:px-10 md:py-16">
         <div className="flex-1 space-y-4 sm:space-y-6">
           <span className="pill dark:bg-dark-surface dark:text-dark-foreground bg-surface text-xs text-foreground sm:text-sm">
-            Login
+            {t("login.badge")}
           </span>
           <h1 className="text-3xl font-bold text-accent sm:text-4xl md:text-5xl">
-            Вход в MetaWallet
+            {t("login.heading")}
           </h1>
           <p className="dark:text-dark-foregroundMuted max-w-xl text-sm text-foregroundMuted sm:text-base md:text-lg">
-            Мы возвращаем утерянные деньги и возрождаем надежду. Подключите MetaMask для безопасного
-            доступа к функциям восстановления средств и защиты от мошенников.
+            {t("login.descriptionText")}
           </p>
           <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-3 rounded-2xl border border-outline bg-surface p-4 shadow-card sm:gap-4 sm:rounded-3xl sm:p-6">
             <Button size="lg" fullWidth onClick={handleMetaMaskConnect} disabled={isConnecting}>
               {isConnecting
-                ? "Подключение..."
+                ? t("login.connecting")
                 : isConnected
-                  ? "Продолжить с MetaMask"
-                  : "Подключить MetaMask"}
+                  ? t("login.continue")
+                  : t("login.connect")}
             </Button>
             <p className="dark:text-dark-foregroundMuted text-[10px] text-foregroundMuted sm:text-xs">
-              При входе вы соглашаетесь с внутренней политикой доступа и NDA. Все операции
-              логируются.
+              {t("login.disclaimer")}
             </p>
           </div>
           <div className="dark:text-dark-foregroundMuted flex flex-wrap gap-3 text-[10px] text-foregroundMuted sm:gap-4 sm:text-xs">
