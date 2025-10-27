@@ -132,32 +132,30 @@ export function SiteHeader() {
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
-      const viewportCenter = window.scrollY + window.innerHeight / 2;
-
+      const scrollPosition = window.scrollY;
+      const offset = 200; // Offset before considering section as active
+      
       let activeSection = "";
-      let minDistance = Infinity;
 
-      // Find the section closest to the center of the viewport
-      for (const section of sections) {
+      // Go through sections in reverse order to find the last one we've scrolled past
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
         const element = document.getElementById(section);
+        
         if (element) {
           const rect = element.getBoundingClientRect();
           const elementTop = rect.top + window.scrollY;
-          const elementCenter = elementTop + rect.height / 2;
-          const distance = Math.abs(viewportCenter - elementCenter);
-
-          // Only consider sections that are on screen or just before
-          if (rect.top <= window.innerHeight && rect.bottom >= 0) {
-            if (distance < minDistance) {
-              minDistance = distance;
-              activeSection = section;
-            }
+          
+          // If scroll position is past the start of this section (with offset)
+          if (scrollPosition >= elementTop - offset) {
+            activeSection = section;
+            break;
           }
         }
       }
 
-      // Fallback: if we're at the top of the page
-      if (window.scrollY < 100) {
+      // Special case: if we're at the very top, don't highlight anything
+      if (scrollPosition < 100) {
         setActiveSection("");
       } else {
         setActiveSection(activeSection);
