@@ -366,11 +366,11 @@ bot.command("details", async (ctx) => {
 
 // Handle investigation status buttons
 bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
-  try {
-    const match = ctx.match;
-    const requestId = match[1];
-    const newStage = match[2];
+  const match = ctx.match;
+  const requestId = match[1];
+  const newStage = match[2];
 
+  try {
     console.log("[telegram-webhook] Investigation status update:", { requestId, newStage });
 
     // Update investigation status in database
