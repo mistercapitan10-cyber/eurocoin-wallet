@@ -132,20 +132,14 @@ Email: ${formData.email || "не указан"}`;
         <CardHeader>
           <div className="mb-8 text-center">
             <h2 className="mb-4 font-display text-4xl font-bold tracking-tight">
-              {t("exchange.title").includes("Обменник") ? (
-                <>
-                  <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
-                    Telegram
-                  </span>{" "}
-                  <span className="text-foreground dark:text-white">Обменник</span>
-                </>
-              ) : (
-                <span className="text-foreground dark:text-white">{t("exchange.title")}</span>
-              )}
+              <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
+                {t("exchange.title").split("-")[0]}
+              </span>{" "}
+              <span className="text-foreground dark:text-white">
+                {t("exchange.title").split("-")[1] || t("exchange.title")}
+              </span>
             </h2>
-            <CardDescription className="text-lg">
-              {t("exchange.description")}
-            </CardDescription>
+            <CardDescription className="text-lg">{t("exchange.description")}</CardDescription>
           </div>
         </CardHeader>
         <CardContent>

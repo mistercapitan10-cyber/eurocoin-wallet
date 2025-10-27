@@ -283,7 +283,7 @@ const translations: Messages = {
       tableDescription: "Таблица для ручной модерации операций.",
     },
     exchange: {
-      title: "Telegram-обменник",
+      title: "Telegram обменник",
       description:
         "Интерфейс для конвертации корпоративных токенов в фиатные средства с передачей заявки через Telegram-бота. Функционал представляется в виде заглушек.",
       calculatorTitle: "Калькулятор обмена",
