@@ -17,7 +17,9 @@ export default function ProfilePage() {
 
   if (!isConnected) {
     return (
-      <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12">
+      <>
+        <PageTitle title="Profile" description="Your wallet profile and requests" />
+        <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12">
         <div className="mx-auto max-w-2xl px-6">
           <Card>
             <CardHeader>
@@ -29,12 +31,15 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
-      </main>
+        </main>
+      </>
     );
   }
 
   return (
-    <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12">
+    <>
+      <PageTitle title="Profile" description="Your wallet profile and requests" />
+      <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12">
       <div className="mx-auto max-w-2xl px-6">
         <div className="mb-8">
           <h1 className="dark:text-dark-foreground text-3xl font-bold text-foreground">
@@ -103,7 +108,8 @@ export default function ProfilePage() {
           {/* My Requests */}
           {address && <UserRequests walletAddress={address} />}
         </div>
-      </div>
-    </main>
-  );
-}
+        </div>
+        </main>
+      </>
+    );
+  }
