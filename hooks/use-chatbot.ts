@@ -13,6 +13,7 @@ interface UseChatbotResult {
   messages: ChatMessageType[];
   sendMessage: (text: string) => Promise<void>;
   addMessage: (message: Omit<ChatMessageType, "id" | "timestamp">) => void;
+  addMessageWithId: (message: Omit<ChatMessageType, "timestamp">) => void;
   updateMessage: (messageId: string, translated: string) => void;
   loading: boolean;
   resetChat: () => void;
@@ -25,7 +26,7 @@ export function useChatbot({ locale, walletAddress }: UseChatbotOptions): UseCha
   const addMessage = useCallback((message: Omit<ChatMessageType, "id" | "timestamp">) => {
     const newMessage: ChatMessageType = {
       ...message,
-      id: `${message.type}-${Date.now()}`,
+      id: `${message.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, newMessage]);
@@ -33,6 +34,20 @@ export function useChatbot({ locale, walletAddress }: UseChatbotOptions): UseCha
 
   const resetChat = useCallback(() => {
     setMessages([]);
+  }, []);
+
+  const addMessageWithId = useCallback((message: Omit<ChatMessageType, "timestamp">) => {
+    const newMessage: ChatMessageType = {
+      ...message,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => {
+      // Check if message with this ID already exists
+      if (prev.some((msg) => msg.id === message.id)) {
+        return prev;
+      }
+      return [...prev, newMessage];
+    });
   }, []);
 
   const updateMessage = useCallback((messageId: string, translated: string) => {
@@ -102,6 +117,7 @@ export function useChatbot({ locale, walletAddress }: UseChatbotOptions): UseCha
     messages,
     sendMessage,
     addMessage,
+    addMessageWithId,
     updateMessage,
     loading,
     resetChat,

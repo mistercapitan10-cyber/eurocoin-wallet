@@ -14,7 +14,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ userAddress }: ChatWindowProps) {
   const { locale } = useLanguage();
-  const { messages, sendMessage, addMessage, updateMessage, loading } = useChatbot({
+  const { messages, sendMessage, addMessage, addMessageWithId, updateMessage, loading } = useChatbot({
     locale,
     walletAddress: userAddress as `0x${string}` | undefined,
   });
@@ -63,35 +63,36 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
           const data = await response.json();
           const newMessages = data.messages || [];
 
-          // Only process if there are actually new messages
-          if (newMessages.length > lastMessageCountRef.current) {
-            console.log(
-              "[chat-window] Detected new messages:",
-              newMessages.length,
-              "current:",
-              lastMessageCountRef.current,
-            );
-            lastMessageCountRef.current = newMessages.length;
+            // Only process if there are actually new messages
+            if (newMessages.length > lastMessageCountRef.current) {
+              console.log(
+                "[chat-window] Detected new messages:",
+                newMessages.length,
+                "current:",
+                lastMessageCountRef.current,
+              );
+              lastMessageCountRef.current = newMessages.length;
 
-            // Compare with current messages and add new ones silently
-            const currentMessageIds = new Set(messages.map((m) => m.id));
-            const messagesToAdd = newMessages.filter(
-              (msg: { id: string; type: string; text: string }) => !currentMessageIds.has(msg.id),
-            );
+              // Compare with current messages and add new ones silently
+              const currentMessageIds = new Set(messages.map((m) => m.id));
+              const messagesToAdd = newMessages.filter(
+                (msg: { id: string; type: string; text: string }) => !currentMessageIds.has(msg.id),
+              );
 
-            if (messagesToAdd.length > 0) {
-              console.log("[chat-window] Adding", messagesToAdd.length, "new messages");
-              // Add new messages without causing a full re-render
-              messagesToAdd.forEach((msg: { id: string; type: string; text: string }) => {
-                const messageType = msg.type === "admin" ? "bot" : msg.type;
-                addMessage({
-                  type: messageType as "user" | "bot",
-                  text: msg.text,
-                  isTranslated: false,
+              if (messagesToAdd.length > 0) {
+                console.log("[chat-window] Adding", messagesToAdd.length, "new messages");
+                // Add new messages without causing a full re-render
+                messagesToAdd.forEach((msg: { id: string; type: string; text: string }) => {
+                  const messageType = msg.type === "admin" ? "bot" : msg.type;
+                  addMessageWithId({
+                    id: msg.id,
+                    type: messageType as "user" | "bot",
+                    text: msg.text,
+                    isTranslated: false,
+                  });
                 });
-              });
+              }
             }
-          }
         }
       } catch (error) {
         console.error("[chat-window] Error polling messages:", error);
@@ -99,7 +100,7 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
     }, 3000); // Poll every 3 seconds
 
     return () => clearInterval(pollInterval);
-  }, [userAddress, messages, addMessage]);
+  }, [userAddress, messages, addMessageWithId]);
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
