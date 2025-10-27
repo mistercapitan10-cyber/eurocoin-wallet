@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { shortenAddress } from "@/lib/address";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { useTranslation } from "@/hooks/use-translation";
@@ -16,6 +16,13 @@ export function WalletStatus() {
     isReconnecting,
   } = useWalletConnection();
   const t = useTranslation();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // This is a standard pattern to prevent hydration mismatch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const label = (() => {
     switch (status) {
@@ -38,6 +45,10 @@ export function WalletStatus() {
     return "bg-accentAlt";
   }, [isConnected, isConnecting, isReconnecting]);
 
+  // Prevent hydration mismatch
+  const displayConnector = isMounted ? connectorName ?? "—" : "—";
+  const displayNetwork = isMounted ? currentChainName ?? "—" : "—";
+
   return (
     <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted flex items-center gap-3 rounded-2xl border border-outline bg-surfaceAlt px-4 py-3 text-sm text-foregroundMuted">
       <span className={`inline-flex h-2.5 w-2.5 rounded-full ${badgeColor}`} />
@@ -47,8 +58,8 @@ export function WalletStatus() {
         </span>
         <span className="dark:text-dark-foreground font-medium text-foreground">{label}</span>
         <div className="dark:text-dark-foregroundMuted flex flex-wrap items-center gap-3 text-xs text-foregroundMuted">
-          <span>{t("wallet.status.connector", { connector: connectorName ?? "—" })}</span>
-          <span>{t("wallet.status.network", { network: currentChainName ?? "—" })}</span>
+          <span>{t("wallet.status.connector", { connector: displayConnector })}</span>
+          <span>{t("wallet.status.network", { network: displayNetwork })}</span>
         </div>
         {isConnected && address ? (
           <div className="dark:text-dark-foreground flex flex-wrap items-center gap-3 text-xs text-foreground">
