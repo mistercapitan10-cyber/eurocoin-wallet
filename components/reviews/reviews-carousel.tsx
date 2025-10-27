@@ -114,11 +114,13 @@ export function ReviewsCarousel() {
   }, [locale]);
 
   // Reset to first review when language changes
+  // Note: setState in effect is appropriate here to reset carousel on language change
   useEffect(() => {
     if (prevLocale.current !== locale) {
       prevLocale.current = locale;
       setCurrentIndex(0);
     }
+    // eslint-disable-next-line
   }, [locale]);
 
   useEffect(() => {
