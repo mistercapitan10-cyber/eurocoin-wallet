@@ -944,6 +944,46 @@ const translations: Messages = {
   },
 };
 
+export function getTranslation(
+  locale: Locale,
+  key: string,
+  vars?: Record<string, string | number>,
+): string {
+  const parts = key.split(".");
+  let value: string | TranslationTree | undefined = translations[locale];
+
+  for (const part of parts) {
+    if (typeof value === "object" && value !== null && part in value) {
+      value = (value as TranslationTree)[part];
+    } else {
+      value = undefined;
+      break;
+    }
+  }
+
+  if (value === undefined) {
+    value = parts.reduce<TranslationTree | string | undefined>((acc, part) => {
+      if (typeof acc === "object" && acc !== null && part in acc) {
+        return (acc as TranslationTree)[part];
+      }
+      return undefined;
+    }, translations.ru);
+  }
+
+  if (typeof value !== "string") {
+    return key;
+  }
+
+  if (!vars) {
+    return value;
+  }
+
+  return Object.entries(vars).reduce(
+    (result, [placeholder, replacement]) => result.replace(`{${placeholder}}`, String(replacement)),
+    value,
+  );
+}
+
 export const availableLocales: Locale[] = ["ru", "en"];
 
 export const defaultLocale: Locale = "ru";
