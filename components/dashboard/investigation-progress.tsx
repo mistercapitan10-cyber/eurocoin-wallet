@@ -47,9 +47,10 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
 
   // Listen for custom event when new request is submitted
   useEffect(() => {
-    const handleNewRequest = (event: CustomEvent) => {
-      console.log("[Investigation] New request submitted, fetching latest data", event.detail);
-      const newRequestId = event.detail?.requestId;
+    const handleNewRequest = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log("[Investigation] New request submitted, fetching latest data", customEvent.detail);
+      const newRequestId = customEvent.detail?.requestId;
       const url = newRequestId
         ? `/api/investigation/status?requestId=${newRequestId}`
         : "/api/investigation/status";
