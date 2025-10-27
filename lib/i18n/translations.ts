@@ -225,6 +225,7 @@ const translations: Messages = {
         title: "График токена",
         description: "Интерактивный график цены в реальном времени",
         openFull: "Открыть на Dexscreener",
+        switching: "Переключение темы...",
       },
       statistics: {
         title: "Статистика кошелька",
@@ -838,6 +839,7 @@ const translations: Messages = {
         title: "Token Chart",
         description: "Real-time interactive price chart",
         openFull: "Open on Dexscreener",
+        switching: "Switching theme...",
       },
       statistics: {
         title: "Wallet Statistics",

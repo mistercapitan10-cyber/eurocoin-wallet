@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
@@ -11,50 +12,30 @@ interface DexscreenerChartProps {
 
 export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   const t = useTranslation();
-  const toggleLockRef = useRef(false);
+  const { theme } = useTheme();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeKey, setIframeKey] = useState(0);
   const prevThemeRef = useRef<string>("");
+  const [isReloading, setIsReloading] = useState(false);
 
-  // Load saved theme from localStorage or default to 'dark'
-  const [dexTheme, setDexTheme] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("dexTheme") || "dark";
-    }
-    return "dark";
-  });
+  // Get current theme (fallback to 'dark' if not mounted)
+  const dexTheme = theme === "light" ? "light" : "dark";
 
-  // Initialize ref
-  useEffect(() => {
-    prevThemeRef.current = dexTheme;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Save theme preference to localStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("dexTheme", dexTheme);
-    }
-  }, [dexTheme]);
-
-  // Force iframe reload when theme changes
+  // Force iframe reload when theme changes with loading state
   useEffect(() => {
     if (prevThemeRef.current && prevThemeRef.current !== dexTheme) {
+      setIsReloading(true);
       setIframeKey((prev) => prev + 1);
+
+      // Reset loading state after iframe loads
+      const timer = setTimeout(() => {
+        setIsReloading(false);
+      }, 1500);
+
+      return () => clearTimeout(timer);
     }
     prevThemeRef.current = dexTheme;
   }, [dexTheme]);
-
-  // Toggle theme function with lock to prevent spam clicks
-  const toggleDexTheme = () => {
-    if (toggleLockRef.current) return;
-
-    toggleLockRef.current = true;
-    setDexTheme((prev) => (prev === "light" ? "dark" : "light"));
-
-    setTimeout(() => {
-      toggleLockRef.current = false;
-    }, 600);
-  };
 
   // Use the token address from env or fallback
   const address =
@@ -62,9 +43,19 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
     process.env.NEXT_PUBLIC_TOKEN_ADDRESS ||
     "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586";
 
-  // Create Dexscreener embed URL with manual theme control
+  // Create Dexscreener embed URL with theme control
+  // Note: DexScreener's theme parameter affects the UI chrome but not the chart itself
+  // Chart theme is typically controlled by user's chart settings stored in their localStorage
   const dexUrl = useMemo(() => {
-    return `https://dexscreener.com/ethereum/${address}?embed=1&theme=${dexTheme}&trades=0&info=0`;
+    // Try multiple theme-related parameters
+    const params = new URLSearchParams({
+      embed: '1',
+      theme: dexTheme,
+      info: '0',
+      trades: '0',
+    });
+
+    return `https://dexscreener.com/ethereum/${address}?${params.toString()}`;
   }, [address, dexTheme]);
 
   return (
@@ -76,55 +67,43 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
             {t("wallet.dexscreener.description")}
           </CardDescription>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="ghost" onClick={toggleDexTheme}>
-            {dexTheme === "light" ? (
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-            )}
-            <span className="ml-2 hidden sm:inline">{dexTheme === "light" ? "Dark" : "Light"}</span>
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => window.open(`https://dexscreener.com/ethereum/${address}`, "_blank")}
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-            <span className="ml-2 hidden sm:inline">{t("wallet.dexscreener.openFull")}</span>
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => window.open(`https://dexscreener.com/ethereum/${address}`, "_blank")}
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+          <span className="ml-2 hidden sm:inline">{t("wallet.dexscreener.openFull")}</span>
+        </Button>
       </CardHeader>
       <CardContent>
         <div
           className="relative"
           style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}
         >
+          {isReloading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-sm text-muted-foreground">
+                  {t("wallet.dexscreener.switching")}
+                </p>
+              </div>
+            </div>
+          )}
           <iframe
-            key={`dex-${dexTheme}-${iframeKey}`} // Force reload when theme changes
+            ref={iframeRef}
+            key={`dex-${dexTheme}-${iframeKey}`}
             src={dexUrl}
-            className="absolute left-0 top-0 h-full w-full border-0"
+            className="absolute left-0 top-0 h-full w-full border-0 transition-opacity duration-300"
+            style={{ opacity: isReloading ? 0.3 : 1 }}
             title="Dexscreener Chart"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           />
