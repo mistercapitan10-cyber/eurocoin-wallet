@@ -36,6 +36,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                const originalConsoleError = console.error;
+                console.error = (...args) => {
+                  const message = args[0];
+                  if (typeof message === 'string' && (
+                    message.includes('Removing intrinsics') ||
+                    message.includes('lockdown-install.js') ||
+                    message.includes('SES Removing unpermitted intrinsics')
+                  )) {
+                    return;
+                  }
+                  originalConsoleError.apply(console, args);
+                };
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} dark:bg-dark-background dark:text-dark-foreground bg-background font-sans text-foreground antialiased`}
       >
