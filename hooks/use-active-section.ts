@@ -7,7 +7,9 @@ export function useActiveSection() {
 
   useEffect(() => {
     const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
-
+    let observer: IntersectionObserver | null = null;
+    let checkInterval: NodeJS.Timeout | null = null;
+    
     // Check initial hash and update immediately
     const checkHash = () => {
       const hash = window.location.hash.slice(1); // Remove '#'
@@ -15,18 +17,24 @@ export function useActiveSection() {
         setActiveSection(hash);
       }
     };
-
+    
     checkHash();
-
+    
     // Listen for hash changes (navigation clicks)
     const handleHashChange = () => {
       checkHash();
     };
-
+    
     window.addEventListener("hashchange", handleHashChange);
-
-    // Delay observer initialization to ensure all sections are rendered
-    const timeout = setTimeout(() => {
+    
+    // Function to setup observer
+    const setupObserver = () => {
+      // Cancel previous observer if exists
+      if (observer) {
+        const elements = sections.map((id) => document.getElementById(id)).filter(Boolean);
+        elements.forEach((el) => observer?.unobserve(el!));
+      }
+      
       const observerOptions = {
         root: null,
         rootMargin: "-20% 0px -60% 0px",
@@ -44,7 +52,7 @@ export function useActiveSection() {
         });
       };
 
-      const observer = new IntersectionObserver(observerCallback, observerOptions);
+      observer = new IntersectionObserver(observerCallback, observerOptions);
 
       // Observe all sections
       const sectionElements = sections
@@ -52,16 +60,23 @@ export function useActiveSection() {
         .filter((el): el is HTMLElement => el !== null);
 
       sectionElements.forEach((section) => observer.observe(section));
-
-      // Cleanup observer
-      return () => {
-        sectionElements.forEach((section) => observer.unobserve(section));
-      };
-    }, 500); // Wait 500ms for components to render
-
+    };
+    
+    // Try to setup observer immediately
+    setupObserver();
+    
+    // Also check periodically to catch late-rendered sections
+    checkInterval = setInterval(() => {
+      setupObserver();
+    }, 1000);
+    
     return () => {
-      clearTimeout(timeout);
+      if (checkInterval) clearInterval(checkInterval);
       window.removeEventListener("hashchange", handleHashChange);
+      if (observer) {
+        const elements = sections.map((id) => document.getElementById(id)).filter(Boolean);
+        elements.forEach((el) => observer?.unobserve(el!));
+      }
     };
   }, []);
 
