@@ -413,6 +413,11 @@ const translations: Messages = {
         description:
           "Зарегистрируйтесь в личном кабинете и отправьте заявку с документами — наши специалисты начнут предварительный анализ сразу после получения информации.",
       },
+      contactCTA: {
+        description: "Свяжитесь с нашей службой поддержки, и мы поможем вам разобраться с любыми вопросами",
+        telegramButton: "Написать в Telegram",
+        emailButton: "Написать на email",
+      },
     },
     tokenSection: {
       mainTitle: "Защита ваших цифровых активов",
@@ -908,6 +913,11 @@ const translations: Messages = {
         title: "🧾 Start your claim",
         description:
           "Register in your personal account and upload your documents. Our specialists will begin the preliminary analysis immediately.",
+      },
+      contactCTA: {
+        description: "Contact our support service, and we will help you with any questions",
+        telegramButton: "Write in Telegram",
+        emailButton: "Write to email",
       },
     },
     tokenSection: {

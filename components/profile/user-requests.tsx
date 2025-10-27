@@ -179,7 +179,10 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
                     createdAt={request.createdAt}
                     updatedAt={request.updatedAt}
                     details={{
-                      title: request.type === "exchange" ? t("profile.requestDetails.exchangeType") : t("profile.requestDetails.internalType"),
+                      title:
+                        request.type === "exchange"
+                          ? t("profile.requestDetails.exchangeType")
+                          : t("profile.requestDetails.internalType"),
                       subtitle:
                         request.type === "exchange"
                           ? `${request.details["Сумма токенов"]} → ${request.details["Сумма фиата"]}`

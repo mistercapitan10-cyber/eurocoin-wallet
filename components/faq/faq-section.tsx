@@ -120,7 +120,7 @@ export function FAQSection() {
                 {t("faq.contact.title")}
               </h3>
               <p className="mb-6 text-foregroundMuted dark:text-dark-foregroundMuted">
-                Свяжитесь с нашей службой поддержки, и мы поможем вам разобраться с любыми вопросами
+                {t("faq.contactCTA.description")}
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <a
@@ -132,7 +132,7 @@ export function FAQSection() {
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16l-1.61 7.59c-.12.54-.44.68-.89.42l-2.46-1.81-1.19 1.15c-.13.13-.24.24-.49.24l.18-2.55 4.57-4.12c.2-.18-.04-.28-.31-.1l-5.64 3.55-2.43-.76c-.53-.16-.54-.53.11-.79l9.46-3.65c.44-.16.83.1.69.79z" />
                   </svg>
-                  Написать в Telegram
+                  {t("faq.contactCTA.telegramButton")}
                 </a>
                 <a
                   href="mailto:treasury@company.io"
@@ -146,7 +146,7 @@ export function FAQSection() {
                       d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  Написать на email
+                  {t("faq.contactCTA.emailButton")}
                 </a>
               </div>
             </CardContent>

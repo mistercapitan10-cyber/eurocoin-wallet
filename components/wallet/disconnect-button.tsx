@@ -34,7 +34,9 @@ export function DisconnectButton() {
 
   return (
     <Button variant="outline" onClick={handleDisconnect} disabled={isDisconnecting}>
-      {isDisconnecting ? t("profile.connectedWallet.disconnecting") : t("profile.connectedWallet.disconnect")}
+      {isDisconnecting
+        ? t("profile.connectedWallet.disconnecting")
+        : t("profile.connectedWallet.disconnect")}
     </Button>
   );
 }

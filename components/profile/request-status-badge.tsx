@@ -10,7 +10,7 @@ interface RequestStatusBadgeProps {
 
 export function RequestStatusBadge({ status, className }: RequestStatusBadgeProps) {
   const t = useTranslation();
-  
+
   const statusConfig = {
     pending: {
       label: t("profile.status.pending"),
@@ -38,7 +38,7 @@ export function RequestStatusBadge({ status, className }: RequestStatusBadgeProp
       colors: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
     },
   };
-  
+
   const config = statusConfig[status];
 
   return (
