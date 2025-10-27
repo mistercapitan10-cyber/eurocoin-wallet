@@ -8,6 +8,23 @@ export function useActiveSection() {
   useEffect(() => {
     const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
     
+    // Check initial hash
+    const checkHash = () => {
+      const hash = window.location.hash.slice(1); // Remove '#'
+      if (hash && sections.includes(hash)) {
+        setActiveSection(hash);
+      }
+    };
+    
+    checkHash();
+    
+    // Listen for hash changes (navigation clicks)
+    const handleHashChange = () => {
+      checkHash();
+    };
+    
+    window.addEventListener("hashchange", handleHashChange);
+    
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
@@ -35,10 +52,10 @@ export function useActiveSection() {
     sectionElements.forEach((section) => observer.observe(section));
 
     return () => {
+      window.removeEventListener("hashchange", handleHashChange);
       sectionElements.forEach((section) => observer.unobserve(section));
     };
   }, []);
 
   return activeSection;
 }
-
