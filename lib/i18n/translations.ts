@@ -941,8 +941,9 @@ const translations: Messages = {
         internal: "📝 Internal",
       },
     },
+    },
   },
-  },
+};
 
 export const availableLocales: Locale[] = ["ru", "en"];
 
