@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { PageTitle } from "@/components/layout/page-title";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
@@ -45,7 +46,9 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="dark:from-dark-backgroundAlt dark:to-dark-background min-h-screen bg-gradient-to-br from-backgroundAlt to-background">
+    <>
+      <PageTitle title="Login" description="Connect your MetaMask wallet" />
+      <main className="dark:from-dark-backgroundAlt dark:to-dark-background min-h-screen bg-gradient-to-br from-backgroundAlt to-background">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-12 md:flex-row md:items-center md:justify-between md:gap-10 md:px-10 md:py-16">
         <div className="flex-1 space-y-4 sm:space-y-6">
           <span className="pill dark:bg-dark-surface dark:text-dark-foreground bg-surface text-xs text-foreground sm:text-sm">

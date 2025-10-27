@@ -15,6 +15,7 @@ import { InvestigationProgress } from "@/components/dashboard/investigation-prog
 import { ExchangeSection } from "@/components/exchange";
 import { FAQSection } from "@/components/faq";
 import { useTranslation } from "@/hooks/use-translation";
+import { PageTitle } from "@/components/layout/page-title";
 
 export default function Home() {
   const t = useTranslation();
@@ -48,7 +49,9 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">
+    <>
+      <PageTitle title="Dashboard" description="Token management dashboard" />
+      <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 md:px-10">
         {/* Exchange Section */}
         <ExchangeSection />
@@ -128,6 +131,7 @@ export default function Home() {
 
       {/* FAQ Section */}
       <FAQSection />
-    </main>
+      </main>
+    </>
   );
 }

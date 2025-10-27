@@ -8,6 +8,7 @@ import { WalletStatus } from "@/components/wallet/wallet-status";
 import { DisconnectButton } from "@/components/wallet/disconnect-button";
 import { UserRequests } from "@/components/profile/user-requests";
 import { useTranslation } from "@/hooks/use-translation";
+import { PageTitle } from "@/components/layout/page-title";
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
