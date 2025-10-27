@@ -21,14 +21,21 @@ const SECTION_TITLES: Record<string, string> = {
 };
 
 export function PageTitle({ title, description, enableSectionTracking = false }: PageTitleProps) {
+  console.log("[PageTitle] Component rendered, enableSectionTracking:", enableSectionTracking);
   const activeSection = useActiveSection();
+  console.log("[PageTitle] Current activeSection:", activeSection);
 
   const dynamicTitle = useMemo(() => {
+    console.log("[PageTitle] Computing dynamicTitle, enableSectionTracking:", enableSectionTracking, "activeSection:", activeSection);
     if (enableSectionTracking && activeSection !== "home") {
       const sectionTitle = SECTION_TITLES[activeSection] || activeSection;
-      return `${sectionTitle} - EuroCoin`;
+      const result = `${sectionTitle} - EuroCoin`;
+      console.log("[PageTitle] Computed title from section:", result);
+      return result;
     }
-    return `${title} - EuroCoin`;
+    const result = `${title} - EuroCoin`;
+    console.log("[PageTitle] Computed title from props:", result);
+    return result;
   }, [title, enableSectionTracking, activeSection]);
 
   const dynamicDescription = useMemo(() => {
