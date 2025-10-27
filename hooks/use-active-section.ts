@@ -17,7 +17,7 @@ export function useActiveSection() {
         setActiveSection(hash);
       }
     };
-    
+
     checkHash();
 
     // Listen for hash changes (navigation clicks)
