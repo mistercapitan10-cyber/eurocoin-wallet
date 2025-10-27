@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTokenPrice } from "@/hooks/use-token-price";
@@ -12,6 +12,13 @@ export function PriceTicker() {
   });
   const { locale } = useLanguage();
   const t = useTranslation();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    // This is a standard pattern to prevent hydration mismatch
+    // eslint-disable-next-line
+  }, []);
 
   const formatPrice = useMemo(
     () => (price: number | null) =>
@@ -26,7 +33,8 @@ export function PriceTicker() {
   );
 
   const timestamp = useMemo(() => {
-    if (!fetchedAt) {
+    // Prevent hydration mismatch by showing placeholder until mounted
+    if (!isMounted || !fetchedAt) {
       return "—";
     }
 
@@ -40,7 +48,7 @@ export function PriceTicker() {
     } catch {
       return "—";
     }
-  }, [fetchedAt, locale]);
+  }, [fetchedAt, locale, isMounted]);
 
   const sourceLabel = source === "coingecko" ? "CoinGecko" : t("wallet.balanceCard.staticSource");
 

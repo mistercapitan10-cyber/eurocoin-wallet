@@ -46,8 +46,8 @@ export function WalletStatus() {
   }, [isConnected, isConnecting, isReconnecting]);
 
   // Prevent hydration mismatch
-  const displayConnector = isMounted ? connectorName ?? "—" : "—";
-  const displayNetwork = isMounted ? currentChainName ?? "—" : "—";
+  const displayConnector = isMounted ? (connectorName ?? "—") : "—";
+  const displayNetwork = isMounted ? (currentChainName ?? "—") : "—";
 
   return (
     <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted flex items-center gap-3 rounded-2xl border border-outline bg-surfaceAlt px-4 py-3 text-sm text-foregroundMuted">
