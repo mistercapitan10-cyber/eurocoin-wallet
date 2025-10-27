@@ -100,7 +100,7 @@ You can run the project inside containers—with continuous health-check logging
 docker compose -f docker/docker-compose.dev.yml up --build
 ```
 
-The dev server will be available at [http://localhost:3000](http://localhost:3000). Source code is mounted for hot reloading. Health logs appear as:
+The dev stack (Next.js + Postgres + Redis) will be available at [http://localhost:3000](http://localhost:3000). Source code is mounted for hot reloading. Health logs appear as:
 
 ```
 [health][web-dev][info] 2025-10-27T15:00:07Z status=200 OK
@@ -117,6 +117,8 @@ Override environment variables as needed via `.env.local` or `docker compose ...
 ```bash
 docker compose -f docker/docker-compose.prod.yml logs -f
 ```
+
+These compose files start the full stack (web, Postgres, Redis) with health checks automatically wired in.
 
 ### Environment Variables
 
