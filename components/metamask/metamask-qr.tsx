@@ -46,10 +46,10 @@ export function MetaMaskQR() {
             {/* Title */}
             <div className="space-y-3">
               <h2 className="dark:text-dark-foreground text-4xl font-bold text-foreground">
-                Скачать MetaMask
+                {t("metamask.download.title")}
               </h2>
               <p className="dark:text-dark-foregroundMuted text-lg text-foregroundMuted">
-                Безопасный криптокошелёк для работы с блокчейном
+                {t("metamask.download.subtitle")}
               </p>
             </div>
 
@@ -72,10 +72,10 @@ export function MetaMaskQR() {
                   </svg>
                 </div>
                 <h3 className="dark:text-dark-foreground mb-1 text-sm font-semibold text-foreground">
-                  Безопасность
+                  {t("metamask.download.feature1.title")}
                 </h3>
                 <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
-                  Ваши ключи под контролем
+                  {t("metamask.download.feature1.description")}
                 </p>
               </div>
 
@@ -96,10 +96,10 @@ export function MetaMaskQR() {
                   </svg>
                 </div>
                 <h3 className="dark:text-dark-foreground mb-1 text-sm font-semibold text-foreground">
-                  Мобильное приложение
+                  {t("metamask.download.feature2.title")}
                 </h3>
                 <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
-                  Установите на телефон
+                  {t("metamask.download.feature2.description")}
                 </p>
               </div>
 
@@ -120,10 +120,10 @@ export function MetaMaskQR() {
                   </svg>
                 </div>
                 <h3 className="dark:text-dark-foreground mb-1 text-sm font-semibold text-foreground">
-                  Web3
+                  {t("metamask.download.feature3.title")}
                 </h3>
                 <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
-                  Поддержка DeFi и DApp
+                  {t("metamask.download.feature3.description")}
                 </p>
               </div>
             </div>
@@ -147,13 +147,13 @@ export function MetaMaskQR() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Скачать MetaMask
+                {t("metamask.download.button")}
               </Button>
             </a>
 
             {/* Info */}
             <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
-              Доступно для iOS, Android, Chrome, Firefox, Brave, Edge и Opera
+              {t("metamask.download.available")}
             </p>
           </div>
         </CardContent>

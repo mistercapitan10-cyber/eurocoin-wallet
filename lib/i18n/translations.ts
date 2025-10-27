@@ -253,16 +253,6 @@ const translations: Messages = {
       historyTitle: "История заявок",
       historyDescription: "Демонстрационная таблица статусов без привязки к API.",
     },
-    reviews: {
-      title: "Отзывы команд",
-      description:
-        "Сбор обратной связи от внутренних команд помогает сформировать backlog перед этапами интеграции. Все данные ниже — заглушки для демонстрации.",
-      videoButton: "Смотреть плейбек",
-      formTitle: "Добавить отзыв",
-      formDescription: "Форма для сотрудников. Логика будет реализована на следующих фазах.",
-      moderationTitle: "Модерация",
-      moderationDescription: "Инструменты админа — пока заглушки.",
-    },
     login: {
       title: "Вход в MetaWallet",
       description:
@@ -356,6 +346,36 @@ const translations: Messages = {
 
 <p><strong>Безопасность:</strong></p>
 <p>Все обмены проходят через смарт-контракты Ethereum, что гарантирует надёжность и прозрачность операций.</p>`,
+      },
+    },
+    metamask: {
+      download: {
+        title: "Скачать MetaMask",
+        subtitle: "Безопасный криптокошелёк для работы с блокчейном",
+        feature1: {
+          title: "Безопасность",
+          description: "Ваши ключи под контролем",
+        },
+        feature2: {
+          title: "Мобильное приложение",
+          description: "Установите на телефон",
+        },
+        feature3: {
+          title: "Web3",
+          description: "Поддержка DeFi и DApp",
+        },
+        button: "Скачать MetaMask",
+        available: "Доступно для iOS, Android, Chrome, Firefox, Brave, Edge и Opera",
+      },
+    },
+    reviews: {
+      title: "Отзывы наших клиентов",
+      subtitle: "Реальные истории возврата средств жертвам мошенничества",
+      counter: "{current} из {total}",
+      stats: {
+        success: "Успешных возвратов",
+        recovered: "Возвращено USD",
+        support: "Поддержка онлайн",
       },
     },
     admin: {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface Review {
   id: string;
@@ -58,6 +59,7 @@ const mockReviews: Review[] = [
 ];
 
 export function ReviewsCarousel() {
+  const t = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -95,10 +97,10 @@ export function ReviewsCarousel() {
         <div className="mx-auto max-w-4xl px-6">
           <div className="mb-8 text-center">
             <h2 className="dark:text-dark-foreground mb-4 text-3xl font-bold text-foreground">
-              Отзывы наших клиентов
+              {t("reviews.title")}
             </h2>
             <p className="dark:text-dark-foregroundMuted text-foregroundMuted">
-              Реальные истории возврата средств жертвам мошенничества
+              {t("reviews.subtitle")}
             </p>
           </div>
           <div className="dark:bg-dark-surfaceAlt h-64 animate-pulse rounded-lg bg-surfaceAlt" />
@@ -115,11 +117,11 @@ export function ReviewsCarousel() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h2 className="dark:text-dark-foreground mb-4 text-3xl font-bold text-foreground">
-            Отзывы наших клиентов
-          </h2>
-          <p className="dark:text-dark-foregroundMuted text-lg text-foregroundMuted">
-            Реальные истории возврата средств жертвам мошенничества
-          </p>
+              {t("reviews.title")}
+            </h2>
+            <p className="dark:text-dark-foregroundMuted text-lg text-foregroundMuted">
+              {t("reviews.subtitle")}
+            </p>
         </div>
 
         {/* Carousel */}
@@ -220,7 +222,7 @@ export function ReviewsCarousel() {
           {/* Review Counter */}
           <div className="mt-4 text-center">
             <span className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
-              {currentIndex + 1} из {mockReviews.length}
+              {t("reviews.counter", { current: currentIndex + 1, total: mockReviews.length })}
             </span>
           </div>
         </div>
@@ -230,19 +232,19 @@ export function ReviewsCarousel() {
           <div className="text-center">
             <div className="text-3xl font-bold text-accent">92%</div>
             <div className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
-              Успешных возвратов
+              {t("reviews.stats.success")}
             </div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-accent">127K+</div>
             <div className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
-              Возвращено USD
+              {t("reviews.stats.recovered")}
             </div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-accent">24/7</div>
             <div className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
-              Поддержка онлайн
+              {t("reviews.stats.support")}
             </div>
           </div>
         </div>
