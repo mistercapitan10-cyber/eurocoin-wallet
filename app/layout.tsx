@@ -53,7 +53,9 @@ export default function RootLayout({
                 background: "var(--surface)",
                 color: "var(--foreground)",
                 border: "1px solid var(--outline)",
+                opacity: 1,
               },
+              className: "opacity-100",
             }}
           />
           <ChatWidget delay={10000} position="bottom-right" />
