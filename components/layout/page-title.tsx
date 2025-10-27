@@ -1,7 +1,7 @@
 "use client";
 
 import { Helmet } from "react-helmet-async";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useActiveSection } from "@/hooks/use-active-section";
 
 interface PageTitleProps {
@@ -33,7 +33,7 @@ export function PageTitle({ title, description, enableSectionTracking = false }:
 
   const dynamicDescription = useMemo(() => {
     if (!enableSectionTracking) return description;
-
+    
     const descriptions: Record<string, string> = {
       exchange: "Convert corporate tokens to fiat via Telegram",
       contact: "Submit internal token operation requests",
@@ -45,6 +45,11 @@ export function PageTitle({ title, description, enableSectionTracking = false }:
 
     return descriptions[activeSection] || description;
   }, [description, enableSectionTracking, activeSection]);
+
+  // Update document.title directly for immediate effect
+  useEffect(() => {
+    document.title = dynamicTitle;
+  }, [dynamicTitle]);
 
   return (
     <Helmet>
