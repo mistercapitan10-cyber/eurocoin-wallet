@@ -8,6 +8,7 @@ export function middleware(request: NextRequest) {
   // Define public paths that don't require authentication
   const publicPaths = [
     "/login",
+    "/info", // Info pages (terms, requests, exchange)
     "/_next",
     "/api",
     "/static",
