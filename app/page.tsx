@@ -116,10 +116,7 @@ export default function Home() {
           <InvestigationProgress />
         </section>
 
-        <section
-          id="token-balance"
-          className="flex flex-col gap-6"
-        >
+        <section id="token-balance" className="flex flex-col gap-6">
           <BalanceCard />
           <div className="grid gap-6 md:grid-cols-2">
             <PriceTicker />
