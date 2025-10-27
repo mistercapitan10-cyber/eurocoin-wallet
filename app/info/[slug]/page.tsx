@@ -50,11 +50,28 @@ export default function InfoPage() {
   }
 
   return (
-    <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12">
-      <div className="mx-auto max-w-4xl px-6">
+    <>
+      <div className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-8 flex items-center justify-between">
-          <Link href="/login" className="dark:text-dark-foreground text-foreground hover:text-accent">
-            ← {t("info.backToLogin")}
+          <Link
+            href="/login"
+            className="dark:text-dark-foreground flex items-center gap-2 text-foreground transition-colors hover:text-accent"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            {t("info.backToLogin")}
           </Link>
         </div>
 
@@ -69,13 +86,13 @@ export default function InfoPage() {
           </CardHeader>
           <CardContent>
             <div
-              className="dark:text-dark-foregroundMuted prose prose-slate max-w-none text-foregroundMuted"
+              className="dark:text-dark-foregroundMuted prose prose-slate max-w-none text-foregroundMuted dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: page.content }}
             />
           </CardContent>
         </Card>
       </div>
-    </main>
+    </>
   );
 }
 
