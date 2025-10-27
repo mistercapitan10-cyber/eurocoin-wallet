@@ -131,34 +131,36 @@ export function SiteHeader() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Order matters - must match the actual page order
-      const sections = [
-        "exchange",
-        "contact",
-        "wallet",
-        "investigation",
-        "token-balance",
-        "faq",
-      ];
-      const scrollPosition = window.scrollY + 100; // Offset for header
+      const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
+      const viewportCenter = window.scrollY + window.innerHeight / 2;
 
+      let activeSection = "";
+      let minDistance = Infinity;
+
+      // Find the section closest to the center of the viewport
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
           const elementTop = rect.top + window.scrollY;
-          const elementBottom = elementTop + rect.height;
+          const elementCenter = elementTop + rect.height / 2;
+          const distance = Math.abs(viewportCenter - elementCenter);
 
-          if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
-            setActiveSection(section);
-            return;
+          // Only consider sections that are on screen or just before
+          if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+            if (distance < minDistance) {
+              minDistance = distance;
+              activeSection = section;
+            }
           }
         }
       }
 
-      // If we're at the top of the page, set dashboard as active
-      if (window.scrollY < 200) {
+      // Fallback: if we're at the top of the page
+      if (window.scrollY < 100) {
         setActiveSection("");
+      } else {
+        setActiveSection(activeSection);
       }
     };
 
