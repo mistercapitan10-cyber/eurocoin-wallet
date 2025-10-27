@@ -12,8 +12,11 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   const t = useTranslation();
 
   // Use the token address from env or fallback
-  const address = tokenAddress || process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586";
-  
+  const address =
+    tokenAddress ||
+    process.env.NEXT_PUBLIC_TOKEN_ADDRESS ||
+    "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586";
+
   // Create Dexscreener embed URL
   const dexUrl = `https://dexscreener.com/ethereum/${address}?embed=1&theme=light&trades=0&info=0`;
 
@@ -31,12 +34,7 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
           variant="ghost"
           onClick={() => window.open(`https://dexscreener.com/ethereum/${address}`, "_blank")}
         >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -48,10 +46,13 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="relative" style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}>
+        <div
+          className="relative"
+          style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}
+        >
           <iframe
             src={dexUrl}
-            className="absolute top-0 left-0 h-full w-full border-0"
+            className="absolute left-0 top-0 h-full w-full border-0"
             title="Dexscreener Chart"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           />
@@ -60,4 +61,3 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
     </Card>
   );
 }
-

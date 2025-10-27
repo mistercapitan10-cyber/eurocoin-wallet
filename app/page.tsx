@@ -2,7 +2,13 @@
 import { useEffect } from "react";
 import { ethers } from "ethers";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
-import { BalanceCard, PriceTicker, TaxCard, WalletStatistics, DexscreenerChart } from "@/components/wallet";
+import {
+  BalanceCard,
+  PriceTicker,
+  TaxCard,
+  WalletStatistics,
+  DexscreenerChart,
+} from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { InvestigationProgress } from "@/components/dashboard/investigation-progress";
@@ -112,14 +118,14 @@ export default function Home() {
 
         <section
           id="token-balance"
-          className="grid gap-6 md:grid-cols-[minmax(0,2fr),minmax(0,1fr)]"
+          className="flex flex-col gap-6"
         >
-          <div className="flex flex-col gap-6">
-            <BalanceCard />
+          <BalanceCard />
+          <div className="grid gap-6 md:grid-cols-2">
             <PriceTicker />
-            <DexscreenerChart />
+            <TaxCard />
           </div>
-          <TaxCard />
+          <DexscreenerChart />
         </section>
       </div>
 
