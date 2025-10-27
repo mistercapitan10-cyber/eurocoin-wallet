@@ -96,11 +96,17 @@ export const getTokenPriceUsd = async (): Promise<TokenPriceResult> => {
   let source: PriceSource = "fixed";
 
   if (pricingConfig.source === "coingecko") {
-    price = await fetchFromCoinGecko();
-    source = "coingecko";
-  }
-
-  if (price === null) {
+    const coingeckoPrice = await fetchFromCoinGecko();
+    if (coingeckoPrice !== null) {
+      price = coingeckoPrice;
+      source = "coingecko";
+    } else {
+      // Fallback to fixed price if CoinGecko fails
+      price = getFixedPrice();
+      source = "fixed";
+    }
+  } else {
+    // Use fixed price if source is "fixed"
     price = getFixedPrice();
     source = "fixed";
   }
