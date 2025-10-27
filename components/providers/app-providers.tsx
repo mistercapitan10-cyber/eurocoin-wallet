@@ -6,6 +6,7 @@ import { WagmiProvider } from "wagmi";
 import { ThemeProvider } from "next-themes";
 import { wagmiConfig } from "@/lib/wagmi";
 import { LanguageProvider } from "@/components/providers/language-provider";
+import { ConsoleFilter } from "@/components/providers/console-filter";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
@@ -25,6 +26,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <LanguageProvider>
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
+            <ConsoleFilter />
             {children}
           </QueryClientProvider>
         </WagmiProvider>
