@@ -256,6 +256,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 // =============================================================================
 
 function createEmailProvider() {
+  // Feature flag to enable email auth explicitly
+  const enableEmailAuth = process.env.ENABLE_EMAIL_AUTH === 'true';
+  if (!enableEmailAuth) {
+    console.warn('[AUTH] Email provider disabled. Set ENABLE_EMAIL_AUTH=true to enable.');
+    return [];
+  }
+
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.SENDER_EMAIL ?? 'noreply@resend.dev';
 
@@ -271,6 +278,7 @@ function createEmailProvider() {
     Email({
       from: fromAddress,
       maxAge: 24 * 60 * 60, // 24 hours
+      // By providing a custom sender we avoid nodemailer `server` requirement
       async sendVerificationRequest({ identifier, url }) {
         try {
           const result = await resend.emails.send({
