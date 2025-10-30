@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
 
@@ -13,32 +13,35 @@ interface InvestigationStage {
 
 interface InvestigationProgressProps {
   requestId?: string;
+  walletAddress?: string;
+  userEmail?: string;
 }
 
-export function InvestigationProgress({ requestId }: InvestigationProgressProps) {
+export function InvestigationProgress({ requestId, walletAddress, userEmail }: InvestigationProgressProps) {
   const t = useTranslation();
   const [fetchedStages, setFetchedStages] = useState<InvestigationStage[] | null>(null);
 
   // Default stages with translations - updates when locale changes
+  // All stages start as incomplete (0% progress) until real data is fetched
   const defaultStages: InvestigationStage[] = useMemo(
     () => [
       {
         id: "submitted",
         label: t("investigation.stages.submitted"),
-        completed: true,
+        completed: false,
         current: false,
       },
       {
         id: "checking",
         label: t("investigation.stages.checking"),
-        completed: true,
+        completed: false,
         current: false,
       },
       {
         id: "analyzing",
         label: t("investigation.stages.analyzing"),
-        completed: true,
-        current: true,
+        completed: false,
+        current: false,
       },
       {
         id: "investigating",
@@ -65,13 +68,26 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
   // Use fetched stages if available, otherwise use default stages
   const stages = fetchedStages || defaultStages;
 
+  // Build URL with query parameters
+  const buildUrl = useCallback((baseUrl: string) => {
+    const params = new URLSearchParams();
+    if (requestId) params.append('requestId', requestId);
+    if (walletAddress) params.append('walletAddress', walletAddress);
+    if (userEmail) params.append('userEmail', userEmail);
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }, [requestId, walletAddress, userEmail]);
+
   // Fetch data immediately on mount
   useEffect(() => {
+    // Skip fetch if no identifier is available yet
+    if (!walletAddress && !userEmail && !requestId) {
+      return;
+    }
+
     const fetchData = async () => {
       try {
-        const url = requestId
-          ? `/api/investigation/status?requestId=${requestId}`
-          : "/api/investigation/status";
+        const url = buildUrl('/api/investigation/status');
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
@@ -90,7 +106,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
     };
 
     fetchData();
-  }, [requestId, t]);
+  }, [buildUrl, t, walletAddress, userEmail, requestId]);
 
   // Listen for custom event when new request is submitted
   useEffect(() => {
@@ -101,9 +117,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
         customEvent.detail,
       );
       const newRequestId = customEvent.detail?.requestId;
-      const url = newRequestId
-        ? `/api/investigation/status?requestId=${newRequestId}`
-        : "/api/investigation/status";
+      const url = buildUrl('/api/investigation/status');
       fetch(url)
         .then((response) => response.json())
         .then((data) => {
@@ -121,15 +135,18 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
 
     window.addEventListener("new-request-submitted", handleNewRequest);
     return () => window.removeEventListener("new-request-submitted", handleNewRequest);
-  }, [requestId, t]);
+  }, [buildUrl, t]);
 
   // Poll for updates from Telegram every 3 seconds
   useEffect(() => {
+    // Skip polling if no identifier is available
+    if (!walletAddress && !userEmail && !requestId) {
+      return;
+    }
+
     const pollInterval = setInterval(async () => {
       try {
-        const url = requestId
-          ? `/api/investigation/status?requestId=${requestId}`
-          : "/api/investigation/status";
+        const url = buildUrl('/api/investigation/status');
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
@@ -148,7 +165,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
     }, 3000);
 
     return () => clearInterval(pollInterval);
-  }, [requestId, t]);
+  }, [buildUrl, t, walletAddress, userEmail, requestId]);
 
   const completedCount = stages.filter((s) => s.completed).length;
   const totalStages = stages.length;

@@ -17,6 +17,12 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const prevThemeRef = useRef<string>("");
   const [isReloading, setIsReloading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Only render iframe after component mounts to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Get current theme (fallback to 'dark' if not mounted)
   const dexTheme = theme === "light" ? "light" : "dark";
@@ -88,25 +94,37 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
           className="relative"
           style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}
         >
-          {isReloading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          {!isMounted ? (
+            // Show skeleton while waiting for client-side mount
+            <div className="absolute inset-0 flex items-center justify-center bg-muted animate-pulse">
               <div className="flex flex-col items-center gap-2">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                <p className="text-sm text-muted-foreground">
-                  {t("wallet.dexscreener.switching")}
-                </p>
+                <p className="text-sm text-muted-foreground">Loading chart...</p>
               </div>
             </div>
+          ) : (
+            <>
+              {isReloading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    <p className="text-sm text-muted-foreground">
+                      {t("wallet.dexscreener.switching")}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <iframe
+                ref={iframeRef}
+                key={`dex-${dexTheme}-${iframeKey}`}
+                src={dexUrl}
+                className="absolute left-0 top-0 h-full w-full border-0 transition-opacity duration-300"
+                style={{ opacity: isReloading ? 0.3 : 1 }}
+                title="Dexscreener Chart"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+              />
+            </>
           )}
-          <iframe
-            ref={iframeRef}
-            key={`dex-${dexTheme}-${iframeKey}`}
-            src={dexUrl}
-            className="absolute left-0 top-0 h-full w-full border-0 transition-opacity duration-300"
-            style={{ opacity: isReloading ? 0.3 : 1 }}
-            title="Dexscreener Chart"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-          />
         </div>
       </CardContent>
     </Card>

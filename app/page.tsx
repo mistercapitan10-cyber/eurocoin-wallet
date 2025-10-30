@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { ethers } from "ethers";
+import { useAccount } from "wagmi";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
 import {
   BalanceCard,
@@ -15,10 +16,13 @@ import { InvestigationProgress } from "@/components/dashboard/investigation-prog
 import { ExchangeSection } from "@/components/exchange";
 import { FAQSection } from "@/components/faq";
 import { useTranslation } from "@/hooks/use-translation";
+import { useAuth } from "@/hooks/use-auth";
 import { PageTitle } from "@/components/layout/page-title";
 
 export default function Home() {
   const t = useTranslation();
+  const { address } = useAccount();
+  const { email } = useAuth();
 
   useEffect(() => {
     const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
@@ -118,7 +122,7 @@ export default function Home() {
 
           {/* Investigation Progress Section */}
           <section id="investigation">
-            <InvestigationProgress />
+            <InvestigationProgress walletAddress={address} userEmail={email} />
           </section>
 
           <section id="token-balance" className="flex flex-col gap-6">

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/use-translation";
+import { useAuth } from "@/hooks/use-auth";
 
 interface FormState {
   requester: string;
@@ -14,6 +15,7 @@ interface FormState {
   requestType: string;
   description: string;
   priority: "low" | "normal" | "high";
+  walletAddress: string; // Add wallet address field
 }
 
 const initialState: FormState = {
@@ -22,13 +24,22 @@ const initialState: FormState = {
   requestType: "",
   description: "",
   priority: "normal",
+  walletAddress: "",
 };
 
 export function InternalRequestForm() {
   const { address } = useAccount();
+  const { authType, userId, email } = useAuth();
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = useTranslation();
+
+  // Auto-fill wallet address for MetaMask users
+  useEffect(() => {
+    if (authType === "wallet" && address) {
+      setForm((prev) => ({ ...prev, walletAddress: address }));
+    }
+  }, [authType, address]);
 
   const requestTypes = [
     { value: "topUp", label: t("internalForm.requestTypes.topUp") },
@@ -80,7 +91,7 @@ export function InternalRequestForm() {
     setIsSubmitting(true);
 
     try {
-      // Send request to API with wallet address
+      // Send request to API with wallet address, userId, and email
       const response = await fetch("/api/submit-request", {
         method: "POST",
         headers: {
@@ -88,7 +99,9 @@ export function InternalRequestForm() {
         },
         body: JSON.stringify({
           ...form,
-          walletAddress: address,
+          walletAddress: form.walletAddress, // Use form field instead of address directly
+          userId: userId || undefined, // Include userId for OAuth users
+          email: email || undefined, // Include email for OAuth users
         }),
       });
 
@@ -224,6 +237,25 @@ export function InternalRequestForm() {
               value={form.description}
               onChange={(event) => handleChange("description", event.target.value)}
             />
+          </div>
+
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+              {t("internalForm.walletAddress")}
+            </label>
+            <input
+              className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
+              placeholder={t("internalForm.placeholders.walletAddress")}
+              value={form.walletAddress}
+              onChange={(event) => handleChange("walletAddress", event.target.value)}
+              disabled={authType === "wallet"}
+              autoComplete="off"
+            />
+            {authType === "wallet" && address && (
+              <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
+                {t("internalForm.walletAddressAutoFilled")}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 md:col-span-2 md:flex-row md:items-center md:justify-between">

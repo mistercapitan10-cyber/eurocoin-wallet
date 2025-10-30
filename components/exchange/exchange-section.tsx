@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { useTokenPrice } from "@/hooks/use-token-price";
 import { useTranslation } from "@/hooks/use-translation";
+import { useAuth } from "@/hooks/use-auth";
 
 export function ExchangeSection() {
+  const { address } = useAccount();
+  const { authType, userId, email: userEmail } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const [tokenAmount, setTokenAmount] = useState("1000");
   const [rubAmount, setRubAmount] = useState("100000");
@@ -17,6 +21,15 @@ export function ExchangeSection() {
     email: "",
     comment: "",
   });
+
+  // Auto-fill wallet address for MetaMask users and email for OAuth users
+  useEffect(() => {
+    if (authType === "wallet" && address) {
+      setFormData((prev) => ({ ...prev, walletAddress: address }));
+    } else if (authType === "email" && userEmail) {
+      setFormData((prev) => ({ ...prev, email: userEmail }));
+    }
+  }, [authType, address, userEmail]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { USD_RUB, loading: rateLoading } = useExchangeRate();
   const { priceUsd, isLoading: isPriceLoading } = useTokenPrice({ refetchInterval: 60_000 });
@@ -89,6 +102,7 @@ Email: ${formData.email || "не указан"}`;
           comment: formData.comment,
           commission: "1.5%",
           rate: `${(tokenPriceUsd * USD_RUB).toFixed(2)} RUB за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)`,
+          userId: userId || undefined, // Include userId for OAuth users
         }),
       });
 
@@ -100,9 +114,16 @@ Email: ${formData.email || "не указан"}`;
 
       toast.success(t("exchange.errors.submitSuccess"));
 
-      // Reset form
+      // Dispatch event to notify Investigation Progress
+      window.dispatchEvent(
+        new CustomEvent("new-request-submitted", {
+          detail: { requestId: data.requestId, type: "exchange" },
+        })
+      );
+
+      // Reset form - keep wallet address for MetaMask users
       setFormData({
-        walletAddress: "",
+        walletAddress: authType === "wallet" && address ? address : "",
         email: "",
         comment: "",
       });
@@ -248,10 +269,16 @@ Email: ${formData.email || "не указан"}`;
                   type="text"
                   value={formData.walletAddress}
                   onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
-                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
                   placeholder={t("exchange.placeholders.walletAddress")}
+                  disabled={authType === "wallet"}
                   required
                 />
+                {authType === "wallet" && address && (
+                  <p className="dark:text-dark-foregroundMuted mt-1 text-xs text-foregroundMuted">
+                    {t("exchange.fields.walletAddressAutoFilled")}
+                  </p>
+                )}
               </div>
 
               <div>

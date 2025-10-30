@@ -10,7 +10,8 @@ import toast from "react-hot-toast";
 import { useTranslation } from "@/hooks/use-translation";
 
 interface UserRequestsProps {
-  walletAddress: string;
+  walletAddress?: string;
+  userEmail?: string;
 }
 
 type RequestType = "all" | "exchange" | "internal";
@@ -24,7 +25,7 @@ interface RequestItem {
   details: Record<string, string | undefined>;
 }
 
-export function UserRequests({ walletAddress }: UserRequestsProps) {
+export function UserRequests({ walletAddress, userEmail }: UserRequestsProps) {
   const t = useTranslation();
   const [activeTab, setActiveTab] = useState<RequestType>("all");
   const [requests, setRequests] = useState<RequestItem[]>([]);
@@ -37,9 +38,15 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
     async (type: RequestType) => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `/api/user/requests?walletAddress=${walletAddress}&type=${type}`,
-        );
+        // Build query params based on what identifier we have
+        const params = new URLSearchParams({ type });
+        if (walletAddress) {
+          params.append('walletAddress', walletAddress);
+        } else if (userEmail) {
+          params.append('userEmail', userEmail);
+        }
+
+        const response = await fetch(`/api/user/requests?${params.toString()}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch requests");
@@ -99,13 +106,18 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
         setLoading(false);
       }
     },
-    [walletAddress],
+    [walletAddress, userEmail],
   );
 
   useEffect(() => {
+    // Skip fetch if no identifier is available
+    if (!walletAddress && !userEmail) {
+      return;
+    }
+
     fetchRequests(activeTab);
     setShowAll(false); // Reset showAll when switching tabs
-  }, [activeTab, fetchRequests]);
+  }, [activeTab, fetchRequests, walletAddress, userEmail]);
 
   const handleRequestClick = (request: RequestItem) => {
     setSelectedRequest(request as RequestData);
