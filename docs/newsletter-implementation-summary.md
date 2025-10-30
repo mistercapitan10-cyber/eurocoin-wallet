@@ -135,3 +135,4 @@ curl -X POST http://your-app.com/api/newsletter/send \
 - История ошибок отправки
 - Процент успешных доставок
 
+

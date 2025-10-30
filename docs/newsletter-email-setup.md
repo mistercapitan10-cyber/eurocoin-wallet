@@ -175,3 +175,4 @@ language VARCHAR(10) - Язык (ru/en)
 - Админ получает статистику отправки (отправлено/ошибок)
 - Все email отправляются от `eurocoinfinance@gmail.com`
 
+
