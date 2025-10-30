@@ -9,12 +9,14 @@ CREATE TABLE IF NOT EXISTS exchange_requests (
   commission VARCHAR(50) NOT NULL,
   comment TEXT,
   status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+  current_stage VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_exchange_requests_wallet ON exchange_requests(wallet_address);
 CREATE INDEX IF NOT EXISTS idx_exchange_requests_status ON exchange_requests(status);
+CREATE INDEX IF NOT EXISTS idx_exchange_requests_stage ON exchange_requests(current_stage);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

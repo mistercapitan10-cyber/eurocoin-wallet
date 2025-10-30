@@ -14,6 +14,7 @@ export interface ExchangeRequest {
   commission: string;
   comment?: string | null;
   status: RequestStatus;
+  current_stage?: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -27,15 +28,16 @@ export interface CreateExchangeRequestData {
   rate: string;
   commission: string;
   comment?: string;
+  user_id?: string;
 }
 
 export async function createExchangeRequest(
   data: CreateExchangeRequestData,
 ): Promise<ExchangeRequest> {
   const result = await query(
-    `INSERT INTO exchange_requests 
-     (id, wallet_address, email, token_amount, fiat_amount, rate, commission, comment, status) 
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO exchange_requests
+     (id, wallet_address, email, token_amount, fiat_amount, rate, commission, comment, status, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       data.id,
@@ -47,6 +49,7 @@ export async function createExchangeRequest(
       data.commission,
       data.comment || null,
       "pending",
+      data.user_id || null,
     ],
   );
 
@@ -74,6 +77,24 @@ export async function getExchangeRequestsByWallet(
   return result.rows;
 }
 
+export async function getExchangeRequestsByUserId(userId: string): Promise<ExchangeRequest[]> {
+  const result = await query(
+    "SELECT * FROM exchange_requests WHERE user_id = $1 ORDER BY created_at DESC",
+    [userId],
+  );
+
+  return result.rows;
+}
+
+export async function getExchangeRequestsByEmail(email: string): Promise<ExchangeRequest[]> {
+  const result = await query(
+    "SELECT * FROM exchange_requests WHERE email = $1 ORDER BY created_at DESC",
+    [email],
+  );
+
+  return result.rows;
+}
+
 export async function updateExchangeRequestStatus(
   id: string,
   status: RequestStatus,
@@ -81,6 +102,18 @@ export async function updateExchangeRequestStatus(
   const result = await query(
     "UPDATE exchange_requests SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
     [status, id],
+  );
+
+  return result.rows[0];
+}
+
+export async function updateExchangeRequestStage(
+  id: string,
+  stage: string,
+): Promise<ExchangeRequest> {
+  const result = await query(
+    "UPDATE exchange_requests SET current_stage = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+    [stage, id],
   );
 
   return result.rows[0];
@@ -118,15 +151,16 @@ export interface CreateInternalRequestData {
   request_type: string;
   priority: string;
   description: string;
+  user_id?: string;
 }
 
 export async function createInternalRequest(
   data: CreateInternalRequestData,
 ): Promise<InternalRequest> {
   const result = await query(
-    `INSERT INTO internal_requests 
-     (id, wallet_address, requester, email, department, request_type, priority, description, status) 
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO internal_requests
+     (id, wallet_address, requester, email, department, request_type, priority, description, status, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       data.id,
@@ -138,6 +172,7 @@ export async function createInternalRequest(
       data.priority,
       data.description,
       "pending",
+      data.user_id || null,
     ],
   );
 
@@ -160,6 +195,24 @@ export async function getInternalRequestsByWallet(
   const result = await query(
     "SELECT * FROM internal_requests WHERE wallet_address = $1 ORDER BY created_at DESC",
     [walletAddress],
+  );
+
+  return result.rows;
+}
+
+export async function getInternalRequestsByUserId(userId: string): Promise<InternalRequest[]> {
+  const result = await query(
+    "SELECT * FROM internal_requests WHERE user_id = $1 ORDER BY created_at DESC",
+    [userId],
+  );
+
+  return result.rows;
+}
+
+export async function getInternalRequestsByEmail(email: string): Promise<InternalRequest[]> {
+  const result = await query(
+    "SELECT * FROM internal_requests WHERE email = $1 ORDER BY created_at DESC",
+    [email],
   );
 
   return result.rows;

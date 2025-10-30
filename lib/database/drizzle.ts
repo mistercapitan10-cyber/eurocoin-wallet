@@ -3,9 +3,11 @@
  * For use with NextAuth.js Drizzle Adapter
  */
 
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import * as authSchema from './auth-schema';
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+// Note: DrizzleAdapter will use its own schema
+// Tables should match NextAuth standard names: users, accounts, sessions, verification_tokens
+// Or use custom schema with adapter configuration
 
 // Create PostgreSQL connection pool
 const pool = new Pool({
@@ -18,15 +20,13 @@ const pool = new Pool({
 });
 
 // Handle pool errors gracefully
-pool.on('error', (err) => {
-  console.error('[DB] Unexpected error on idle PostgreSQL client:', err.message);
+pool.on("error", (err) => {
+  console.error("[DB] Unexpected error on idle PostgreSQL client:", err.message);
   // Don't exit process - let the app continue
 });
 
-// Create Drizzle instance with auth schema
-export const db = drizzle(pool, {
-  schema: authSchema,
-});
+// Create Drizzle instance (schema will be provided by DrizzleAdapter)
+export const db = drizzle(pool);
 
 // Export pool for raw queries if needed
 export { pool };

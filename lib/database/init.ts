@@ -27,16 +27,16 @@ async function applyMigrations() {
   try {
     console.log("Applying database migrations...");
 
-    // Migration: Add current_stage column
-    const checkResult = await query(`
+    // Migration: Add current_stage column to internal_requests
+    const checkInternalResult = await query(`
       SELECT 1 FROM information_schema.columns 
       WHERE table_name = 'internal_requests' 
       AND column_name = 'current_stage'
     `);
 
-    if (checkResult.rows.length === 0) {
-      console.log("Applying migration: add_current_stage column");
-      
+    if (checkInternalResult.rows.length === 0) {
+      console.log("Applying migration: add_current_stage column to internal_requests");
+
       await query(`
         ALTER TABLE internal_requests 
         ADD COLUMN current_stage VARCHAR(50)
@@ -47,9 +47,34 @@ async function applyMigrations() {
         ON internal_requests(current_stage)
       `);
 
-      console.log("✅ Migration completed: current_stage column added");
+      console.log("✅ Migration completed: current_stage column added to internal_requests");
     } else {
-      console.log("✅ Migration already applied: current_stage column exists");
+      console.log("✅ Migration already applied: current_stage column exists in internal_requests");
+    }
+
+    // Migration: Add current_stage column to exchange_requests
+    const checkExchangeResult = await query(`
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'exchange_requests' 
+      AND column_name = 'current_stage'
+    `);
+
+    if (checkExchangeResult.rows.length === 0) {
+      console.log("Applying migration: add_current_stage column to exchange_requests");
+
+      await query(`
+        ALTER TABLE exchange_requests 
+        ADD COLUMN current_stage VARCHAR(50)
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_exchange_requests_stage 
+        ON exchange_requests(current_stage)
+      `);
+
+      console.log("✅ Migration completed: current_stage column added to exchange_requests");
+    } else {
+      console.log("✅ Migration already applied: current_stage column exists in exchange_requests");
     }
   } catch (error) {
     console.error("Failed to apply migrations:", error);
