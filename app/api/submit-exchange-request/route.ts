@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Telegraf } from "telegraf";
+import { Telegraf, Markup } from "telegraf";
 import { Resend } from "resend";
 import { createExchangeRequest } from "@/lib/database/queries";
 
@@ -14,6 +14,7 @@ interface ExchangeRequest {
   commission: string;
   rate: string;
   comment?: string;
+  userId?: string; // For OAuth users
 }
 
 export async function POST(request: NextRequest) {
@@ -39,13 +40,11 @@ export async function POST(request: NextRequest) {
         rate: data.rate,
         commission: data.commission,
         comment: data.comment,
+        user_id: data.userId, // For OAuth users
       });
     } catch (dbError) {
       console.error("Error saving to database:", dbError);
-      return NextResponse.json(
-        { error: "Failed to save request to database" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to save request to database" }, { status: 500 });
     }
 
     // Prepare message for manager
@@ -70,7 +69,25 @@ ${data.comment ? `📝 *Комментарий:* ${data.comment}` : ""}
     // Send to manager in Telegram
     const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
     if (managerChatId) {
-      await bot.telegram.sendMessage(managerChatId, message, { parse_mode: "Markdown" });
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback("✅ В обработке", `status_${requestId}_submitted`),
+          Markup.button.callback("📄 Проверка", `status_${requestId}_checking`),
+        ],
+        [
+          Markup.button.callback("🔍 Анализ", `status_${requestId}_analyzing`),
+          Markup.button.callback("🕵️ Расследование", `status_${requestId}_investigating`),
+        ],
+        [
+          Markup.button.callback("💰 Восстановление", `status_${requestId}_recovering`),
+          Markup.button.callback("✅ Завершить", `status_${requestId}_completed`),
+        ],
+      ]);
+
+      await bot.telegram.sendMessage(managerChatId, message, {
+        parse_mode: "Markdown",
+        ...keyboard,
+      });
     }
 
     // Send email notification

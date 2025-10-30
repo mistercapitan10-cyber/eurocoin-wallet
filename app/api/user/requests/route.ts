@@ -1,20 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getExchangeRequestsByWallet, getInternalRequestsByWallet } from "@/lib/database/queries";
+import {
+  getExchangeRequestsByWallet,
+  getInternalRequestsByWallet,
+  getExchangeRequestsByEmail,
+  getInternalRequestsByEmail,
+} from "@/lib/database/queries";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const walletAddress = searchParams.get("walletAddress");
+    const userEmail = searchParams.get("userEmail");
     const type = searchParams.get("type") || "all";
 
-    // Validate wallet address
-    if (!walletAddress) {
-      return NextResponse.json({ error: "walletAddress is required" }, { status: 400 });
+    // Validate that at least one identifier is provided
+    if (!walletAddress && !userEmail) {
+      return NextResponse.json(
+        { error: "Either walletAddress or userEmail is required" },
+        { status: 400 }
+      );
     }
 
-    // Validate wallet address format (basic validation)
-    if (!walletAddress.startsWith("0x") || walletAddress.length !== 42) {
-      return NextResponse.json({ error: "Invalid wallet address format" }, { status: 400 });
+    // Validate wallet address format if provided
+    if (walletAddress) {
+      if (!walletAddress.startsWith("0x") || walletAddress.length !== 42) {
+        return NextResponse.json({ error: "Invalid wallet address format" }, { status: 400 });
+      }
+    }
+
+    // Validate userEmail format if provided
+    if (userEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userEmail)) {
+        return NextResponse.json({ error: "Invalid userEmail format" }, { status: 400 });
+      }
     }
 
     // Fetch requests based on type
@@ -27,12 +46,16 @@ export async function GET(request: NextRequest) {
     };
 
     if (type === "all" || type === "exchange") {
-      const exchangeRequests = await getExchangeRequestsByWallet(walletAddress);
+      const exchangeRequests = walletAddress
+        ? await getExchangeRequestsByWallet(walletAddress)
+        : await getExchangeRequestsByEmail(userEmail!);
       result.exchangeRequests = exchangeRequests;
     }
 
     if (type === "all" || type === "internal") {
-      const internalRequests = await getInternalRequestsByWallet(walletAddress);
+      const internalRequests = walletAddress
+        ? await getInternalRequestsByWallet(walletAddress)
+        : await getInternalRequestsByEmail(userEmail!);
       result.internalRequests = internalRequests;
     }
 

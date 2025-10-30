@@ -13,6 +13,8 @@ interface RequestFormData {
   description: string;
   priority: "low" | "normal" | "high";
   walletAddress?: string;
+  userId?: string; // For OAuth users
+  email?: string; // For OAuth users
 }
 
 export async function POST(request: NextRequest) {
@@ -36,8 +38,9 @@ export async function POST(request: NextRequest) {
         request_type: data.requestType,
         priority: data.priority,
         description: data.description,
-        email: data.requester.includes("@") ? data.requester : undefined,
+        email: data.email || undefined, // Use email from form data
         wallet_address: data.walletAddress || undefined,
+        user_id: data.userId, // For OAuth users
       });
     } catch (dbError) {
       console.error("Error saving to database:", dbError);

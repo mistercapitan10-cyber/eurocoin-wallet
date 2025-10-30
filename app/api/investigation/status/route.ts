@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllInternalRequests } from "@/lib/database/queries";
+import {
+  getAllInternalRequests,
+  getInternalRequestsByWallet,
+  getInternalRequestsByEmail,
+  getExchangeRequestsByWallet,
+  getExchangeRequestsByEmail,
+} from "@/lib/database/queries";
 
 interface InvestigationStage {
   id: string;
@@ -64,30 +70,71 @@ function getStagesFromStatus(status: string, currentStage?: string | null): Inve
 export async function GET(request: NextRequest) {
   try {
     const requestId = request.nextUrl.searchParams.get("requestId");
+    const walletAddress = request.nextUrl.searchParams.get("walletAddress");
+    const userEmail = request.nextUrl.searchParams.get("userEmail");
 
-    // Get latest internal request if no ID provided
-    const requests = await getAllInternalRequests();
+    let allRequests: any[] = [];
 
-    if (requests.length === 0) {
-      // Return mock data if no requests
-      const mockStages: InvestigationStage[] = [
-        { id: "submitted", label: "Заявка подана", completed: true, current: false },
-        { id: "checking", label: "Проверка документов", completed: true, current: false },
-        { id: "analyzing", label: "Анализ транзакций", completed: true, current: true },
+    // Get ALL requests for this user (internal + exchange)
+    if (walletAddress) {
+      // Get both types of requests for specific wallet address
+      const [internalReqs, exchangeReqs] = await Promise.all([
+        getInternalRequestsByWallet(walletAddress),
+        getExchangeRequestsByWallet(walletAddress),
+      ]);
+      allRequests = [...internalReqs, ...exchangeReqs];
+    } else if (userEmail) {
+      // Get both types of requests for specific email (OAuth users)
+      const [internalReqs, exchangeReqs] = await Promise.all([
+        getInternalRequestsByEmail(userEmail),
+        getExchangeRequestsByEmail(userEmail),
+      ]);
+      allRequests = [...internalReqs, ...exchangeReqs];
+    } else {
+      // No user identifier provided - return empty state
+      const emptyStages: InvestigationStage[] = [
+        { id: "submitted", label: "Заявка подана", completed: false, current: false },
+        { id: "checking", label: "Проверка документов", completed: false, current: false },
+        { id: "analyzing", label: "Анализ транзакций", completed: false, current: false },
         { id: "investigating", label: "Расследование", completed: false, current: false },
         { id: "recovering", label: "Восстановление средств", completed: false, current: false },
         { id: "completed", label: "Завершено", completed: false, current: false },
       ];
 
       return NextResponse.json({
-        stages: mockStages,
-        progress: 50,
+        stages: emptyStages,
+        progress: 0,
         requestId: null,
+        hasRequests: false,
       });
     }
 
+    if (allRequests.length === 0) {
+      // User has no requests - return empty state
+      const emptyStages: InvestigationStage[] = [
+        { id: "submitted", label: "Заявка подана", completed: false, current: false },
+        { id: "checking", label: "Проверка документов", completed: false, current: false },
+        { id: "analyzing", label: "Анализ транзакций", completed: false, current: false },
+        { id: "investigating", label: "Расследование", completed: false, current: false },
+        { id: "recovering", label: "Восстановление средств", completed: false, current: false },
+        { id: "completed", label: "Завершено", completed: false, current: false },
+      ];
+
+      return NextResponse.json({
+        stages: emptyStages,
+        progress: 0,
+        requestId: null,
+        hasRequests: false,
+      });
+    }
+
+    // Sort all requests by created_at DESC to get the latest
+    allRequests.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
     // Use latest or specific request
-    const targetRequest = requestId ? requests.find((r) => r.id === requestId) : requests[0];
+    const targetRequest = requestId
+      ? allRequests.find((r) => r.id === requestId)
+      : allRequests[0];
 
     if (!targetRequest) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 });
@@ -101,6 +148,7 @@ export async function GET(request: NextRequest) {
       stages,
       progress,
       requestId: targetRequest.id,
+      hasRequests: true,
     });
   } catch (error) {
     console.error("Error fetching investigation status:", error);
