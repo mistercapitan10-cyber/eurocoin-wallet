@@ -11,6 +11,7 @@ import {
   updateInternalRequestStage,
 } from "@/lib/database/queries";
 import { query } from "@/lib/database/db";
+import { formatChatHistoryForTelegram, isValidWalletAddress } from "@/lib/telegram/notify-admin";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 
@@ -77,6 +78,22 @@ bot.start((ctx) => {
   );
 });
 
+// My ID command - to get chat ID for TELEGRAM_ADMIN_CHAT_ID
+bot.command("myid", (ctx) => {
+  const chatId = ctx.chat.id;
+  const username = ctx.from?.username || 'Unknown';
+  const firstName = ctx.from?.first_name || 'Unknown';
+
+  ctx.reply(
+    `🆔 *Ваш Chat ID:* \`${chatId}\`\n\n` +
+    `👤 Username: @${username}\n` +
+    `👤 Name: ${firstName}\n\n` +
+    `📝 Добавьте этот Chat ID в .env.local:\n` +
+    `\`TELEGRAM_ADMIN_CHAT_ID=${chatId}\``,
+    { parse_mode: "Markdown" }
+  );
+});
+
 // Help command
 bot.command("help", (ctx) => {
   const helpMessage = `
@@ -86,6 +103,7 @@ bot.command("help", (ctx) => {
 
 /start - Начать работу с ботом
 /help - Показать эту справку
+/myid - Узнать свой Chat ID
 
 📊 *Команды для просмотра заявок:*
 
@@ -470,7 +488,173 @@ bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
 });
 
 // Simple storage for pending replies (in-memory, will be reset on restart)
-const pendingReplies = new Map<number, string>();
+// Maps: chatId -> { walletAddress, sessionId, type }
+interface PendingReply {
+  walletAddress: string;
+  sessionId?: string;
+  type: 'support' | 'chatbot';
+}
+const pendingReplies = new Map<number, PendingReply>();
+const typingTimeouts = new Map<string, NodeJS.Timeout>();
+
+// ============================================
+// Support Messenger Callback Handlers
+// ============================================
+
+// Handle "Send Message" button (msg_WALLET_ADDRESS)
+bot.action(/^msg_(.+)$/, async (ctx) => {
+  try {
+    const walletAddress = ctx.match[1];
+    const chatId = ctx.from.id;
+
+    console.log('[telegram-webhook] Support msg button clicked:', { walletAddress, chatId });
+
+    // Validate wallet address format
+    if (!isValidWalletAddress(walletAddress)) {
+      console.warn('[telegram-webhook] Invalid wallet address format:', walletAddress);
+      ctx.answerCbQuery('❌ Неверный формат адреса кошелька');
+      await ctx.reply(
+        `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
+        `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // Store pending reply
+    pendingReplies.set(chatId, {
+      walletAddress,
+      type: 'support',
+    });
+
+    ctx.answerCbQuery();
+    await ctx.reply(
+      `💬 *Отправка сообщения пользователю*\n\n` +
+      `Кошелек: \`${walletAddress}\`\n\n` +
+      `Напишите сообщение, которое хотите отправить пользователю.\n` +
+      `Для отмены используйте /cancel`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    console.error('[telegram-webhook] Error in msg handler:', error);
+    ctx.answerCbQuery('❌ Ошибка');
+  }
+});
+
+// Handle "Chat History" button (history_WALLET_ADDRESS)
+bot.action(/^history_(.+)$/, async (ctx) => {
+  try {
+    const walletAddress = ctx.match[1];
+
+    console.log('[telegram-webhook] Support history button clicked:', { walletAddress });
+
+    // Validate wallet address format
+    if (!isValidWalletAddress(walletAddress)) {
+      console.warn('[telegram-webhook] Invalid wallet address format:', walletAddress);
+      ctx.answerCbQuery('❌ Неверный формат адреса кошелька');
+      await ctx.reply(
+        `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
+        `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    ctx.answerCbQuery();
+
+    // Fetch chat history from API
+    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/support/get-chat-history?walletAddress=${walletAddress}&limit=10`;
+
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      await ctx.reply('❌ Ошибка при получении истории чата');
+      return;
+    }
+
+    const data = await response.json();
+    const messages = data.messages || [];
+
+    if (messages.length === 0) {
+      await ctx.reply('📭 История чата пуста');
+      return;
+    }
+
+    // Format messages for the helper function
+    const formattedMessages = messages.map((msg: any) => ({
+      type: msg.type,
+      text: msg.text,
+      admin_username: msg.adminUsername,
+      created_at: msg.createdAt,
+    }));
+
+    // Use helper function to format history
+    const historyText = formatChatHistoryForTelegram(formattedMessages);
+
+    // Add reply button
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.callback('💬 Ответить', `reply_${walletAddress}`)],
+    ]);
+
+    await ctx.reply(historyText, { parse_mode: 'MarkdownV2', ...keyboard });
+  } catch (error) {
+    console.error('[telegram-webhook] Error in history handler:', error);
+    ctx.answerCbQuery('❌ Ошибка');
+    await ctx.reply('❌ Ошибка при получении истории чата');
+  }
+});
+
+// Handle "Reply" button (reply_WALLET_ADDRESS) - but NOT reply_to_chat_
+// Use negative lookahead to exclude reply_to_chat_ pattern
+bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
+  try {
+    const walletAddress = ctx.match[1];
+    const chatId = ctx.from.id;
+
+    console.log('[telegram-webhook] Support reply button clicked:', { walletAddress, chatId });
+
+    // Store pending reply
+    pendingReplies.set(chatId, {
+      walletAddress,
+      type: 'support',
+    });
+
+    ctx.answerCbQuery();
+    await ctx.reply(
+      `💬 *Ответить пользователю*\n\n` +
+      `Кошелек: \`${walletAddress}\`\n\n` +
+      `Напишите ваш ответ. Для отмены используйте /cancel`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    console.error('[telegram-webhook] Error in reply handler:', error);
+    ctx.answerCbQuery('❌ Ошибка');
+  }
+});
+
+// ============================================
+// Cancel Command
+// ============================================
+
+bot.command('cancel', (ctx) => {
+  const chatId = ctx.from.id;
+  const pending = pendingReplies.get(chatId);
+
+  if (pending) {
+    pendingReplies.delete(chatId);
+
+    // Clear typing timeout if exists
+    const timeoutKey = `${chatId}_${pending.walletAddress}`;
+    if (typingTimeouts.has(timeoutKey)) {
+      clearTimeout(typingTimeouts.get(timeoutKey)!);
+      typingTimeouts.delete(timeoutKey);
+    }
+
+    ctx.reply('❌ Отправка сообщения отменена');
+  } else {
+    ctx.reply('Нет активной отправки сообщения');
+  }
+});
 
 // Chatbot callback handler - handle reply button click
 bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
@@ -481,8 +665,12 @@ bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
     console.log("[telegram-webhook] Reply button clicked for session:", sessionId);
 
     if (chatId) {
-      // Store session ID for this chat
-      pendingReplies.set(chatId, sessionId);
+      // Store session ID for this chat (chatbot type)
+      pendingReplies.set(chatId, {
+        walletAddress: '', // Not needed for chatbot
+        sessionId,
+        type: 'chatbot',
+      });
     }
 
     ctx.answerCbQuery();
@@ -509,52 +697,125 @@ bot.on("text", async (ctx) => {
 
   // Check if we're awaiting a reply from the button click
   const chatId = ctx.from.id;
-  const pendingSessionId = pendingReplies.get(chatId);
+  const pending = pendingReplies.get(chatId);
 
-  if (pendingSessionId) {
-    const sessionId = pendingSessionId;
+  if (pending) {
     const adminResponse = ctx.message.text;
+    const adminUsername = ctx.from.first_name || ctx.from.username || 'Admin';
 
-    console.log("[telegram-webhook] Admin reply detected via button:", {
-      sessionId,
-      text: adminResponse,
-      adminId: ctx.from.id,
-    });
-
-    // Clear the pending flag
-    pendingReplies.delete(chatId);
-
-    try {
-      // Send response to user via API
-      const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
-      console.log("[telegram-webhook] Calling API:", apiUrl);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          text: adminResponse,
-          adminId: ctx.from.id,
-        }),
+    // Handle support messenger reply
+    if (pending.type === 'support') {
+      console.log("[telegram-webhook] Support message detected:", {
+        walletAddress: pending.walletAddress,
+        text: adminResponse,
+        adminId: ctx.from.id,
       });
 
-      console.log("[telegram-webhook] API response status:", response.status);
+      // Clear the pending flag
+      pendingReplies.delete(chatId);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("[telegram-webhook] Admin response saved:", data);
-        ctx.reply("✅ Ответ отправлен пользователю");
-      } else {
-        const errorText = await response.text();
-        console.error("[telegram-webhook] API error:", errorText);
+      // Clear typing timeout if exists
+      const timeoutKey = `${chatId}_${pending.walletAddress}`;
+      if (typingTimeouts.has(timeoutKey)) {
+        clearTimeout(typingTimeouts.get(timeoutKey)!);
+        typingTimeouts.delete(timeoutKey);
+      }
+
+      try {
+        // Set typing indicator
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/set-typing`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            walletAddress: pending.walletAddress,
+            adminId: ctx.from.id,
+            adminUsername,
+            isTyping: true,
+          }),
+        }).catch(err => console.error('Failed to set typing:', err));
+
+        // Wait a bit to simulate typing
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Send message via support API
+        const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/send-admin-message`;
+        console.log("[telegram-webhook] Calling support API:", apiUrl);
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            walletAddress: pending.walletAddress,
+            text: adminResponse,
+            adminId: ctx.from.id,
+            adminUsername,
+            sessionId: pending.sessionId,
+          }),
+        });
+
+        console.log("[telegram-webhook] Support API response status:", response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("[telegram-webhook] Support message saved:", data);
+          ctx.reply("✅ Сообщение отправлено пользователю");
+        } else {
+          const errorText = await response.text();
+          console.error("[telegram-webhook] Support API error:", errorText);
+          ctx.reply("❌ Ошибка при отправке сообщения");
+        }
+      } catch (error) {
+        console.error("[telegram-webhook] Error sending support message:", error);
+        ctx.reply("❌ Ошибка при отправке сообщения");
+      }
+      return;
+    }
+
+    // Handle chatbot reply
+    if (pending.type === 'chatbot' && pending.sessionId) {
+      const sessionId = pending.sessionId;
+
+      console.log("[telegram-webhook] Chatbot reply detected via button:", {
+        sessionId,
+        text: adminResponse,
+        adminId: ctx.from.id,
+      });
+
+      // Clear the pending flag
+      pendingReplies.delete(chatId);
+
+      try {
+        // Send response to user via API
+        const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
+        console.log("[telegram-webhook] Calling API:", apiUrl);
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+            text: adminResponse,
+            adminId: ctx.from.id,
+          }),
+        });
+
+        console.log("[telegram-webhook] API response status:", response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("[telegram-webhook] Admin response saved:", data);
+          ctx.reply("✅ Ответ отправлен пользователю");
+        } else {
+          const errorText = await response.text();
+          console.error("[telegram-webhook] API error:", errorText);
+          ctx.reply("❌ Ошибка при отправке ответа");
+        }
+      } catch (error) {
+        console.error("[telegram-webhook] Error sending admin response:", error);
         ctx.reply("❌ Ошибка при отправке ответа");
       }
-    } catch (error) {
-      console.error("[telegram-webhook] Error sending admin response:", error);
-      ctx.reply("❌ Ошибка при отправке ответа");
+      return;
     }
-    return;
   }
 
   // Check if this is an admin reply to chatbot (legacy format)

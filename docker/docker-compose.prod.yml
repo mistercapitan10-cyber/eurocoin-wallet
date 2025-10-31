@@ -1,41 +1,44 @@
 services:
-  postgres:
+  postgres-prod:
     image: postgres:15-alpine
+    container_name: web-wallet-postgres-prod
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: web_wallet_db
+      POSTGRES_DB: web_wallet_db_prod
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-prod-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  redis:
+  redis-prod:
     image: redis:7-alpine
+    container_name: web-wallet-redis-prod
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
-      - redis-data:/data
+      - redis-prod-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  web:
+  web-prod:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    container_name: web-wallet-web-prod
     depends_on:
-      postgres:
+      postgres-prod:
         condition: service_healthy
-      redis:
+      redis-prod:
         condition: service_healthy
     environment:
       NODE_ENV: production
@@ -44,19 +47,19 @@ services:
       SERVICE_NAME: web-prod
       HEALTHCHECK_URL: http://127.0.0.1:3000/
       HEALTHCHECK_INTERVAL: "15000"
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/web_wallet_db
-      REDIS_URL: redis://redis:6379/0
-      DB_HOST: postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres-prod:5432/web_wallet_db_prod
+      REDIS_URL: redis://redis-prod:6379/0
+      DB_HOST: postgres-prod
       DB_PORT: "5432"
-      DB_NAME: web_wallet_db
+      DB_NAME: web_wallet_db_prod
       DB_USER: postgres
       DB_PASSWORD: postgres
     ports:
-      - "3000:3000"
+      - "3001:3000"
     restart: unless-stopped
     command: >
       sh -c "npm run db:init && npm run db:migrate && npm run auth:migrate && npm run start"
 
 volumes:
-  postgres-data:
-  redis-data:
+  postgres-prod-data:
+  redis-prod-data:

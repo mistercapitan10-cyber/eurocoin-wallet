@@ -2,3 +2,4 @@
 export * from "./db";
 export * from "./queries";
 export * from "./init";
+export * from "./user-queries";

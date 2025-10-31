@@ -5,12 +5,12 @@
 
 import { pgTable, text, timestamp, uuid, boolean, index, bigint } from "drizzle-orm/pg-core";
 
-// Users table
-export const users = pgTable("users", {
+// Users table (matches auth_users in database)
+export const users = pgTable("auth_users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
   email: text("email").unique(),
-  emailVerified: timestamp("emailVerified", { mode: "date", withTimezone: true }),
+  emailVerified: timestamp("email_verified", { mode: "date", withTimezone: true }),
   image: text("image"),
 
   // Custom fields from auth_users schema (optional)
@@ -20,17 +20,17 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
-// Accounts table
+// Accounts table (matches auth_accounts in database)
 export const accounts = pgTable(
-  "accounts",
+  "auth_accounts",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("userId")
+    userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
     refreshToken: text("refresh_token"),
     accessToken: text("access_token"),
     expiresAt: bigint("expires_at", { mode: "number" }),
@@ -44,19 +44,19 @@ export const accounts = pgTable(
   }),
 );
 
-// Sessions table
-export const sessions = pgTable("sessions", {
+// Sessions table (matches auth_sessions in database)
+export const sessions = pgTable("auth_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  sessionToken: text("sessionToken").notNull().unique(),
-  userId: uuid("userId")
+  sessionToken: text("session_token").notNull().unique(),
+  userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
 });
 
-// Verification tokens table
+// Verification tokens table (matches auth_verification_tokens in database)
 export const verificationTokens = pgTable(
-  "verification_tokens",
+  "auth_verification_tokens",
   {
     identifier: text("identifier").notNull(),
     token: text("token").notNull().unique(),

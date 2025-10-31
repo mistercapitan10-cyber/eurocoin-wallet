@@ -10,6 +10,7 @@ lib/database/
 ├── schema.sql     # PostgreSQL schema (tables, indexes, triggers)
 ├── init.ts        # Database initialization functions
 ├── queries.ts     # CRUD operations for requests
+├── user-queries.ts # Auth user helpers (wallet registration)
 └── README.md      # This file
 ```
 
@@ -80,6 +81,11 @@ Stores internal/contact form requests.
 - `getInternalRequestsByWallet(walletAddress)` - Get all requests for a wallet
 - `updateInternalRequestStatus(id, status)` - Update request status
 - `getAllInternalRequests()` - Get all internal requests
+
+### Users
+
+- `upsertWalletUser(data)` - Create or update a wallet-authenticated user
+- `getUserByWalletAddress(address)` - Retrieve a user by wallet address
 
 ## Request Statuses
 

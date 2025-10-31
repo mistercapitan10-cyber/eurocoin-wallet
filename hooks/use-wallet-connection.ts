@@ -1,12 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import {
-  useAccount,
-  useChains,
-  useConnect,
-  useDisconnect,
-} from "wagmi";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { useAccount, useChains, useConnect, useDisconnect } from "wagmi";
 import { DEFAULT_CHAIN } from "@/config/chains";
 
 interface UseWalletConnectionResult {
@@ -26,6 +22,7 @@ interface UseWalletConnectionResult {
 }
 
 export function useWalletConnection(): UseWalletConnectionResult {
+  const { data: session } = useSession();
   const {
     address,
     chainId,
@@ -38,6 +35,13 @@ export function useWalletConnection(): UseWalletConnectionResult {
   const { connectAsync, connectors, isPending, error } = useConnect();
   const { disconnectAsync, isPending: isDisconnecting } = useDisconnect();
   const chains = useChains();
+  const lastRegistrationRef = useRef<{ address: string; email?: string; name?: string } | null>(
+    null,
+  );
+  const isRegisteringRef = useRef(false);
+
+  const sessionEmail = session?.user?.email ?? undefined;
+  const sessionName = session?.user?.name ?? undefined;
 
   const metaMaskConnector = useMemo(
     () =>
@@ -128,6 +132,89 @@ export function useWalletConnection(): UseWalletConnectionResult {
     () => chains.find((chain) => chain.id === chainId),
     [chains, chainId],
   );
+
+  useEffect(() => {
+    if (!isConnected || !address) {
+      return;
+    }
+
+    if (isRegisteringRef.current) {
+      return;
+    }
+
+    const lastRegistration = lastRegistrationRef.current;
+    if (
+      lastRegistration &&
+      lastRegistration.address === address &&
+      lastRegistration.email === sessionEmail &&
+      lastRegistration.name === sessionName
+    ) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const payload: Record<string, unknown> = {
+      walletAddress: address,
+    };
+
+    if (sessionEmail) {
+      payload.email = sessionEmail;
+    }
+
+    if (sessionName) {
+      payload.name = sessionName;
+    }
+
+    isRegisteringRef.current = true;
+
+    (async () => {
+      try {
+        const response = await fetch("/api/user/register-wallet", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          let errorDetails: unknown = null;
+
+          try {
+            errorDetails = await response.json();
+          } catch {
+            errorDetails = await response.text();
+          }
+
+          console.error("[wallet] Failed to register wallet user", {
+            status: response.status,
+            details: errorDetails,
+          });
+          return;
+        }
+
+        lastRegistrationRef.current = {
+          address,
+          email: sessionEmail,
+          name: sessionName,
+        };
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") {
+          return;
+        }
+
+        console.error("[wallet] Error registering wallet user:", error);
+      } finally {
+        isRegisteringRef.current = false;
+      }
+    })();
+
+    return () => {
+      controller.abort();
+      isRegisteringRef.current = false;
+    };
+  }, [address, isConnected, sessionEmail, sessionName]);
 
   return {
     address,

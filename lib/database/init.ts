@@ -133,6 +133,24 @@ async function applyMigrations() {
     } else {
       console.log("✅ Migration already applied: request_files table exists");
     }
+
+    // Migration: Fix request_files foreign keys
+    const checkFKFixResult = await query(`
+      SELECT 1 FROM information_schema.table_constraints 
+      WHERE table_name = 'request_files' 
+      AND constraint_name = 'fk_exchange_request'
+    `);
+
+    if (checkFKFixResult.rows.length > 0) {
+      console.log("Applying migration: fix request_files foreign keys");
+
+      const fixFKMigration = await readMigrationFile("fix-request-files-fks.sql");
+      await query(fixFKMigration);
+
+      console.log("✅ Migration completed: request_files foreign keys fixed");
+    } else {
+      console.log("✅ Migration already applied: foreign keys already removed");
+    }
   } catch (error) {
     console.error("Failed to apply migrations:", error);
     throw error;

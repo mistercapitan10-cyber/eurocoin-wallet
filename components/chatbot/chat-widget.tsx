@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { useLanguage } from "@/components/providers/language-provider";
 import { ChatWindow } from "./chat-window";
@@ -13,6 +14,7 @@ interface ChatWidgetProps {
 }
 
 export function ChatWidget({ delay = 10000, position = "bottom-right" }: ChatWidgetProps) {
+  const pathname = usePathname();
   const { isConnected, address } = useWalletConnection();
   const { locale } = useLanguage();
   const [showWindow, setShowWindow] = useState(false);
@@ -111,8 +113,8 @@ export function ChatWidget({ delay = 10000, position = "bottom-right" }: ChatWid
     return () => clearTimeout(timer);
   }, [showNotification]);
 
-  // Don't show if not connected
-  if (!isConnected) {
+  // Don't show if not connected or on support page
+  if (!isConnected || pathname === "/support") {
     return null;
   }
 

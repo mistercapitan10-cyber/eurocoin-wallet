@@ -559,6 +559,11 @@ const translations: Messages = {
       statusCompleted: "Завершено",
       updating: "Обновление в реальном времени · Следующее обновление через несколько секунд",
       stageInProgress: "В процессе...",
+      allInvestigations: {
+        title: "Все расследования",
+        description:
+          "Здесь отображаются все расследования переводов и транзакций, происходящих на сайте в реальном времени",
+      },
       stages: {
         submitted: "Заявка подана",
         checking: "Проверка документов",
@@ -1278,6 +1283,11 @@ const translations: Messages = {
       statusCompleted: "Completed",
       updating: "Real-time updates · Next update in a few seconds",
       stageInProgress: "In progress...",
+      allInvestigations: {
+        title: "All Investigations",
+        description:
+          "Here are displayed all investigations of transfers and transactions happening on the site in real-time",
+      },
       stages: {
         submitted: "Application submitted",
         checking: "Document verification",
@@ -2000,6 +2010,11 @@ const translations: Messages = {
       statusCompleted: "Užbaigta",
       updating: "Realaus laiko atnaujinimai · Kitas atnaujinimas per kelias sekundes",
       stageInProgress: "Vykdoma...",
+      allInvestigations: {
+        title: "Visi tyrimai",
+        description:
+          "Čia rodomi visi pervedimų ir operacijų tyrimai, vykstantys svetainėje realiu laiku",
+      },
       stages: {
         submitted: "Prašymas pateiktas",
         checking: "Dokumentų patikrinimas",
@@ -2721,6 +2736,11 @@ const translations: Messages = {
       statusCompleted: "Pabeigts",
       updating: "Reāllaika atjauninājumi · Nākamais atjauninājums pēc dažām sekundēm",
       stageInProgress: "Procesā...",
+      allInvestigations: {
+        title: "Visas izmeklēšanas",
+        description:
+          "Šeit tiek parādītas visas pārvedumu un transakciju izmeklēšanas, kas notiek vietnē reāllaikā",
+      },
       stages: {
         submitted: "Pieteikums iesniegts",
         checking: "Dokumentu pārbaude",

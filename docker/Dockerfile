@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1.6
 
 FROM node:20-alpine AS base
-ENV NODE_ENV=production
 ENV npm_config_legacy_peer_deps=true
 
 RUN apk add --no-cache python3 make g++
@@ -30,6 +29,9 @@ COPY next.config.ts ./next.config.ts
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY docker/scripts ./docker/scripts
+# Copy lib and scripts for database migrations
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/scripts ./scripts
 RUN chmod +x ./docker/scripts/docker-entrypoint.sh
 
 EXPOSE 3000

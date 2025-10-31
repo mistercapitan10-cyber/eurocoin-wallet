@@ -1,6 +1,7 @@
 services:
-  postgres:
+  postgres-dev:
     image: postgres:15-alpine
+    container_name: web-wallet-postgres-dev
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -8,34 +9,36 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-dev-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  redis:
+  redis-dev:
     image: redis:7-alpine
+    container_name: web-wallet-redis-dev
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
       - "6379:6379"
     volumes:
-      - redis-data:/data
+      - redis-dev-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  web:
+  web-dev:
     build:
       context: ..
       dockerfile: docker/Dockerfile.dev
+    container_name: web-wallet-web-dev
     depends_on:
-      postgres:
+      postgres-dev:
         condition: service_healthy
-      redis:
+      redis-dev:
         condition: service_healthy
     environment:
       NODE_ENV: development
@@ -45,9 +48,9 @@ services:
       SERVICE_NAME: web-dev
       HEALTHCHECK_URL: http://127.0.0.1:3000/
       HEALTHCHECK_INTERVAL: "15000"
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/web_wallet_db
-      REDIS_URL: redis://redis:6379/0
-      DB_HOST: postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres-dev:5432/web_wallet_db
+      REDIS_URL: redis://redis-dev:6379/0
+      DB_HOST: postgres-dev
       DB_PORT: "5432"
       DB_NAME: web_wallet_db
       DB_USER: postgres
@@ -63,5 +66,5 @@ services:
       sh -c "npm run db:init && npm run db:migrate && npm run auth:migrate && npm run dev -- -H 0.0.0.0"
 
 volumes:
-  postgres-data:
-  redis-data:
+  postgres-dev-data:
+  redis-dev-data:

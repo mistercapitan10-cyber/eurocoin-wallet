@@ -260,11 +260,11 @@ export function AllInvestigations() {
       <div className="mb-6">
         <h2 className="mb-2 font-display text-3xl font-bold tracking-tight">
           <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
-            Все расследования
+            {t("investigation.allInvestigations.title")}
           </span>
         </h2>
         <p className="dark:text-dark-foregroundMuted text-foregroundMuted">
-          Здесь отображаются все расследования переводов и транзакций, происходящих на сайте в реальном времени
+          {t("investigation.allInvestigations.description")}
         </p>
       </div>
 

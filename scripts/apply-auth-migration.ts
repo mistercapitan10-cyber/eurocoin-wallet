@@ -33,6 +33,24 @@ async function applyMigration() {
     console.log('✅ Connected to PostgreSQL database\n');
 
     try {
+      const alreadyApplied = await client
+        .query(
+          `
+        SELECT EXISTS (
+          SELECT 1
+          FROM information_schema.tables
+          WHERE table_schema = 'public'
+            AND table_name = 'auth_users'
+        ) AS present;
+      `,
+        )
+        .then((result) => result.rows[0]?.present === true);
+
+      if (alreadyApplied) {
+        console.log('✅ Migration already applied: auth tables already exist');
+        return;
+      }
+
       // Begin transaction
       await client.query('BEGIN');
       console.log('🔄 Starting transaction...\n');

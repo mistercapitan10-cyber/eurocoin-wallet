@@ -44,6 +44,7 @@
     "react-hot-toast": "^2.6.0",
     "resend": "^6.2.2",
     "telegraf": "^4.16.3",
+    "tsx": "^4.20.6",
     "viem": "^2.38.3",
     "wagmi": "^2.18.2"
   },
@@ -60,7 +61,6 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.5.13",
     "tailwindcss": "^3.4.18",
-    "tsx": "^4.20.6",
     "typescript": "^5"
   }
 }
