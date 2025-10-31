@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Telegraf, Markup } from "telegraf";
 import { Resend } from "resend";
 import { createExchangeRequest } from "@/lib/database/queries";
+import { notifyNewExchangeRequest } from "@/lib/telegram/notify-admin";
+import { createRequestFile, getRequestFilesByRequestId } from "@/lib/database/file-queries";
+import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -15,6 +18,12 @@ interface ExchangeRequest {
   rate: string;
   comment?: string;
   userId?: string; // For OAuth users
+  files?: Array<{
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    fileData: string; // base64
+  }>;
 }
 
 export async function POST(request: NextRequest) {
@@ -42,12 +51,30 @@ export async function POST(request: NextRequest) {
         comment: data.comment,
         user_id: data.userId, // For OAuth users
       });
+
+      // Save files if provided
+      if (data.files && data.files.length > 0) {
+        for (const file of data.files) {
+          await createRequestFile({
+            requestId: requestId,
+            requestType: "exchange",
+            fileName: file.fileName,
+            fileType: file.fileType,
+            fileSize: file.fileSize,
+            fileData: file.fileData,
+          });
+        }
+      }
     } catch (dbError) {
       console.error("Error saving to database:", dbError);
       return NextResponse.json({ error: "Failed to save request to database" }, { status: 500 });
     }
 
     // Prepare message for manager
+    const filesInfo = data.files && data.files.length > 0 
+      ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.` 
+      : "";
+
     const message = `
 🔔 *Новая заявка на обмен токенов*
 
@@ -62,6 +89,7 @@ export async function POST(request: NextRequest) {
 
 📧 *Email клиента:* ${data.email}
 ${data.comment ? `📝 *Комментарий:* ${data.comment}` : ""}
+${filesInfo}
 
 ⏰ *Время:* ${new Date().toLocaleString("ru-RU")}
 `;
@@ -88,7 +116,39 @@ ${data.comment ? `📝 *Комментарий:* ${data.comment}` : ""}
         parse_mode: "Markdown",
         ...keyboard,
       });
+
+      // Send files separately if they exist
+      if (data.files && data.files.length > 0) {
+        const files = await getRequestFilesByRequestId(requestId);
+        await sendFilesToTelegram(
+          managerChatId,
+          files.map((f) => ({
+            id: f.id,
+            fileName: f.file_name,
+            fileType: f.file_type,
+            fileSize: f.file_size,
+            fileData: f.file_data instanceof Buffer
+              ? f.file_data
+              : Buffer.from(f.file_data, "base64"),
+          })),
+        ).catch((err) => {
+          console.error("Failed to send files to Telegram:", err);
+          // Don't fail the request if file sending fails
+        });
+      }
     }
+
+    // Send support messenger notification with inline buttons
+    await notifyNewExchangeRequest({
+      id: requestId,
+      walletAddress: data.walletAddress,
+      email: data.email,
+      tokenAmount: data.tokenAmount,
+      fiatAmount: data.fiatAmount,
+    }).catch((err) => {
+      console.error('Failed to send support notification:', err);
+      // Don't fail the request if notification fails
+    });
 
     // Send email notification
     const emailHtml = `
@@ -146,6 +206,16 @@ ${data.comment ? `📝 *Комментарий:* ${data.comment}` : ""}
               <div class="field">
                 <span class="label">Комментарий:</span>
                 <div class="value">${data.comment}</div>
+              </div>
+              `
+                  : ""
+              }
+              ${
+                data.files && data.files.length > 0
+                  ? `
+              <div class="field">
+                <span class="label">Прикрепленные файлы:</span>
+                <div class="value">${data.files.length} шт.</div>
               </div>
               `
                   : ""

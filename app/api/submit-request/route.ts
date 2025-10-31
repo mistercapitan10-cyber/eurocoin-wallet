@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { Telegraf, Markup } from "telegraf";
 import { createInternalRequest } from "@/lib/database/queries";
+import { notifyNewInternalRequest } from "@/lib/telegram/notify-admin";
+import { createRequestFile, getRequestFilesByRequestId } from "@/lib/database/file-queries";
+import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
@@ -15,6 +18,12 @@ interface RequestFormData {
   walletAddress?: string;
   userId?: string; // For OAuth users
   email?: string; // For OAuth users
+  files?: Array<{
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    fileData: string; // base64
+  }>;
 }
 
 export async function POST(request: NextRequest) {
@@ -42,6 +51,20 @@ export async function POST(request: NextRequest) {
         wallet_address: data.walletAddress || undefined,
         user_id: data.userId, // For OAuth users
       });
+
+      // Save files if provided
+      if (data.files && data.files.length > 0) {
+        for (const file of data.files) {
+          await createRequestFile({
+            requestId: requestId,
+            requestType: "internal",
+            fileName: file.fileName,
+            fileType: file.fileType,
+            fileSize: file.fileSize,
+            fileData: file.fileData,
+          });
+        }
+      }
     } catch (dbError) {
       console.error("Error saving to database:", dbError);
       return NextResponse.json({ error: "Failed to save request to database" }, { status: 500 });
@@ -119,6 +142,16 @@ export async function POST(request: NextRequest) {
                 <span class="label">Description:</span>
                 <div class="value" style="white-space: pre-wrap;">${data.description}</div>
               </div>
+              ${
+                data.files && data.files.length > 0
+                  ? `
+              <div class="field">
+                <span class="label">Прикрепленные файлы:</span>
+                <div class="value">${data.files.length} шт.</div>
+              </div>
+              `
+                  : ""
+              }
               <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
               <p style="font-size: 12px; color: #666;">
                 This request was submitted through the internal dashboard at ${new Date().toLocaleString()}.
@@ -146,6 +179,10 @@ export async function POST(request: NextRequest) {
     try {
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
       if (managerChatId) {
+        const filesInfo = data.files && data.files.length > 0 
+          ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.` 
+          : "";
+
         const telegramMessage =
           `🔵 *Новая внутренняя заявка*\n\n` +
           `👤 Инициатор: ${data.requester}\n` +
@@ -153,8 +190,9 @@ export async function POST(request: NextRequest) {
           `🏢 Отдел: ${departmentMap[data.department] || data.department}\n` +
           `📋 Тип: ${requestTypeMap[data.requestType] || data.requestType}\n` +
           `📊 Приоритет: ${data.priority.toUpperCase()}\n` +
-          `📝 Описание: ${data.description}\n\n` +
-          `🆔 ID: \`${requestId}\``;
+          `📝 Описание: ${data.description}\n` +
+          filesInfo +
+          `\n\n🆔 ID: \`${requestId}\``;
 
         const keyboard = Markup.inlineKeyboard([
           [
@@ -175,11 +213,44 @@ export async function POST(request: NextRequest) {
           parse_mode: "Markdown",
           ...keyboard,
         });
+
+        // Send files separately if they exist
+        if (data.files && data.files.length > 0) {
+          const files = await getRequestFilesByRequestId(requestId);
+          await sendFilesToTelegram(
+            managerChatId,
+            files.map((f) => ({
+              id: f.id,
+              fileName: f.file_name,
+              fileType: f.file_type,
+              fileSize: f.file_size,
+              fileData: f.file_data instanceof Buffer
+                ? f.file_data
+                : Buffer.from(f.file_data, "base64"),
+            })),
+          ).catch((err) => {
+            console.error("Failed to send files to Telegram:", err);
+            // Don't fail the request if file sending fails
+          });
+        }
       }
     } catch (telegramError) {
       console.error("Error sending to Telegram:", telegramError);
       // Don't fail the request if Telegram fails
     }
+
+    // Send support messenger notification with inline buttons
+    await notifyNewInternalRequest({
+      id: requestId,
+      requester: data.requester,
+      walletAddress: data.walletAddress,
+      department: departmentMap[data.department] || data.department,
+      requestType: requestTypeMap[data.requestType] || data.requestType,
+      priority: data.priority.toUpperCase(),
+    }).catch((err) => {
+      console.error('Failed to send support notification:', err);
+      // Don't fail the request if notification fails
+    });
 
     return NextResponse.json(
       { success: true, requestId, messageId: emailData?.id },

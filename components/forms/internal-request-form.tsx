@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
+import { FileUploader } from "@/components/ui/file-uploader";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/hooks/use-auth";
+import { convertFilesToBase64 } from "@/lib/utils/file-converter";
 
 interface FormState {
   requester: string;
@@ -31,6 +33,7 @@ export function InternalRequestForm() {
   const { address } = useAccount();
   const { authType, userId, email } = useAuth();
   const [form, setForm] = useState<FormState>(initialState);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = useTranslation();
 
@@ -91,6 +94,11 @@ export function InternalRequestForm() {
     setIsSubmitting(true);
 
     try {
+      // Convert files to base64 if they exist
+      const filesData = attachedFiles.length > 0
+        ? await convertFilesToBase64(attachedFiles)
+        : undefined;
+
       // Send request to API with wallet address, userId, and email
       const response = await fetch("/api/submit-request", {
         method: "POST",
@@ -102,6 +110,7 @@ export function InternalRequestForm() {
           walletAddress: form.walletAddress, // Use form field instead of address directly
           userId: userId || undefined, // Include userId for OAuth users
           email: email || undefined, // Include email for OAuth users
+          files: filesData,
         }),
       });
 
@@ -119,6 +128,7 @@ export function InternalRequestForm() {
 
       toast.success(t("internalForm.successTitle"));
       setForm(initialState);
+      setAttachedFiles([]);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error(error instanceof Error ? error.message : t("internalForm.validationDescription"));
@@ -256,6 +266,18 @@ export function InternalRequestForm() {
                 {t("internalForm.walletAddressAutoFilled")}
               </p>
             )}
+          </div>
+
+          {/* File Upload */}
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+              Attach Files (Optional)
+            </label>
+            <FileUploader
+              onFilesChange={setAttachedFiles}
+              maxFiles={5}
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="flex flex-col gap-3 md:col-span-2 md:flex-row md:items-center md:justify-between">

@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FileUploader } from "@/components/ui/file-uploader";
 import toast from "react-hot-toast";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { useTokenPrice } from "@/hooks/use-token-price";
 import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/hooks/use-auth";
+import { convertFilesToBase64 } from "@/lib/utils/file-converter";
 
 export function ExchangeSection() {
   const { address } = useAccount();
@@ -16,6 +18,7 @@ export function ExchangeSection() {
   const [isMounted, setIsMounted] = useState(false);
   const [tokenAmount, setTokenAmount] = useState("1000");
   const [eurAmount, setEurAmount] = useState("920");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     walletAddress: "",
     email: "",
@@ -89,6 +92,11 @@ Email: ${formData.email || "не указан"}`;
     const tokenPriceUsd = priceUsd || 1; // Fallback to 1 if price not loaded yet
 
     try {
+      // Convert files to base64 if they exist
+      const filesData = attachedFiles.length > 0
+        ? await convertFilesToBase64(attachedFiles)
+        : undefined;
+
       const response = await fetch("/api/submit-exchange-request", {
         method: "POST",
         headers: {
@@ -103,6 +111,7 @@ Email: ${formData.email || "не указан"}`;
           commission: "1.5%",
           rate: `${(tokenPriceUsd * USD_EUR).toFixed(2)} EUR за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)`,
           userId: userId || undefined, // Include userId for OAuth users
+          files: filesData,
         }),
       });
 
@@ -127,6 +136,7 @@ Email: ${formData.email || "не указан"}`;
         email: "",
         comment: "",
       });
+      setAttachedFiles([]);
     } catch (error) {
       console.error("Error submitting exchange request:", error);
       toast.error(t("exchange.errors.submitError"));
@@ -297,6 +307,18 @@ Email: ${formData.email || "не указан"}`;
                   className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                   placeholder={t("exchange.placeholders.comment")}
                   rows={3}
+                />
+              </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                  Attach Files (Optional)
+                </label>
+                <FileUploader
+                  onFilesChange={setAttachedFiles}
+                  maxFiles={5}
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
