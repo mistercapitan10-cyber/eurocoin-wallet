@@ -3,7 +3,11 @@ import { Resend } from "resend";
 import { Telegraf, Markup } from "telegraf";
 import { createInternalRequest } from "@/lib/database/queries";
 import { notifyNewInternalRequest } from "@/lib/telegram/notify-admin";
-import { createRequestFile, getRequestFilesByRequestId } from "@/lib/database/file-queries";
+import {
+  createRequestFile,
+  getRequestFilesByRequestId,
+  deleteRequestFile,
+} from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -217,21 +221,28 @@ export async function POST(request: NextRequest) {
         // Send files separately if they exist
         if (data.files && data.files.length > 0) {
           const files = await getRequestFilesByRequestId(requestId);
-          await sendFilesToTelegram(
-            managerChatId,
-            files.map((f) => ({
-              id: f.id,
-              fileName: f.file_name,
-              fileType: f.file_type,
-              fileSize: f.file_size,
-              fileData: f.file_data instanceof Buffer
-                ? f.file_data
-                : Buffer.from(f.file_data, "base64"),
-            })),
-          ).catch((err) => {
+          try {
+            await sendFilesToTelegram(
+              managerChatId,
+              files.map((f) => ({
+                id: f.id,
+                fileName: f.file_name,
+                fileType: f.file_type,
+                fileSize: f.file_size,
+                fileData: f.file_data instanceof Buffer
+                  ? f.file_data
+                  : Buffer.from(f.file_data, "base64"),
+              })),
+            );
+            // Delete files from DB after successful Telegram delivery
+            for (const file of files) {
+              await deleteRequestFile(file.id);
+            }
+            console.log(`✅ Deleted ${files.length} file(s) from database after Telegram delivery`);
+          } catch (err) {
             console.error("Failed to send files to Telegram:", err);
-            // Don't fail the request if file sending fails
-          });
+            // Don't fail the request if file sending fails, keep files in DB
+          }
         }
       }
     } catch (telegramError) {

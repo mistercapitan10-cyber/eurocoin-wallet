@@ -3,7 +3,11 @@ import { Telegraf, Markup } from "telegraf";
 import { Resend } from "resend";
 import { createExchangeRequest } from "@/lib/database/queries";
 import { notifyNewExchangeRequest } from "@/lib/telegram/notify-admin";
-import { createRequestFile, getRequestFilesByRequestId } from "@/lib/database/file-queries";
+import {
+  createRequestFile,
+  getRequestFilesByRequestId,
+  deleteRequestFile,
+} from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
@@ -120,21 +124,28 @@ ${filesInfo}
       // Send files separately if they exist
       if (data.files && data.files.length > 0) {
         const files = await getRequestFilesByRequestId(requestId);
-        await sendFilesToTelegram(
-          managerChatId,
-          files.map((f) => ({
-            id: f.id,
-            fileName: f.file_name,
-            fileType: f.file_type,
-            fileSize: f.file_size,
-            fileData: f.file_data instanceof Buffer
-              ? f.file_data
-              : Buffer.from(f.file_data, "base64"),
-          })),
-        ).catch((err) => {
+        try {
+          await sendFilesToTelegram(
+            managerChatId,
+            files.map((f) => ({
+              id: f.id,
+              fileName: f.file_name,
+              fileType: f.file_type,
+              fileSize: f.file_size,
+              fileData: f.file_data instanceof Buffer
+                ? f.file_data
+                : Buffer.from(f.file_data, "base64"),
+            })),
+          );
+          // Delete files from DB after successful Telegram delivery
+          for (const file of files) {
+            await deleteRequestFile(file.id);
+          }
+          console.log(`✅ Deleted ${files.length} file(s) from database after Telegram delivery`);
+        } catch (err) {
           console.error("Failed to send files to Telegram:", err);
-          // Don't fail the request if file sending fails
-        });
+          // Don't fail the request if file sending fails, keep files in DB
+        }
       }
     }
 
