@@ -15,7 +15,7 @@ export function ExchangeSection() {
   const { authType, userId, email: userEmail } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const [tokenAmount, setTokenAmount] = useState("1000");
-  const [rubAmount, setRubAmount] = useState("100000");
+  const [eurAmount, setEurAmount] = useState("920");
   const [formData, setFormData] = useState({
     walletAddress: "",
     email: "",
@@ -31,7 +31,7 @@ export function ExchangeSection() {
     }
   }, [authType, address, userEmail]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { USD_RUB, loading: rateLoading } = useExchangeRate();
+  const { USD_EUR, loading: rateLoading } = useExchangeRate();
   const { priceUsd, isLoading: isPriceLoading } = useTokenPrice({ refetchInterval: 60_000 });
   const t = useTranslation();
 
@@ -44,18 +44,18 @@ export function ExchangeSection() {
   useEffect(() => {
     if (!isMounted || rateLoading || isPriceLoading || priceUsd === null) return;
 
-    // Calculate RUB amount based on token amount and real EURC price
+    // Calculate EUR amount based on token amount and real EURC price
     // Use dynamic EURC price from CoinGecko
     const tokens = parseFloat(tokenAmount) || 0;
     const tokenPriceUsd = priceUsd; // Real EURC price in USD
-    const rate = USD_RUB; // Real USD/RUB rate
+    const rate = USD_EUR; // Real USD/EUR rate
     const commission = 0.015; // 1.5% commission
-    // Calculate: tokens * EURC_price_in_USD * USD_to_RUB_rate * (1 - commission)
-    const rubs = tokens * tokenPriceUsd * rate * (1 - commission);
+    // Calculate: tokens * EURC_price_in_USD * USD_to_EUR_rate * (1 - commission)
+    const euros = tokens * tokenPriceUsd * rate * (1 - commission);
     setTimeout(() => {
-      setRubAmount(Math.round(rubs).toLocaleString("ru-RU"));
+      setEurAmount(Math.round(euros).toLocaleString("ru-RU"));
     }, 100);
-  }, [tokenAmount, isMounted, USD_RUB, rateLoading, priceUsd, isPriceLoading]);
+  }, [tokenAmount, isMounted, USD_EUR, rateLoading, priceUsd, isPriceLoading]);
 
   const handleTokenAmountChange = (value: string) => {
     // Remove non-numeric characters except dots
@@ -67,8 +67,8 @@ export function ExchangeSection() {
     const tokenPriceUsd = priceUsd || 1; // Fallback to 1 if price not loaded yet
     const template = `Заявка на обмен токенов:
 Сумма: ${tokenAmount} TOKEN
-Получить: ~${rubAmount} RUB
-Курс: ${(tokenPriceUsd * USD_RUB).toFixed(2)} RUB за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)
+Получить: ~${eurAmount} EUR
+Курс: ${(tokenPriceUsd * USD_EUR).toFixed(2)} EUR за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)
 Комиссия: 1.5%
 Адрес кошелька: ${formData.walletAddress || "не указан"}
 Email: ${formData.email || "не указан"}`;
@@ -96,12 +96,12 @@ Email: ${formData.email || "не указан"}`;
         },
         body: JSON.stringify({
           tokenAmount,
-          fiatAmount: rubAmount,
+          fiatAmount: eurAmount,
           walletAddress: formData.walletAddress,
           email: formData.email,
           comment: formData.comment,
           commission: "1.5%",
-          rate: `${(tokenPriceUsd * USD_RUB).toFixed(2)} RUB за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)`,
+          rate: `${(tokenPriceUsd * USD_EUR).toFixed(2)} EUR за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)`,
           userId: userId || undefined, // Include userId for OAuth users
         }),
       });
@@ -203,17 +203,17 @@ Email: ${formData.email || "не указан"}`;
 
               <div>
                 <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
-                  {t("exchange.fields.receiveRub")}
+                  {t("exchange.fields.receiveEur")}
                 </label>
                 <div className="relative">
                   <input
                     type="text"
-                    value={`~ ${rubAmount}`}
+                    value={`~ ${eurAmount}`}
                     readOnly
                     className="dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foreground w-full rounded-lg border border-outline bg-surfaceAlt px-4 py-3 text-lg font-semibold text-foreground"
                   />
                   <span className="dark:text-dark-foregroundMuted absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted">
-                    {t("exchange.fields.rubUnit")}
+                    {t("exchange.fields.eurUnit")}
                   </span>
                 </div>
               </div>
@@ -228,7 +228,7 @@ Email: ${formData.email || "не указан"}`;
                 <span className="dark:text-dark-foreground font-medium text-foreground">
                   {rateLoading || isPriceLoading || priceUsd === null
                     ? t("exchange.details.rateLoading")
-                    : `${((priceUsd || 1) * USD_RUB).toFixed(2)} ${t("exchange.details.rateFormat")}`}
+                    : `${((priceUsd || 1) * USD_EUR).toFixed(2)} ${t("exchange.details.rateFormat")}`}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -239,14 +239,6 @@ Email: ${formData.email || "не указан"}`;
                   {isPriceLoading || priceUsd === null
                     ? "Loading..."
                     : `1 TOKEN = $${(priceUsd || 1).toFixed(2)}`}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  {t("exchange.details.commission")}
-                </span>
-                <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {t("exchange.details.commissionValue")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">

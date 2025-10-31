@@ -17,13 +17,13 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-outline bg-surface text-foreground transition-colors hover:bg-surfaceAlt focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+        className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-outline bg-surface text-foreground transition-colors hover:bg-surfaceAlt focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
         aria-label="Toggle theme"
       >
         <span className="sr-only">Toggle theme</span>
         {/* Placeholder icon while loading */}
         <svg
-          className="h-5 w-5"
+          className="h-4 w-4"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -37,14 +37,14 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-outline bg-surface text-foreground transition-all hover:bg-surfaceAlt hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt"
+      className="relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-outline bg-surface text-foreground transition-all hover:bg-surfaceAlt hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       <span className="sr-only">Toggle theme</span>
 
       {/* Sun Icon (Light Mode) */}
       <svg
-        className={`absolute h-5 w-5 transition-all ${
+        className={`absolute h-4 w-4 transition-all ${
           theme === 'dark'
             ? 'rotate-90 scale-0 opacity-0'
             : 'rotate-0 scale-100 opacity-100'
@@ -60,7 +60,7 @@ export function ThemeToggle() {
 
       {/* Moon Icon (Dark Mode) */}
       <svg
-        className={`absolute h-5 w-5 transition-all ${
+        className={`absolute h-4 w-4 transition-all ${
           theme === 'dark'
             ? 'rotate-0 scale-100 opacity-100'
             : 'rotate-90 scale-0 opacity-0'

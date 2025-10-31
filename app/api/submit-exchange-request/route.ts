@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
 
 📋 *ID заявки:* ${requestId}
 💰 *Сумма токенов:* ${data.tokenAmount} TOKEN
-💵 *Сумма фиата:* ${data.fiatAmount} RUB
-📊 *Курс:* ${data.rate} RUB за 1 TOKEN
+💵 *Сумма фиата:* ${data.fiatAmount} EUR
+📊 *Курс:* ${data.rate}
 💸 *Комиссия:* ${data.commission}%
 
 💼 *Адрес кошелька:*
@@ -122,11 +122,11 @@ ${data.comment ? `📝 *Комментарий:* ${data.comment}` : ""}
               </div>
               <div class="field">
                 <span class="label">Сумма фиата:</span>
-                <div class="value">${data.fiatAmount} RUB</div>
+                <div class="value">${data.fiatAmount} EUR</div>
               </div>
               <div class="field">
                 <span class="label">Курс:</span>
-                <div class="value">${data.rate} RUB за 1 TOKEN</div>
+                <div class="value">${data.rate}</div>
               </div>
               <div class="field">
                 <span class="label">Комиссия:</span>

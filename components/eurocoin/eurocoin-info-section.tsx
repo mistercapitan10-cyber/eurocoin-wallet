@@ -27,17 +27,6 @@ export function EuroCoinInfoSection() {
       label: t("eurocoin.info.features.symbol.label"),
       value: t("eurocoin.info.features.symbol.value"),
     },
-    {
-      key: "contract",
-      label: t("eurocoin.info.features.contract.label"),
-      value: t("eurocoin.info.features.contract.value"),
-      isAddress: true,
-    },
-    {
-      key: "fee",
-      label: t("eurocoin.info.features.fee.label"),
-      value: t("eurocoin.info.features.fee.value"),
-    },
   ];
 
   return (

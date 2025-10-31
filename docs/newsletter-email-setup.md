@@ -176,3 +176,4 @@ language VARCHAR(10) - Язык (ru/en)
 - Все email отправляются от `eurocoinfinance@gmail.com`
 
 
+

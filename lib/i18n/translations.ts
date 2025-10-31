@@ -1,4 +1,4 @@
-export type Locale = "ru" | "en";
+export type Locale = "ru" | "en" | "lt" | "lv";
 
 interface TranslationTree {
   [key: string]: string | TranslationTree;
@@ -363,7 +363,8 @@ const translations: Messages = {
       upgradeError: "Не удалось подключить MetaMask",
       readOnly: {
         title: "Режим только для чтения",
-        description: "Вы вошли через email. Подключите MetaMask для отправки токенов и создания запросов.",
+        description:
+          "Вы вошли через email. Подключите MetaMask для отправки токенов и создания запросов.",
         upgradeButton: "Подключить MetaMask",
         upgrading: "Подключение...",
       },
@@ -511,9 +512,9 @@ const translations: Messages = {
       chatbotDescription: "Макет интерфейса общения с ботом.",
       fields: {
         tokenAmount: "СУММА В ТОКЕНАХ",
-        receiveRub: "ПОЛУЧИТЕ (RUB)",
+        receiveEur: "ПОЛУЧИТЕ (EUR)",
         tokenUnit: "TOKEN",
-        rubUnit: "RUB",
+        eurUnit: "EUR",
         walletAddress: "Адрес кошелька для получения фиата *",
         walletAddressAutoFilled: "Адрес автоматически заполнен из вашего MetaMask кошелька",
         email: "Email для связи *",
@@ -528,7 +529,7 @@ const translations: Messages = {
       details: {
         exchangeRate: "Курс обмена",
         rateLoading: "Загрузка...",
-        rateFormat: "RUB за 1 TOKEN",
+        rateFormat: "EUR за 1 TOKEN",
         equivalent: "Эквивалент",
         tokenUsd: "1 TOKEN = 1 USD",
         commission: "Комиссия обмена",
@@ -1082,7 +1083,8 @@ const translations: Messages = {
       upgradeError: "Failed to connect MetaMask",
       readOnly: {
         title: "Read-only mode",
-        description: "You signed in with email. Connect MetaMask to send tokens and create requests.",
+        description:
+          "You signed in with email. Connect MetaMask to send tokens and create requests.",
         upgradeButton: "Connect MetaMask",
         upgrading: "Connecting...",
       },
@@ -1229,9 +1231,9 @@ const translations: Messages = {
       chatbotDescription: "Mock chat interface.",
       fields: {
         tokenAmount: "AMOUNT IN TOKENS",
-        receiveRub: "RECEIVE (RUB)",
+        receiveEur: "RECEIVE (EUR)",
         tokenUnit: "TOKEN",
-        rubUnit: "RUB",
+        eurUnit: "EUR",
         walletAddress: "Wallet address for receiving fiat *",
         walletAddressAutoFilled: "Address automatically filled from your MetaMask wallet",
         email: "Email for contact *",
@@ -1246,7 +1248,7 @@ const translations: Messages = {
       details: {
         exchangeRate: "Exchange rate",
         rateLoading: "Loading...",
-        rateFormat: "RUB per 1 TOKEN",
+        rateFormat: "EUR per 1 TOKEN",
         equivalent: "Equivalent",
         tokenUsd: "1 TOKEN = 1 USD",
         commission: "Exchange commission",
@@ -1444,6 +1446,1450 @@ const translations: Messages = {
       },
     },
   },
+  lt: {
+    common: {
+      brand: {
+        badge: "Vidinis prieiga",
+        report: "Ataskaita",
+        version: "v0.4 vidinis",
+      },
+      nav: {
+        dashboard: "Skydelis",
+        wallet: "Piniginė",
+        token: "Žetonas",
+        requests: "Užklausos",
+        reviews: "Atsiliepimai",
+        admin: "Administratorius",
+        exchange: "Keitykla",
+        faq: "DUK",
+        contact: "Kontaktai",
+        investigation: "Tyrimas",
+      },
+      footer: {
+        contact: "Kontaktai: eurocoinfinance@gmail.com",
+        policy: "Saugumo politika",
+        copyright: "Visos teisės saugomos.",
+        version: "v0.4.0-beta",
+      },
+      buttons: {
+        update: "Atnaujinama…",
+        refresh: "Atnaujinti",
+        submitRequest: "Pateikti užklausą",
+        clear: "Išvalyti",
+        disabled: "Neleidžiama demo versijoje",
+        approve: "Patvirtinti",
+        decline: "Atmesti",
+        send: "Siųsti",
+        copy: "Kopijuoti",
+        download: "Atsisiųsti",
+      },
+    },
+    language: {
+      title: "Kalba",
+      russian: "Русский",
+      english: "English",
+      lithuanian: "Lietuvių",
+      latvian: "Latviešu",
+    },
+    home: {
+      hero: {
+        badge: "MetaMask stilius",
+        title: "Įmonės žetono valdymas",
+        description:
+          "Prijunkite MetaMask, kad valdytumėte korporacinį žetoną: peržiūrėkite balansus, stebėkite kursą ir kontroliuokite mokesčius viename MetaMask stiliaus skydelyje.",
+        chip1: "Ethereum Mainnet",
+        chip2: "Reaktyvūs balanso atnaujinimai",
+        chip3: "USD ekvivalentas ir mokesčio skaičiuoklė",
+        statusTitle: "Integracijos būsena",
+        statusLine1: "• MetaMask prijungimas ir tinklo valdymas",
+        statusLine2: "• ERC-20 balanso nuskaitymas ir USD rodymas",
+        statusLine3: "• Vidinės užklausų forma aktyvi",
+        checklistTitle: "QA sąrašas",
+        checklist1: "Patvirtinta stalinėse (1440px)",
+        checklist2: "Rekomenduojamas MetaMask autentifikacijos srautas",
+        checklist3: "Visos operacijos vykdomos testavimo tinkle iki išleidimo",
+      },
+      walletSection: {
+        title: "Piniginės prijungimas",
+        description:
+          "MetaMask + wagmi v2. Po prijungimo prieinamos žetono operacijos ir stebėjimas.",
+        phase: "2 fazė",
+      },
+      status: {
+        title: "Kūrimo būsena",
+        description: "MVP pažanga pagal fazes: architektūra, prijungimas ir analitika.",
+        phase1Title: "1 fazė — užbaigta",
+        phase1List1: "• Baziniai konfigūracijos ir projekto struktūra",
+        phase1List2: "• Tailwind, ESLint, absoliutūs importai",
+        phase1List3: "• Wagmi ir React Query teikėjai",
+        phase2Title: "2 fazė — baigta",
+        phase3Title: "3 fazė — paruošta",
+        phase4Title: "4 fazė — vykdoma",
+        phase2List1: "• MetaMask prijungimo/atjungimo srautas",
+        phase2List2: "• Tinklo būsena ir perjungiklis",
+        phase2List3: "• UI komponentai firmos stiliuje",
+        phase3List1: "• ERC-20 balanso nuskaitymas ir formateriai",
+        phase3List2: "• viem + React Query integracija",
+        phase3List3: "• Balanso kortelė su atsarginės logikos",
+        phase4List1: "• USD ekvivalentas, talpyklos kursai, CoinGecko atsarginė",
+        phase4List2: "• Mokesčio skaičiuoklė ir konfigūracija",
+        phase4List3: "• Vidinės operacijų užklausos",
+      },
+    },
+    eurocoin: {
+      sectionTitle: "Lėšų grąžinimas iš sukčiavimo brokerių",
+      sectionDescription:
+        "Individualus požiūris į jūsų turto atkūrimą, pagrįstą blokų grandinės analize",
+      title: "EuroCoin — Korporacinis žetonas",
+      description: "Interaktyvus 3D auksinės monetos modelis su išsamiais žetono specifikacijomis",
+      features: {
+        title: "Pagrindinės funkcijos",
+        feature1: "ERC-20 standarto suderinamumas",
+        feature2: "Automatinis kursų atnaujinimas",
+        feature3: "MetaMask integracija",
+      },
+      specs: {
+        title: "Techninės specifikacijos",
+        spec1: "Tinklas: Ethereum Mainnet / Sepolia",
+        spec2: "Dešimtainės dalys: 18 skaitmenų",
+        spec3: "Maksimalus kiekis: 1,000,000 žetonų",
+      },
+      info: {
+        title: "Apie EuroCoin (EURC)",
+        subtitle:
+          "EuroCoin (EURC) yra skaitmeninė valiuta, pagrįsta blokų grandinės technologija, skirta užtikrinti stabilią euro likvidumą Web3 ekosistemoje.",
+        description: {
+          paragraph1:
+            "Žetonas sukurtas supaprastinti tarptautinius atsiskaitymus, pervedimus ir DeFi operacijas Europos finansinėje erdvėje. EuroCoin užtikrina skaidrumą, saugumą ir suderinamumą su šiuolaikiniais decentralizuotais protokolais.",
+          paragraph2:
+            "Dėl ERC-20 standarto protingųjų sutarčių naudojimo EURC gali būti integruotas į bet kokius DeFi paslaugas, palaikančius Ethereum tinklą.",
+        },
+        features: {
+          title: "Pagrindinės charakteristikos",
+          type: {
+            label: "Tipas",
+            value: "ERC-20",
+          },
+          decimals: {
+            label: "Dešimtainės dalys",
+            value: "18",
+          },
+          blockchain: {
+            label: "Blokų grandinė",
+            value: "Ethereum",
+          },
+          symbol: {
+            label: "Simbolis",
+            value: "EURC",
+          },
+          contract: {
+            label: "Sutarties adresas",
+            value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
+          },
+          fee: {
+            label: "Operacijos mokestis",
+            value: "3% (fikuotas, reguliuojamas savininko sutarties)",
+          },
+        },
+        additional:
+          "EuroCoin atitinka skaidrumo ir patikimumo standartus, suteikdamas vartotojams galimybę vykdyti atsiskaitymus euro ekvivalentu be bankų dalyvavimo.",
+        license: {
+          title: "Licencija",
+          description:
+            "Projektas veikia skaitmeninio turto modelio sistema ir eina teisinę sertifikaciją pagal ES MiCA reglamentą.",
+        },
+      },
+    },
+    timer: {
+      title: "Lėšų atrakino laikmatis",
+      description:
+        "Lėšos laukia išėmimo. Išteklių skyrius patvirtins operaciją, kai laikmatis baigsis.",
+      status: "Apdorojama",
+      hours: "Valandos",
+      minutes: "Minutės",
+      seconds: "Sekundės",
+      progress: "Pažanga",
+      meta: "Paskutinis AML patikrinimas: 2025-10-23 13:45 · Atsakingas: Išteklių skyrius",
+    },
+    internalForm: {
+      badge: "Vidinis",
+      title: "Žetono operacijos užklausa",
+      description:
+        "Vidinės komandos gali prašyti papildymo, išėmimo ar balanso peržiūros. Pateikite kuo daugiau detalių, kad pagreitintumėte patvirtinimą.",
+      regulationTitle: "Gairės",
+      regulation1: "• Atsakymo laikas: iki 2 valandų",
+      regulation2: "• Skubius prašymus pažymėkite prioritetu High",
+      regulation3: "• Jei reikia, įtraukite bilieto / užduoties nuorodą",
+      requester: "Prašytojas*",
+      department: "Skyrius*",
+      requestType: "Užklausos tipas*",
+      priority: "Prioritetas",
+      descriptionField: "Užduoties aprašymas / detalės*",
+      walletAddress: "Piniginės adresas*",
+      walletAddressAutoFilled: "Adresas automatiškai užpildytas iš jūsų MetaMask piniginės",
+      helper: "Laukai, pažymėti *, yra privalomi. Pateikus užklausa pasirodo vidiniame skydelyje.",
+      placeholders: {
+        requester: "Pilnas vardas arba įmonės el. paštas",
+        description: "Piniginės adresas, suma, terminas, bilieto ID…",
+        department: "Pasirinkite skyrių",
+        type: "Pasirinkite tipą",
+        walletAddress: "Įveskite piniginės adresą",
+      },
+      requestTypes: {
+        topUp: "Žetonų papildymas",
+        withdraw: "Žetonų išėmimas",
+        balance: "Balanso peržiūra",
+        report: "Ataskaitos užklausa",
+      },
+      departments: {
+        finance: "Finansų skyrius",
+        aml: "AML/KYC skyrius",
+        investment: "Investicijų komanda",
+        support: "Klientų aptarnavimas",
+      },
+      validationTitle: "Užpildykite privalomus laukus",
+      validationDescription: "Nurodykite prašytoją, skyrių, užklausos tipą ir aprašymą.",
+      successTitle: "Užklausa pateikta",
+      successDescription: "Išteklių skyrius peržiūrės per darbo dieną.",
+      buttons: {
+        submit: "Pateikti užklausą",
+        clear: "Išvalyti",
+      },
+      priorities: {
+        low: "žemas",
+        normal: "normalus",
+        high: "aukštas",
+      },
+    },
+    wallet: {
+      connect: "Prijungti MetaMask",
+      connecting: "Jungiamasi...",
+      connector: "Prieinamas jungiklis: {connector}",
+      install: "Įdiekite MetaMask ir leiskite prieigą prie svetainės.",
+      error: "Jungties klaida",
+      disconnected: "MetaMask ryšys nutrauktas. Nukreipiama į prisijungimo puslapį...",
+      connectSuccessTitle: "Piniginė prijungta",
+      connectSuccessDescription: "MetaMask sėkmingai prijungtas prie programos.",
+      statusDisconnected: "Neprijungta",
+      status: {
+        label: "Būsena",
+        connector: "Jungiklis: {connector}",
+        network: "Tinklas: {network}",
+        connectedAddress: "Prijungtas adresas",
+      },
+      networkAlert: {
+        title: "Nepalaikomas tinklas",
+        message: "Norėdami tęsti, perjunkite į {chain}.",
+        button: "Perjungti į {chain}",
+      },
+      networkLabel: "Tinklas",
+      balanceCard: {
+        title: "Žetono balansas",
+        description: "Rodo prijungtos piniginės balansą korporacinio žetono.",
+        refresh: "Atnaujinti",
+        loading: "Atnaujinama…",
+        usdLabel: "USD ekvivalentas",
+        rate: "Kursas",
+        fallbackRate: "Nepavyko gauti gyvą kursą. Naudojama atsarginė vertė.",
+        autoRefresh: "Duomenys automatiškai atnaujinami kas 30 sekundžių.",
+        staticSource: "fiksuota vertė",
+        status: {
+          notConfigured:
+            "Nustatykite žetono adresą aplinkos kintamuosiuose, kad būtų galima duomenys.",
+          notConnected: "Prijunkite MetaMask, kad būtų rodomas žetono balansas.",
+          unsupported: "Perjunkite į {chain}, kad būtų įkelti žetono duomenys.",
+          infoUnavailable:
+            "Nepavyko gauti žetono informacijos. Patikrinkite sutarties adresą ir RPC.",
+          error: "Nepavyko nuskaityti duomenų",
+        },
+      },
+      priceTicker: {
+        title: "Žetono kaina (USD)",
+        description: "Atnaujinama kas 60 sekundžių.",
+        source: "Šaltinis: {source}",
+        updated: "Atnaujinta: {time}",
+        fallback: "Nepavyko gauti naujausios kainos. Rodoma atsarginė vertė.",
+      },
+      dexscreener: {
+        title: "Žetono diagrama",
+        description: "Realaus laiko interaktyvi kainų diagrama",
+        openFull: "Atidaryti Dexscreener",
+        switching: "Perjungiama tema...",
+      },
+      statistics: {
+        title: "Piniginės statistika",
+        totalSpent: "Iš viso išleista",
+        cancelledAmount: "Užblokuota/Grąžinta",
+        loading: "Įkeliama...",
+      },
+      taxCard: {
+        title: "Mokesčiai (Tax)",
+        description: "Komisinių procentas už žetono operacijas kartu su greituoju skaičiuokle.",
+        current: "Dabartinis mokestis",
+        calculatorLabel: "Operacijos suma (žetonais)",
+        resultFee: "Mokestis ({tax})",
+        resultNet: "Grynasis po mokesčio",
+        placeholder: "Įveskite sumą",
+        invalid: "Įveskite galiojantį skaičių, kad būtų apskaičiuotas mokestis.",
+        fallback: "Nepavyko gauti mokesčio iš sutarties. Naudojama atsarginė konfigūracijos vertė.",
+        sourceContract: "sutartis",
+        sourceFallback: "konfigūracija (.env)",
+      },
+    },
+    requests: {
+      title: "Išėmimo užklausos",
+      description:
+        "Tvarkykite išėmimo užklausas. Kiekvienas veiksmas reikalauja rankinio finansų komandos patvirtinimo. Žemiau pateikti duomenys yra demonstracijai.",
+      formTitle: "Užklausos forma",
+      formDescription: "UI vietos žymė vidinėms operacijoms. Forma vėliau siųs Slack/El. paštą.",
+      smartReceiptTitle: "Protingas kvitas",
+      smartReceiptDescription: "NFT kvitas pateiktai užklausai. Kol kas vietos žymė.",
+      historyTitle: "Užklausų istorija",
+      historyDescription: "Demonstracinė būsenų lentelė be API prijungimo.",
+    },
+    login: {
+      title: "MetaWallet prisijungimas",
+      description:
+        "Autentifikacija per įmonės SSO arba MetaMask. Demo versijoje prieiga atrakinta mygtuku žemiau ir atidaro UI be teisių patikrinimo.",
+      connect: "Prijungti MetaMask",
+      corporate: "Prisijungti su įmonės el. paštu",
+      disclaimer:
+        "Prisijungdami sutinkate su vidaus prieigos politika ir NDA. Visi veiksmai registruojami.",
+      demo: "Demo prieiga",
+      demoDescription: "MetaWallet build 0.4 · vidinis peržiūra",
+      link: {
+        requests: "Išėmimo užklausos",
+        terms: "Paslaugų teikimo sąlygos",
+        exchange: "Telegram keitykla",
+      },
+      badge: "Prisijungti",
+      heading: "Prisijungti prie MetaWallet",
+      descriptionText:
+        "Mes atkuriame prarastas lėšas ir atgaiviname viltį. Prijunkite MetaMask, kad gautumėte saugų prieigą prie lėšų atkūrimo ir sukčiavimo apsaugos funkcijų.",
+      connecting: "Jungiamasi...",
+      continue: "Tęsti su MetaMask",
+      email: {
+        title: "Prisijungti su el. paštu",
+        description: "Gaukite vienkartinį prisijungimo nuorodą tiesiai į jūsų gautuosius.",
+        label: "El. paštas",
+        placeholder: "you@example.com",
+        button: "Siųsti prisijungimo nuorodą",
+        loading: "Siunčiamas el. laiškas...",
+        success:
+          "Magijos nuoroda išsiųsta. Patikrinkite gautuosius ir nepageidaujamų el. laiškų aplanką.",
+        error: "Nepavyko išsiųsti prisijungimo el. laiško. Bandykite vėliau.",
+        invalid: "Įveskite galiojantį el. pašto adresą.",
+      },
+      oauth: {
+        google: "Prisijungti su Google",
+        github: "Prisijungti su GitHub",
+        googleLoading: "Jungiamasi su Google...",
+        githubLoading: "Jungiamasi su GitHub...",
+        googleError: "Google prisijungimo klaida",
+        githubError: "GitHub prisijungimo klaida",
+      },
+      divider: {
+        or: "arba",
+      },
+      walletConnected: "Piniginė jau prijungta. Nukreipiama į pagrindinį puslapį...",
+      walletConnectedSuccess: "MetaMask sėkmingai prijungtas. Nukreipiama į pagrindinį puslapį...",
+      connectError: "Nepavyko prijungti piniginės",
+    },
+    auth: {
+      signOut: "Atsijungti",
+      signingOut: "Atsijungiama...",
+      signOutSuccess: "Sėkmingai atsijungėte",
+      signOutError: "Atsijungimo klaida",
+      upgradeSuccess: "MetaMask sėkmingai prijungtas. Dabar visos funkcijos prieinamos!",
+      upgradeError: "Nepavyko prijungti MetaMask",
+      readOnly: {
+        title: "Tik skaitymo režimas",
+        description:
+          "Prisijungėte su el. paštu. Prijunkite MetaMask, kad siųstumėte žetonus ir kurtumėte užklausas.",
+        upgradeButton: "Prijungti MetaMask",
+        upgrading: "Jungiamasi...",
+      },
+    },
+    info: {
+      notFound: "Puslapis nerastas",
+      backToLogin: "Grįžti į prisijungimo puslapį",
+      requests: {
+        title: "Išėmimo užklausos",
+        description:
+          "Pateikite išėmimo užklausas per MetaMask naudojant Ethereum protingąsias sutartis",
+        content: `<p>Mūsų platforma leidžia jums pateikti išėmimo užklausas tiesiogiai per jūsų MetaMask piniginę.</p>
+        
+<p><strong>Kaip tai veikia:</strong></p>
+<ul>
+  <li>Prijunkite savo MetaMask piniginę</li>
+  <li>Užpildykite išėmimo užklausos formą</li>
+  <li>Patvirtinkite operaciją per MetaMask</li>
+  <li>Sekite užklausos būseną realiu laiku</li>
+</ul>
+
+<p><strong>Privalumai:</strong></p>
+<ul>
+  <li>Saugumas: visos operacijos per protingąsias sutartis</li>
+  <li>Skaidrumas: realaus laiko užklausos būsena</li>
+  <li>Kontrolė: visada matote, kas vyksta su jūsų lėšomis</li>
+</ul>`,
+      },
+      terms: {
+        title: "Paslaugų teikimo sąlygos",
+        description: "EuroCoin paslaugos naudojimo sąlygos",
+        content: `<p>Šios paslaugų teikimo sąlygos reglamentuoja EuroCoin paslaugos naudojimą.</p>
+
+<h3>1. Bendrosios nuostatos</h3>
+<p>Naudodami mūsų paslaugą, sutinkate su šio susitarimo sąlygomis.</p>
+
+<h3>2. Naudojimo sąlygos</h3>
+<ul>
+  <li>Naudokite MetaMask, kad pasiektumėte paslaugos funkcijas</li>
+  <li>Laikykitės saugumo taisyklių dirbdami su kriptovaliutomis</li>
+  <li>Laiku mokėkite už paslaugas pagal tarifus</li>
+</ul>
+
+<h3>3. Saugumas</h3>
+<p>Visos operacijos vykdomos per saugias Ethereum protingąsias sutartis. Mes nesaugome jūsų privatinių raktų ir neturime prieigos prie jūsų piniginės.</p>
+
+<h3>4. Atsakomybė</h3>
+<p>Vartotojas visiškai atsakingas už savo MetaMask piniginės ir privatinių raktų saugumą.</p>`,
+      },
+      exchange: {
+        title: "Telegram keitykla",
+        description: "Korporacinių žetonų keitimas per Telegram botą",
+        content: `<p>Telegram keitykla leidžia jums konvertuoti EuroCoin korporacinius žetonus į fiatines lėšas per patogų Telegram botą.</p>
+
+<p><strong>Kaip veikia keitimas:</strong></p>
+<ol>
+  <li>Atidarykite Telegram ir suraskite mūsų botą</li>
+  <li>Siųskite žetonų keitimo komandą</li>
+  <li>Nurodykite sumą ir duomenis fiatinių lėšų gavimui</li>
+  <li>Patvirtinkite operaciją per MetaMask</li>
+  <li>Gaukite lėšas į nurodytą sąskaitą</li>
+</ol>
+
+<p><strong>Keitimo kursas:</strong></p>
+<ul>
+  <li>1 TOKEN = 1 USD</li>
+  <li>Kursas automatiškai atnaujinamas kas minutę</li>
+  <li>Keitimo komisiniai: 1.5%</li>
+</ul>
+
+<p><strong>Saugumas:</strong></p>
+<p>Visi keitimai vykdomi per Ethereum protingąsias sutartis, užtikrinant operacijų patikimumą ir skaidrumą.</p>`,
+      },
+      security: {
+        title: "Saugumo politika",
+        description: "EuroCoin paslaugos saugumo priemonės",
+        content: `<p>Mes labai vertiname mūsų vartotojų ir jų lėšų saugumą.</p>
+
+<h3>1. Duomenų apsauga</h3>
+<p>Mes nesaugome jūsų privatinių raktų ir neturime prieigos prie jūsų piniginės. Visos operacijos vykdomos tiesiogiai per jūsų MetaMask.</p>
+
+<h3>2. Protingosios sutartys</h3>
+<p>Visos operacijos vykdomos per saugias Ethereum protingąsias sutartis, užtikrinant skaidrumą ir neįmanomumą keisti operacijos sąlygų.</p>
+
+<h3>3. Privatumas</h3>
+<p>Jūsų asmens duomenys saugomi pagal tarptautinius saugumo standartus. Mes neperduodame jūsų duomenų trečiosioms šalims.</p>
+
+<h3>4. Stebėjimas</h3>
+<p>Mes nuolat stebime sistemą dėl įtartinos veiklos ir nedelsiant reaguojame į bet kokius kompromitavimo bandymus.</p>
+
+<h3>5. Vartotojo atsakomybė</h3>
+<p>Jūs esate visiškai atsakingas už savo MetaMask piniginės ir privatinių raktų saugumą. Mes negalime atkurti lėšų, prarastų dėl jūsų piniginės kompromitavimo.</p>`,
+      },
+    },
+    metamask: {
+      download: {
+        title: "Atsisiųsti MetaMask",
+        subtitle: "Saugi kriptovaliutų piniginė blokų grandinės operacijoms",
+        feature1: {
+          title: "Saugumas",
+          description: "Jūsų raktai jūsų kontrolėje",
+        },
+        feature2: {
+          title: "Mobilioji programa",
+          description: "Įdiekite į savo telefoną",
+        },
+        feature3: {
+          title: "Web3",
+          description: "DeFi ir DApp palaikymas",
+        },
+        button: "Atsisiųsti MetaMask",
+        available: "Prieinama iOS, Android, Chrome, Firefox, Brave, Edge ir Opera",
+      },
+    },
+    reviews: {
+      title: "Mūsų klientų atsiliepimai",
+      subtitle: "Tikros lėšų atkūrimo istorijos sukčiavimo aukoms",
+      counter: "{current} iš {total}",
+      stats: {
+        success: "Sėkmingų atkūrimų",
+        recovered: "Atkurta USD",
+        support: "Palaikymas internete",
+      },
+    },
+    admin: {
+      title: "Administratoriaus skydelis",
+      description:
+        "Tvarkykite išėmimo užklausas, stebėkite būsenas ir atlikite rankinius patikrinimus. UI atspindi būsimą skydelį be aktyvios logikos.",
+      filtersTitle: "Filtrai",
+      filtersDescription: "Pasirinkite kriterijus užklausų paieškai.",
+      tableTitle: "Dabartinės užklausos",
+      tableDescription: "Lentelė rankinei moderacijai.",
+    },
+    exchange: {
+      title: "Telegram keitykla",
+      description:
+        "Sąsaja korporacinių žetonų konvertavimui į fiatines su užklausa, išsiųsta per Telegram botą.",
+      calculatorTitle: "Konversijos skaičiuoklė",
+      calculatorDescription: "Įveskite sumą, kad pamatytumėte iš anksto apskaičiuotą vertę.",
+      qrTitle: "QR kodas",
+      qrDescription: "Nuskaitykite, kad atidarytumėte pokalbį su korporaciniu botu.",
+      faqTitle: "Keityklos DUK",
+      faqDescription: "Akordeon taps interaktyvus kitoje fazėje.",
+      chatbotTitle: "Pokalbio botas",
+      chatbotDescription: "Mok pokalbio sąsaja.",
+      fields: {
+        tokenAmount: "SUMA ŽETONAIS",
+        receiveEur: "GAUSITE (EUR)",
+        tokenUnit: "TOKEN",
+        eurUnit: "EUR",
+        walletAddress: "Piniginės adresas fiatinių gavimui *",
+        walletAddressAutoFilled: "Adresas automatiškai užpildytas iš jūsų MetaMask piniginės",
+        email: "El. paštas kontaktams *",
+        comment: "Komentaras (neprivalomas)",
+      },
+      placeholders: {
+        tokenAmount: "1 000",
+        walletAddress: "Įveskite piniginės adresą",
+        email: "your@email.com",
+        comment: "Papildoma informacija",
+      },
+      details: {
+        exchangeRate: "Keitimo kursas",
+        rateLoading: "Įkeliama...",
+        rateFormat: "EUR už 1 TOKEN",
+        equivalent: "Ekvivalentas",
+        tokenUsd: "1 TOKEN = 1 USD",
+        commission: "Keitimo komisiniai",
+        commissionValue: "1.5% (iš konfigūracijos)",
+        processingTime: "Vidutinis apdorojimo laikas",
+        processingValue: "15 minučių",
+      },
+      buttons: {
+        submitFull: "Sukurti užklausą Telegram",
+        submitShort: "Sukurti užklausą",
+        submitting: "Siunčiama...",
+        copyFull: "Kopijuoti šabloną",
+        copyShort: "Kopijuoti",
+        copySuccess: "Šablonas nukopijuotas!",
+      },
+      errors: {
+        fillRequired: "Užpildykite visus privalomus laukus!",
+        submitError: "Užklausos pateikimo klaida. Bandykite dar kartą.",
+        submitSuccess: "Užklausa sėkmingai išsiųsta į Telegram!",
+      },
+    },
+    investigation: {
+      title: "Tyrimas",
+      description: "Stebėkite jūsų prašymo pažangą realiu laiku",
+      progress: "Pažanga",
+      statusInProgress: "Vykdoma",
+      statusCompleted: "Užbaigta",
+      updating: "Realaus laiko atnaujinimai · Kitas atnaujinimas per kelias sekundes",
+      stageInProgress: "Vykdoma...",
+      stages: {
+        submitted: "Prašymas pateiktas",
+        checking: "Dokumentų patikrinimas",
+        analyzing: "Operacijų analizė",
+        investigating: "Tyrimas",
+        recovering: "Lėšų atkūrimas",
+        completed: "Užbaigta",
+      },
+    },
+    faq: {
+      title: "✅ DUK: Lėšų atkūrimas iš sukčiavimo brokerių",
+      description: "Atsakymai į dažniausius klausimus apie lėšų atkūrimo procedūras",
+      questions: {
+        q1: {
+          question: "1. Kaip atrodo lėšų atkūrimo procedūra?",
+          answer:
+            "Mes atliekame išsamų tyrimą — įskaitant blokų grandinės operacijų analizę, įrodymų rinkimą ir prašymų pateikimą reguliavimo ir teisėsaugos institucijoms. Remdamiesi išvadomis, pradedame turto patikrinimo ir teisinio lėšų atkūrimo procesą.",
+        },
+        q2: {
+          question: "2. Su kokiais reguliatoriais dirbate?",
+          answer:
+            "Mes pateikiame prašymus ir skundus nacionalinėms ir tarptautinėms institucijoms, tokioms kaip: FCA (Financial Conduct Authority, JK), CySEC (Kipro vertybinių popierių ir biržos komisija), BaFin (Vokietija), ASIC (Australija), SEC (JAV vertybinių popierių ir biržos komisija), FINMA (Šveicarija), MAS (Singapūras), CNMV / CONSOB (Ispanija / Italija), FinCEN (JAV finansinių nusikaltimų stebėjimo tarnyba), Interpol – Finansinių kibernetinių nusikaltimų skyrius. (Sąrašas yra iliustracinis ir gali skirtis priklausomai nuo sukčiavimo subjekto jurisdikcijos ir kliento gyvenamosios šalies.)",
+        },
+        q3: {
+          question: '3. Ką reiškia "tiesioginis darbas su Ethereum ir MetaMask"?',
+          answer:
+            "Mūsų platforma veikia Ethereum ekosistemoje ir integruota su MetaMask, leisdama mums sekti operacijas, patikrinti šaltinius ir saugiai pervesti patvirtintus turtą į jūsų asmeninę MetaMask piniginę ETH arba ERC žetonais.",
+        },
+        q4: {
+          question: '4. Kaip "užšaldomos" sukčiavimo lėšos?',
+          answer:
+            "Per techninę analizę, įrodymų rinkimą ir komunikaciją su partneriais ir reguliatoriais, mes pradedame veiksmus, skirtus izoliuoti įtartinus piniginių adresus arba operacijas blokų grandinėje. Kai sukčiavimas patvirtintas, lėšos gali būti sulaikytos pervedimui teisėtam savininkui pagal taikomus teisinius rėmus.",
+        },
+        q5: {
+          question: "5. Kas yra protingoji sutartis ir kodėl jūs ją kuriate?",
+          answer:
+            "Siekiant užtikrinti saugų ir skaidrų lėšų pervedimą, mes kuriamo individualią protingąją sutartį Ethereum tinkle. Ji automatiškai perduoda sąlyginius lėšų pristatymą į jūsų piniginę ir registruoja visas operacijų sąlygas, užtikrinant teisinį sekamumą ir apsaugą.",
+        },
+        q6: {
+          question: "6. Ar atkurtos lėšos gali būti pervestos į banko sąskaitą?",
+          answer:
+            "Taip. Po teisinio patikrinimo ir AML/KYC atitikties, atkurtos lėšos gali būti pervestos iš jūsų MetaMask piniginės į jūsų asmeninę banko sąskaitą. Priedinė dokumentacija ir protingoji sutartis padeda patvirtinti jūsų turto šaltinį ir teisėtumą.",
+        },
+        q7: {
+          question: "7. Kada aš moku už jūsų paslaugas?",
+          answer:
+            "Mes veikiame pagal sėkmės modelį — mokestis mokamas tik po to, kai atkurtos lėšos įrašomos į jūsų piniginę. Nėra išankstinių arba paslėptų mokesčių.",
+        },
+        q8: {
+          question: "8. Ar galima atkurti lėšas, prarastas prieš 2–3 metus?",
+          answer:
+            "Taip. Mes sėkmingai padėjome klientams atkurti turtą, prarastą daugiau nei prieš 5 metus, jei originalios operacijos buvo galimos sekti Ethereum tinkle.",
+        },
+        q9: {
+          question: "9. Kokius dokumentus man reikia pateikti?",
+          answer:
+            "Po registracijos prašome pateikti savo prašymą ir įkelti prieinamas palaikančias medžiagas: kvitus arba mokėjimo patvirtinimus; banko arba kriptovaliutų keityklos išrašus; ekrano kopijas susirašinėjimo su brokeriu; sutartis arba sąskaitas; bet kokius kitus dokumentus, patvirtinančius jūsų santykius su įmone. Kuo daugiau įrodymų pateiksite, tuo didesnė jūsų sėkmės tikimybė.",
+        },
+        q10: {
+          question: "10. Kiek laiko užtrunka procesas?",
+          answer:
+            "Laikotarpis priklauso nuo bylos sudėtingumo, jurisdikcijos ir reguliatoriaus atsakymo laiko. Kai kurios bylos sprendžiamos per kelias savaites, o sudėtingos tarptautinės bylos gali užtrukti kelis mėnesius.",
+        },
+      },
+      contact: {
+        title: "🧾 Pradėkite savo prašymą",
+        description:
+          "Registruokitės savo asmeninėje paskyroje ir įkelkite savo dokumentus. Mūsų specialistai pradės preliminarią analizę nedelsiant.",
+      },
+      contactCTA: {
+        description:
+          "Susisiekite su mūsų palaikymo tarnyba, ir mes padėsime jums su bet kokiais klausimais",
+        telegramButton: "Rašykite Telegram",
+        emailButton: "Rašykite el. paštu",
+        newsletterButton: "Naujienlaiškis",
+      },
+    },
+    tokenSection: {
+      mainTitle: "Lėšų atkūrimas ir jūsų skaitmeninio turto apsauga",
+      walletConnection: {
+        title: "Piniginės prijungimas",
+        description:
+          "MetaMask + wagmi v2. Žetono operacijos ir stebėjimas tampa prieinami po prijungimo.",
+      },
+      recovery: {
+        p1: "Mes veikiame pagrįsti Ethereum infrastruktūra ir integracija su MetaMask.",
+        p2: "Mūsų platforma padeda klientams atkurti lėšas, prarastas sukčiavimo brokeriams, ir užšaldo iki 90% įtartinų operacijų teisiniam ir techniniam patikrinimui.",
+        p3: "Mes naudojame blokų grandinės analizę ir tarptautinius atitikties standartus, kad užtikrintume kiekvienos operacijos skaidrumą, saugumą ir teisėtumą.",
+      },
+      legal: {
+        title: "Teisinė apsauga ir finansinė ekspertizė",
+        p1: "Teisininkų ir analitikų komanda atlieka išsamų operacijų analizę, siekdama nustatyti sukčiavimo požymius ir pradėti lėšų atkūrimo procesą.",
+        p2: "Mes veikiame pagal tarptautines AML/KYC normas, užtikrindami visišką asmens duomenų konfidencialumą ir pateiktos informacijos saugumą.",
+      },
+      process: {
+        title: "Kaip veikia procesas",
+        step1: "Registracija — sukurkite asmeninę paskyrą, kad pasiektumėte analizės sistemą.",
+        step2:
+          "Prašymo pateikimas — užpildykite formą ir pridėkite kvitus, kvitančius, išrašus ar kitus dokumentus, patvirtinančius jūsų santykius su brokeriu ar platforma.",
+        step3:
+          "Operacijų patikrinimas — mūsų specialistai atlieka visų operacijų techninę ir teisinę auditą.",
+        step4:
+          "Užšaldymas ir atkūrimas — patvirtinus sukčiavimo veiksmus, lėšos užblokuojamos, po to pradedama atkūrimo procedūra.",
+      },
+      whyChooseUs: {
+        title: "Kodėl rinktis mus",
+        item1: "Mes veikiame pagrįsti Ethereum ir integracija su MetaMask",
+        item2: "Tarptautinis teisinis palaikymas",
+        item3: "Šiuolaikiniai blokų grandinės analitikos metodai",
+        item4: "Aukšta lėšų atkūrimo tikimybė",
+        item5: "Visas kliento konfidencialumas",
+      },
+      checkToday: {
+        title: "Patikrinkite atkūrimo galimybę šiandien",
+        p1: "Registruokitės dabar, kad atliktumėte nemokamą preliminarią operacijų analizę.",
+        p2: "Mūsų specialistai susisieks su jumis per 24 valandas, kad pradėtų patikrinimo procedūrą.",
+      },
+    },
+    profile: {
+      title: "Profilis",
+      subtitle: "Jūsų piniginės informacija",
+      connectWallet: "Prašome prijungti savo MetaMask piniginę, kad peržiūrėtumėte savo profilį",
+      connectedWallet: {
+        title: "Prijungta piniginė",
+        subtitle: "Jūsų MetaMask paskyros detalės",
+        disconnect: "Atsijungti",
+        disconnecting: "Atsijungiama...",
+      },
+      accountDetails: {
+        title: "Paskyros detalės",
+        network: "Tinklas:",
+        networkValue: "Ethereum / Sepolia",
+        connected: "Prijungta:",
+        connectedValue: "Taip",
+      },
+      myRequests: {
+        title: "Mano užklausos",
+        subtitle: "Peržiūrėkite ir sekite visas jūsų užklausas",
+        tabs: {
+          all: "Visos užklausos",
+          exchange: "Keitykla",
+          internal: "Vidinis",
+        },
+        loading: "Įkeliamos užklausos...",
+        empty: "Nėra užklausų",
+        emptyDescription: "Jūs dar nesukūrėte jokių užklausų",
+        expand: "Išplėsti sąrašą",
+        collapse: "Suskleisti sąrašą",
+      },
+      status: {
+        pending: "Laukiama",
+        processing: "Apdorojama",
+        completed: "Užbaigta",
+        rejected: "Atmesta",
+        cancelled: "Atšaukta",
+      },
+      requestDetails: {
+        title: "Užklausos detalės",
+        requestType: "Užklausos tipas",
+        exchangeType: "💱 Žetono keitimas",
+        internalType: "📝 Vidinis prašymas",
+        viewDetails: "Detalės",
+      },
+      requestCard: {
+        exchange: "💱 Keitykla",
+        internal: "📝 Vidinis",
+      },
+    },
+  },
+  lv: {
+    common: {
+      brand: {
+        badge: "Iekšēja piekļuve",
+        report: "Ziņojums",
+        version: "v0.4 iekšējs",
+      },
+      nav: {
+        dashboard: "Informācijas panelis",
+        wallet: "Maciņš",
+        token: "Žetons",
+        requests: "Pieprasījumi",
+        reviews: "Atsauksmes",
+        admin: "Administrators",
+        exchange: "Maiņa",
+        faq: "BUJ",
+        contact: "Kontakti",
+        investigation: "Izmeklēšana",
+      },
+      footer: {
+        contact: "Kontakti: eurocoinfinance@gmail.com",
+        policy: "Drošības politika",
+        copyright: "Visas tiesības aizsargātas.",
+        version: "v0.4.0-beta",
+      },
+      buttons: {
+        update: "Atjaunina…",
+        refresh: "Atjaunināt",
+        submitRequest: "Iesniegt pieprasījumu",
+        clear: "Notīrīt",
+        disabled: "Nav pieejams demo versijā",
+        approve: "Apstiprināt",
+        decline: "Noraidīt",
+        send: "Sūtīt",
+        copy: "Kopēt",
+        download: "Lejupielādēt",
+      },
+    },
+    language: {
+      title: "Valoda",
+      russian: "Русский",
+      english: "English",
+      lithuanian: "Lietuvių",
+      latvian: "Latviešu",
+    },
+    home: {
+      hero: {
+        badge: "MetaMask stils",
+        title: "Uzņēmuma žetona kontrole",
+        description:
+          "Pievienojiet MetaMask, lai pārvaldītu korporatīvo žetonu: pārskatiet bilances, izsekojiet kursu un kontrolējiet komisijas vienotā MetaMask stilā veidotā informācijas panelī.",
+        chip1: "Ethereum Mainnet",
+        chip2: "Reaktīvi bilances atjauninājumi",
+        chip3: "USD ekvivalents un nodokļa kalkulators",
+        statusTitle: "Integrācijas statuss",
+        statusLine1: "• MetaMask savienojums un tīkla vadība",
+        statusLine2: "• ERC-20 bilances nolasīšana un USD attēlošana",
+        statusLine3: "• Iekšējo pieprasījumu forma ir aktīva",
+        checklistTitle: "QA kontrolsaraksts",
+        checklist1: "Pārbaudīts darbvirsmas (1440px)",
+        checklist2: "Ieteicams MetaMask autentifikācijas plūsma",
+        checklist3: "Visas darbības tiek veiktas testa tīklā līdz izlaišanai",
+      },
+      walletSection: {
+        title: "Maciņa pievienošana",
+        description:
+          "MetaMask + wagmi v2. Pēc pievienošanas pieejamas žetona operācijas un uzraudzība.",
+        phase: "2. fāze",
+      },
+      status: {
+        title: "Izstrādes statuss",
+        description: "MVP progress pa fāzēm: arhitektūra, savienojums un analītika.",
+        phase1Title: "1. fāze — pabeigta",
+        phase1List1: "• Pamatkonfigurācijas un projekta struktūra",
+        phase1List2: "• Tailwind, ESLint, absolūtie importi",
+        phase1List3: "• Wagmi un React Query nodrošinātāji",
+        phase2Title: "2. fāze — pabeigta",
+        phase3Title: "3. fāze — gatava",
+        phase4Title: "4. fāze — aktīva",
+        phase2List1: "• MetaMask pievienošanas/atvienošanas plūsma",
+        phase2List2: "• Tīkla statuss un pārslēdzējs",
+        phase2List3: "• UI komponenti firmas stilā",
+        phase3List1: "• ERC-20 bilances lasīšana un formatētāji",
+        phase3List2: "• viem + React Query integrācija",
+        phase3List3: "• Bilances karte ar rezerves loģiku",
+        phase4List1: "• USD ekvivalents, kešota kursi, CoinGecko rezerve",
+        phase4List2: "• Nodokļa kalkulators un konfigurācija",
+        phase4List3: "• Iekšējie operāciju pieprasījumi",
+      },
+    },
+    eurocoin: {
+      sectionTitle: "Līdzekļu atgūšana no krāpnieciskiem brokeriem",
+      sectionDescription:
+        "Individuāla pieeja jūsu aktīvu atjaunošanai, pamatojoties uz blokķēdes analīzi",
+      title: "EuroCoin — Korporatīvais žetons",
+      description: "Interaktīvs 3D zelta monētas modelis ar detalizētām žetona specifikācijām",
+      features: {
+        title: "Galvenās funkcijas",
+        feature1: "ERC-20 standarta saderība",
+        feature2: "Automātiski kursa atjauninājumi",
+        feature3: "MetaMask integrācija",
+      },
+      specs: {
+        title: "Tehniskais specifikācijas",
+        spec1: "Tīkls: Ethereum Mainnet / Sepolia",
+        spec2: "Decimāldaļas: 18 cipari",
+        spec3: "Maksimālā emisija: 1,000,000 žetonu",
+      },
+      info: {
+        title: "Par EuroCoin (EURC)",
+        subtitle:
+          "EuroCoin (EURC) ir digitālā valūta, kas balstīta uz blokķēdes tehnoloģiju, izveidota, lai nodrošinātu stabilu eiro likviditāti Web3 ekosistēmā.",
+        description: {
+          paragraph1:
+            "Žetons izveidots, lai vienkāršotu starptautiskos norēķinus, pārskaitījumus un DeFi operācijas Eiropas finanšu telpā. EuroCoin nodrošina caurspīdīgumu, drošību un saderību ar mūsdienīgiem decentralizētiem protokoliem.",
+          paragraph2:
+            "Pateicoties ERC-20 standarta gudro līgumu izmantošanai, EURC var tikt integrēts jebkuros DeFi pakalpojumos, kas atbalsta Ethereum tīklu.",
+        },
+        features: {
+          title: "Galvenās īpašības",
+          type: {
+            label: "Tips",
+            value: "ERC-20",
+          },
+          decimals: {
+            label: "Decimāldaļas",
+            value: "18",
+          },
+          blockchain: {
+            label: "Blokķēde",
+            value: "Ethereum",
+          },
+          symbol: {
+            label: "Simbols",
+            value: "EURC",
+          },
+          contract: {
+            label: "Līguma adrese",
+            value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
+          },
+          fee: {
+            label: "Transakcijas maksa",
+            value: "3% (fiksēta, regulēta ar īpašnieka līgumu)",
+          },
+        },
+        additional:
+          "EuroCoin atbilst caurspīdīguma un uzticamības standartiem, nodrošinot lietotājiem iespēju veikt norēķinus eiro ekvivalentā bez banku līdzdalības.",
+        license: {
+          title: "Licence",
+          description:
+            "Projekts darbojas digitālo aktīvu modeļa sistēmā un ietjur teisisko sertifikāciju saskaņā ar ES MiCA regulāciju.",
+        },
+      },
+    },
+    timer: {
+      title: "Līdzekļu atbloķēšanas taimeris",
+      description:
+        "Līdzekļi gaida izņemšanu. Iztēri izmantošanas nodaļa apstiprinās transakciju, kad taimeris beigsies.",
+      status: "Apstrādā",
+      hours: "Stundas",
+      minutes: "Minūtes",
+      seconds: "Sekundes",
+      progress: "Progress",
+      meta: "Pēdējā AML pārbaude: 2025-10-23 13:45 · Atbildīgais: Iztēri izmantošanas nodaļa",
+    },
+    internalForm: {
+      badge: "Iekšējs",
+      title: "Žetona operācijas pieprasījums",
+      description:
+        "Iekšējās komandas var pieprasīt papildinājumu, izņemšanu vai bilances pārskatu. Sniedziet pēc iespējas vairāk detaļu, lai paātrinātu apstiprināšanu.",
+      regulationTitle: "Vadlīnijas",
+      regulation1: "• Atbildes laiks: līdz 2 stundām",
+      regulation2: "• Steidzamos pieprasījumus atzīmējiet ar prioritāti High",
+      regulation3: "• Ja nepieciešams, iekļaujiet biļetes / uzdevuma saiti",
+      requester: "Pieprasītājs*",
+      department: "Nodaļa*",
+      requestType: "Pieprasījuma veids*",
+      priority: "Prioritāte",
+      descriptionField: "Uzdevuma apraksts / detaļas*",
+      walletAddress: "Maciņa adrese*",
+      walletAddressAutoFilled: "Adrese automātiski aizpildīta no jūsu MetaMask maciņa",
+      helper:
+        "Lauki, kas atzīmēti ar *, ir obligāti. Pēc iesniegšanas pieprasījums parādās iekšējā informācijas panelī.",
+      placeholders: {
+        requester: "Pilns vārds vai korporatīvais e-pasts",
+        description: "Maciņa adrese, summa, termiņš, biļetes ID…",
+        department: "Izvēlieties nodaļu",
+        type: "Izvēlieties veidu",
+        walletAddress: "Ievadiet maciņa adresi",
+      },
+      requestTypes: {
+        topUp: "Žetonu papildinājums",
+        withdraw: "Žetonu izņemšana",
+        balance: "Bilances pārskats",
+        report: "Ziņojuma pieprasījums",
+      },
+      departments: {
+        finance: "Finanšu nodaļa",
+        aml: "AML/KYC nodaļa",
+        investment: "Investīciju komanda",
+        support: "Klientu atbalsts",
+      },
+      validationTitle: "Aizpildiet obligātos laukus",
+      validationDescription: "Norādiet pieprasītāju, nodaļu, pieprasījuma veidu un aprakstu.",
+      successTitle: "Pieprasījums iesniegts",
+      successDescription: "Iztēri izmantošanas nodaļa to pārskatīs darba dienas laikā.",
+      buttons: {
+        submit: "Iesniegt pieprasījumu",
+        clear: "Notīrīt",
+      },
+      priorities: {
+        low: "zems",
+        normal: "normāls",
+        high: "augsts",
+      },
+    },
+    wallet: {
+      connect: "Pievienot MetaMask",
+      connecting: "Savienojas...",
+      connector: "Pieejamais savienotājs: {connector}",
+      install: "Uzinstalējiet MetaMask un atļaujiet piekļuvi vietnei.",
+      error: "Savienojuma kļūda",
+      disconnected: "MetaMask savienojums pārtraukts. Novirza uz pieteikšanās lapu...",
+      connectSuccessTitle: "Maciņš pievienots",
+      connectSuccessDescription: "MetaMask veiksmīgi pievienots lietotnei.",
+      statusDisconnected: "Nav pievienots",
+      status: {
+        label: "Statuss",
+        connector: "Savienotājs: {connector}",
+        network: "Tīkls: {network}",
+        connectedAddress: "Pievienotā adrese",
+      },
+      networkAlert: {
+        title: "Neatbalstīts tīkls",
+        message: "Lūdzu, pārslēdzieties uz {chain}, lai turpinātu.",
+        button: "Pārslēgt uz {chain}",
+      },
+      networkLabel: "Tīkls",
+      balanceCard: {
+        title: "Žetona bilance",
+        description: "Rāda pievienotā maciņa bilanci korporatīvā žetona.",
+        refresh: "Atjaunināt",
+        loading: "Atjaunina…",
+        usdLabel: "USD ekvivalents",
+        rate: "Kurss",
+        fallbackRate: "Neizdevās iegūt dzīvo kursu. Izmantota rezerves vērtība.",
+        autoRefresh: "Dati automātiski atjauninās ik pēc 30 sekundēm.",
+        staticSource: "fiksēta vērtība",
+        status: {
+          notConfigured: "Iestatiet žetona adresi vides mainīgajos, lai aktivizētu datus.",
+          notConnected: "Pievienojiet MetaMask, lai attēlotu žetona bilanci.",
+          unsupported: "Pārslēdzieties uz {chain}, lai ielādētu žetona datus.",
+          infoUnavailable: "Neizdevās iegūt žetona informāciju. Pārbaudiet līguma adresi un RPC.",
+          error: "Neizdevās nolasīt datus",
+        },
+      },
+      priceTicker: {
+        title: "Žetona cena (USD)",
+        description: "Atjauninās ik pēc 60 sekundēm.",
+        source: "Avots: {source}",
+        updated: "Atjaunināts: {time}",
+        fallback: "Neizdevās iegūt jaunāko cenu. Tiek rādīta rezerves vērtība.",
+      },
+      dexscreener: {
+        title: "Žetona diagramma",
+        description: "Reāllaika interaktīva cenu diagramma",
+        openFull: "Atvērt Dexscreener",
+        switching: "Pārslēdzas tēmu...",
+      },
+      statistics: {
+        title: "Maciņa statistika",
+        totalSpent: "Kopā iztērēts",
+        cancelledAmount: "Bloķēts/Atmaksāts",
+        loading: "Ielādē...",
+      },
+      taxCard: {
+        title: "Maksas (Tax)",
+        description: "Komisijas procents žetona operācijām kopā ar ātro kalkulatoru.",
+        current: "Pašreizējā maksa",
+        calculatorLabel: "Transakcijas summa (žetonos)",
+        resultFee: "Maksa ({tax})",
+        resultNet: "Neto pēc maksas",
+        placeholder: "Ievadiet summu",
+        invalid: "Ievadiet derīgu skaitli, lai aprēķinātu maksu.",
+        fallback: "Neizdevās iegūt maksu no līguma. Izmantota rezerves konfigurācijas vērtība.",
+        sourceContract: "līgums",
+        sourceFallback: "konfigurācija (.env)",
+      },
+    },
+    requests: {
+      title: "Izņemšanas pieprasījumi",
+      description:
+        "Pārvaldiet izņemšanas pieprasījumus. Katra darbība prasa manuālu finanšu komandas apstiprinājumu. Zemāk sniegtie dati ir demonstrācijai.",
+      formTitle: "Pieprasījuma forma",
+      formDescription: "UI vieta iekšējām operācijām. Forma vēlāk nosūtīs Slack/E-pastu.",
+      smartReceiptTitle: "Gudrs kvīts",
+      smartReceiptDescription: "NFT kvīts iesniegtajam pieprasījumam. Pagaidām vieta.",
+      historyTitle: "Pieprasījumu vēsture",
+      historyDescription: "Demo statusu tabula bez API pievienošanas.",
+    },
+    login: {
+      title: "MetaWallet pieteikšanās",
+      description:
+        "Autentifikācija caur korporatīvo SSO vai MetaMask. Demo versijā piekļuve tiek atrakta ar zemāk esošo pogu un atver UI bez tiesību pārbaudes.",
+      connect: "Pievienot MetaMask",
+      corporate: "Piesakieties ar korporatīvo e-pastu",
+      disclaimer:
+        "Piesakoties, jūs piekrītat iekšējās piekļuves politikai un NDA. Visas darbības tiek reģistrētas.",
+      demo: "Demo piekļuve",
+      demoDescription: "MetaWallet build 0.4 · iekšēja priekšskatīšana",
+      link: {
+        requests: "Izņemšanas pieprasījumi",
+        terms: "Pakalpojuma noteikumi",
+        exchange: "Telegram maiņa",
+      },
+      badge: "Pieteikšanās",
+      heading: "Pieteikšanās MetaWallet",
+      descriptionText:
+        "Mēs atjaunojam zaudētos līdzekļus un atjaunojam cerību. Pievienojiet MetaMask, lai iegūtu drošu piekļuvi līdzekļu atgūšanas un krāpniecības aizsardzības funkcijām.",
+      connecting: "Savienojas...",
+      continue: "Turpināt ar MetaMask",
+      email: {
+        title: "Piesakieties ar e-pastu",
+        description: "Saņemiet vienreizēju pieteikšanās saiti tieši uz jūsu iesūtni.",
+        label: "E-pasts",
+        placeholder: "you@example.com",
+        button: "Sūtīt pieteikšanās saiti",
+        loading: "Sūta e-pastu...",
+        success: "Maģijas saite nosūtīta. Lūdzu, pārbaudiet iesūtni un nevēlamo e-pastu mapi.",
+        error: "Neizdevās nosūtīt pieteikšanās e-pastu. Lūdzu, mēģiniet vēlāk.",
+        invalid: "Ievadiet derīgu e-pasta adresi.",
+      },
+      oauth: {
+        google: "Piesakieties ar Google",
+        github: "Piesakieties ar GitHub",
+        googleLoading: "Piesakās ar Google...",
+        githubLoading: "Piesakās ar GitHub...",
+        googleError: "Google pieteikšanās kļūda",
+        githubError: "GitHub pieteikšanās kļūda",
+      },
+      divider: {
+        or: "vai",
+      },
+      walletConnected: "Maciņš jau pievienots. Novirza uz sākumlapu...",
+      walletConnectedSuccess: "MetaMask veiksmīgi pievienots. Novirza uz sākumlapu...",
+      connectError: "Neizdevās pievienot maciņu",
+    },
+    auth: {
+      signOut: "Iziet",
+      signingOut: "Izrakstās...",
+      signOutSuccess: "Jūs veiksmīgi izgājāt no sistēmas",
+      signOutError: "Izrakstīšanās kļūda",
+      upgradeSuccess: "MetaMask veiksmīgi pievienots. Tagad visas funkcijas ir pieejamas!",
+      upgradeError: "Neizdevās pievienot MetaMask",
+      readOnly: {
+        title: "Tikai lasīšanas režīms",
+        description:
+          "Jūs pieslēdzāties ar e-pastu. Pievienojiet MetaMask, lai sūtītu žetonus un izveidotu pieprasījumus.",
+        upgradeButton: "Pievienot MetaMask",
+        upgrading: "Savienojas...",
+      },
+    },
+    info: {
+      notFound: "Lapa nav atrasta",
+      backToLogin: "Atgriezties uz pieteikšanās lapu",
+      requests: {
+        title: "Izņemšanas pieprasījumi",
+        description:
+          "Iesniedziet izņemšanas pieprasījumus caur MetaMask, izmantojot Ethereum gudros līgumus",
+        content: `<p>Mūsu platforma ļauj jums iesniegt izņemšanas pieprasījumus tieši caur jūsu MetaMask maciņu.</p>
+        
+<p><strong>Kā tas darbojas:</strong></p>
+<ul>
+  <li>Pievienojiet savu MetaMask maciņu</li>
+  <li>Aizpildiet izņemšanas pieprasījuma formu</li>
+  <li>Apstipriniet transakciju caur MetaMask</li>
+  <li>Izsekojiet pieprasījuma statusu reāllaikā</li>
+</ul>
+
+<p><strong>Priekšrocības:</strong></p>
+<ul>
+  <li>Drošība: visas operācijas caur gudriem līgumiem</li>
+  <li>Caurspīdīgums: reāllaika pieprasījuma statuss</li>
+  <li>Kontrole: jūs vienmēr redzat, kas notiek ar jūsu līdzekļiem</li>
+</ul>`,
+      },
+      terms: {
+        title: "Pakalpojuma noteikumi",
+        description: "EuroCoin pakalpojuma izmantošanas noteikumi",
+        content: `<p>Šie pakalpojuma noteikumi regulē EuroCoin pakalpojuma izmantošanu.</p>
+
+<h3>1. Vispārīgie noteikumi</h3>
+<p>Izmantojot mūsu pakalpojumu, jūs piekrītat šī līguma noteikumiem.</p>
+
+<h3>2. Izmantošanas noteikumi</h3>
+<ul>
+  <li>Izmantojiet MetaMask, lai piekļūtu pakalpojuma funkcijām</li>
+  <li>Ievērojiet drošības noteikumus, strādājot ar kriptovalūtām</li>
+  <li>Savlaicīgi maksājiet par pakalpojumiem saskaņā ar tarifiem</li>
+</ul>
+
+<h3>3. Drošība</h3>
+<p>Visas operācijas tiek veiktas caur drošiem Ethereum gudriem līgumiem. Mēs nesaglabājam jūsu privātos atslēgas un nav piekļuves jūsu maciņam.</p>
+
+<h3>4. Atbildība</h3>
+<p>Lietotājs ir pilnībā atbildīgs par savu MetaMask maciņa un privāto atslēgu drošību.</p>`,
+      },
+      exchange: {
+        title: "Telegram maiņa",
+        description: "Korporatīvo žetonu maiņa caur Telegram botu",
+        content: `<p>Telegram maiņa ļauj jums konvertēt EuroCoin korporatīvos žetonus fiat līdzekļos caur ērtu Telegram botu.</p>
+
+<p><strong>Kā darbojas maiņa:</strong></p>
+<ol>
+  <li>Atveriet Telegram un atrodiet mūsu botu</li>
+  <li>Nosūtiet žetonu maiņas komandu</li>
+  <li>Norādiet summu un datus fiat līdzekļu saņemšanai</li>
+  <li>Apstipriniet operāciju caur MetaMask</li>
+  <li>Saņemiet līdzekļus uz norādīto kontu</li>
+</ol>
+
+<p><strong>Maiņas kurss:</strong></p>
+<ul>
+  <li>1 TOKEN = 1 USD</li>
+  <li>Kurss automātiski atjauninās katru minūti</li>
+  <li>Maiņas komisija: 1.5%</li>
+</ul>
+
+<p><strong>Drošība:</strong></p>
+<p>Visas maiņas tiek veiktas caur Ethereum gudriem līgumiem, nodrošinot operāciju uzticamību un caurspīdīgumu.</p>`,
+      },
+      security: {
+        title: "Drošības politika",
+        description: "EuroCoin pakalpojuma drošības pasākumi",
+        content: `<p>Mēs ļoti vērtējam mūsu lietotāju un viņu līdzekļu drošību.</p>
+
+<h3>1. Datu aizsardzība</h3>
+<p>Mēs nesaglabājam jūsu privātos atslēgas un nav piekļuves jūsu maciņam. Visas operācijas tiek veiktas tieši caur jūsu MetaMask.</p>
+
+<h3>2. Gudrie līgumi</h3>
+<p>Visas transakcijas tiek izpildītas caur drošiem Ethereum gudriem līgumiem, nodrošinot caurspīdīgumu un neiespējamību mainīt transakcijas noteikumus.</p>
+
+<h3>3. Privātums</h3>
+<p>Jūsu personas dati tiek aizsargāti saskaņā ar starptautiskajiem drošības standartiem. Mēs nekopīgojam jūsu datus ar trešajām pusēm.</p>
+
+<h3>4. Uzraudzība</h3>
+<p>Mēs nepārtraukti uzraugām sistēmu uz aizdomīgu darbību un nekavējoties reaģējam uz jebkādiem kompromitēšanas mēģinājumiem.</p>
+
+<h3>5. Lietotāja atbildība</h3>
+<p>Jūs esat pilnībā atbildīgs par savu MetaMask maciņa un privāto atslēgu drošību. Mēs nevaram atgūt līdzekļus, kas zaudēti jūsu maciņa kompromitēšanas dēļ.</p>`,
+      },
+    },
+    metamask: {
+      download: {
+        title: "Lejupielādēt MetaMask",
+        subtitle: "Drošs kriptovalūtu maciņš blokķēdes operācijām",
+        feature1: {
+          title: "Drošība",
+          description: "Jūsu atslēgas jūsu kontrolē",
+        },
+        feature2: {
+          title: "Mobilo lietotne",
+          description: "Uzinstalējiet uz sava tālruņa",
+        },
+        feature3: {
+          title: "Web3",
+          description: "DeFi un DApp atbalsts",
+        },
+        button: "Lejupielādēt MetaMask",
+        available: "Pieejams iOS, Android, Chrome, Firefox, Brave, Edge un Opera",
+      },
+    },
+    reviews: {
+      title: "Mūsu klientu atsauksmes",
+      subtitle: "Īstas līdzekļu atgūšanas stāsti krāpniecības upuriem",
+      counter: "{current} no {total}",
+      stats: {
+        success: "Veiksmīgas atgūšanas",
+        recovered: "Atgūts USD",
+        support: "Atbalsts tiešsaistē",
+      },
+    },
+    admin: {
+      title: "Administratora panelis",
+      description:
+        "Pārvaldiet izņemšanas pieprasījumus, uzraugiet statusus un veiciet manuālas pārbaudes. UI atspoguļo nākamo paneli bez aktīvas loģikas.",
+      filtersTitle: "Filtri",
+      filtersDescription: "Izvēlieties kritērijus pieprasījumu meklēšanai.",
+      tableTitle: "Pašreizējie pieprasījumi",
+      tableDescription: "Tabula manuālai moderācijai.",
+    },
+    exchange: {
+      title: "Telegram maiņa",
+      description:
+        "Saskarne korporatīvo žetonu konvertēšanai fiat līdzekļos ar pieprasījumu, kas nosūtīts caur Telegram botu.",
+      calculatorTitle: "Konversijas kalkulators",
+      calculatorDescription: "Ievadiet summu, lai redzētu iepriekš aprēķinātu vērtību.",
+      qrTitle: "QR kods",
+      qrDescription: "Skenējiet, lai atvērtu sarunu ar korporatīvo botu.",
+      faqTitle: "Maiņas BUJ",
+      faqDescription: "Akordeons kļūs interaktīvs nākamajā fāzē.",
+      chatbotTitle: "Čata bots",
+      chatbotDescription: "Maketa čata saskarne.",
+      fields: {
+        tokenAmount: "SUMA ŽETONOS",
+        receiveEur: "SAŅEMAT (EUR)",
+        tokenUnit: "TOKEN",
+        eurUnit: "EUR",
+        walletAddress: "Maciņa adrese fiat saņemšanai *",
+        walletAddressAutoFilled: "Adrese automātiski aizpildīta no jūsu MetaMask maciņa",
+        email: "E-pasts kontaktam *",
+        comment: "Komentārs (nav obligāts)",
+      },
+      placeholders: {
+        tokenAmount: "1 000",
+        walletAddress: "Ievadiet maciņa adresi",
+        email: "your@email.com",
+        comment: "Papildu informācija",
+      },
+      details: {
+        exchangeRate: "Maiņas kurss",
+        rateLoading: "Ielādē...",
+        rateFormat: "EUR par 1 TOKEN",
+        equivalent: "Ekvivalents",
+        tokenUsd: "1 TOKEN = 1 USD",
+        commission: "Maiņas komisija",
+        commissionValue: "1.5% (no konfigurācijas)",
+        processingTime: "Vidējais apstrādes laiks",
+        processingValue: "15 minūtes",
+      },
+      buttons: {
+        submitFull: "Izveidot pieprasījumu Telegram",
+        submitShort: "Izveidot pieprasījumu",
+        submitting: "Iesniedz...",
+        copyFull: "Kopēt veidni",
+        copyShort: "Kopēt",
+        copySuccess: "Veidne nokopēta!",
+      },
+      errors: {
+        fillRequired: "Aizpildiet visus obligātos laukus!",
+        submitError: "Pieprasījuma iesniegšanas kļūda. Lūdzu, mēģiniet vēlreiz.",
+        submitSuccess: "Pieprasījums veiksmīgi nosūtīts uz Telegram!",
+      },
+    },
+    investigation: {
+      title: "Izmeklēšana",
+      description: "Izsekojiet jūsu pieteikuma progressu reāllaikā",
+      progress: "Progress",
+      statusInProgress: "Procesā",
+      statusCompleted: "Pabeigts",
+      updating: "Reāllaika atjauninājumi · Nākamais atjauninājums pēc dažām sekundēm",
+      stageInProgress: "Procesā...",
+      stages: {
+        submitted: "Pieteikums iesniegts",
+        checking: "Dokumentu pārbaude",
+        analyzing: "Transakciju analīze",
+        investigating: "Izmeklēšana",
+        recovering: "Līdzekļu atgūšana",
+        completed: "Pabeigts",
+      },
+    },
+    faq: {
+      title: "✅ BUJ: Līdzekļu atgūšana no krāpnieciskiem brokeriem",
+      description: "Atbildes uz biežākajiem jautājumiem par līdzekļu atgūšanas procedūrām",
+      questions: {
+        q1: {
+          question: "1. Kā izskatās līdzekļu atgūšanas procedūra?",
+          answer:
+            "Mēs veicam visaptverošu izmeklēšanu — ieskaitot blokķēdes transakciju analīzi, pierādījumu vākšanu un prasību iesniegšanu regulatīvajām un tiesībaizsardzības iestādēm. Pamatojoties uz secinājumiem, mēs sākam aktīvu pārbaudes un juridiskās līdzekļu atgūšanas procesu.",
+        },
+        q2: {
+          question: "2. Ar kādiem regulatoriem jūs strādājat?",
+          answer:
+            "Mēs iesniedzam prasības un sūdzības nacionālajās un starptautiskajās iestādēs, piemēram: FCA (Financial Conduct Authority, Lielbritānija), CySEC (Kipras vērtspapīru un biržas komisija), BaFin (Vācija), ASIC (Austrālija), SEC (ASV vērtspapīru un biržas komisija), FINMA (Šveice), MAS (Singapūra), CNMV / CONSOB (Spānija / Itālija), FinCEN (ASV finanšu noziedzību uzraudzības dienests), Interpol – Finanšu kibernoziedzību nodaļa. (Saraksts ir ilustratīvs un var atšķirties atkarībā no krāpnieciska subjekta jurisdikcijas un klienta dzīvesvietas valsts.)",
+        },
+        q3: {
+          question: '3. Ko nozīmē "tiešais darbs ar Ethereum un MetaMask"?',
+          answer:
+            "Mūsu platforma darbojas Ethereum ekosistēmā un ir integrēta ar MetaMask, ļaujot mums izsekot transakcijām, pārbaudīt avotus un droši pārskaitīt apstiprinātos aktīvus uz jūsu personīgo MetaMask maciņu ETH vai ERC žetonos.",
+        },
+        q4: {
+          question: '4. Kā tiek "iesaldēti" krāpniecisko līdzekļi?',
+          answer:
+            "Caur tehnisko analīzi, pierādījumu vākšanu un komunikāciju ar partneriem un regulatoriem, mēs uzsākam darbības, kuru mērķis ir izolēt aizdomīgus maciņu adreses vai transakcijas blokķēdē. Kad krāpniecība ir apstiprināta, līdzekļi var tikt aizturēti pārskaitīšanai likumīgajam īpašniekam saskaņā ar piemērojamiem juridiskajiem ietvariem.",
+        },
+        q5: {
+          question: "5. Kas ir gudrais līgums un kāpēc jūs to izveidojat?",
+          answer:
+            "Lai nodrošinātu drošu un caurspīdīgu līdzekļu pārskaitījumu, mēs izveidojam individuālu gudro līgumu Ethereum tīklā. Tas automātiski nodrošina nosacītu līdzekļu piegādi uz jūsu maciņu un reģistrē visas transakciju noteikumus, nodrošinot juridisko izsekojamību un aizsardzību.",
+        },
+        q6: {
+          question: "6. Vai atgūtie līdzekļi var tikt pārsūtīti uz bankas kontu?",
+          answer:
+            "Jā. Pēc juridiskās pārbaudes un AML/KYC atbilstības, atgūtie līdzekļi var tikt pārskaitīti no jūsu MetaMask maciņa uz jūsu personīgo bankas kontu. Pievienotā dokumentācija un gudrais līgums palīdz apstiprināt jūsu aktīvu avotu un likumību.",
+        },
+        q7: {
+          question: "7. Kad es maksāju par jūsu pakalpojumiem?",
+          answer:
+            "Mēs darbojamies pēc veiksmes modeļa — maksa tiek iekasēta tikai pēc tam, kad atgūtie līdzekļi ir noguldīti jūsu maciņā. Nav iepriekšējo vai slēpto maksu.",
+        },
+        q8: {
+          question: "8. Vai iespējams atgūt līdzekļus, kas zaudēti pirms 2–3 gadiem?",
+          answer:
+            "Jā. Mēs veiksmīgi palīdzējām klientiem atgūt aktīvus, kas zaudēti vairāk nekā pirms 5 gadiem, ja sākotnējās transakcijas bija izsekojamas Ethereum tīklā.",
+        },
+        q9: {
+          question: "9. Kādus dokumentus man jāiesniedz?",
+          answer:
+            "Pēc reģistrācijas lūdzu, iesniedziet savu prasību un augšupielādējiet pieejamos atbalsta materiālus: kvītis vai maksājumu apstiprinājumus; bankas vai kriptovalūtu biržas izrakstus; ekrānuzņēmumus sarunām ar brokeri; līgumus vai rēķinus; jebkādus citus dokumentus, kas apstiprina jūsu attiecības ar uzņēmumu. Jo vairāk pierādījumu jūs iesniedzat, jo lielāka jūsu veiksmes iespējamība.",
+        },
+        q10: {
+          question: "10. Cik ilgi aizņem process?",
+          answer:
+            "Laika periods ir atkarīgs no lietas sarežģītības, jurisdikcijas un regulatora atbildes laika. Dažas lietas tiek atrisinātas dažu nedēļu laikā, bet sarežģītas starptautiskas lietas var aizņemt vairākus mēnešus.",
+        },
+      },
+      contact: {
+        title: "🧾 Sāciet savu prasību",
+        description:
+          "Reģistrējieties savā personīgajā kontā un augšupielādējiet savus dokumentus. Mūsu speciālisti nekavējoties sāks sākotnējo analīzi.",
+      },
+      contactCTA: {
+        description:
+          "Sazinieties ar mūsu atbalsta dienestu, un mēs palīdzēsim jums ar jebkādiem jautājumiem",
+        telegramButton: "Rakstiet Telegram",
+        emailButton: "Rakstiet e-pastā",
+        newsletterButton: "Ziņojums",
+      },
+    },
+    tokenSection: {
+      mainTitle: "Līdzekļu atgūšana un jūsu digitālo aktīvu aizsardzība",
+      walletConnection: {
+        title: "Maciņa savienojums",
+        description:
+          "MetaMask + wagmi v2. Žetona operācijas un uzraudzība kļūst pieejamas pēc savienojuma.",
+      },
+      recovery: {
+        p1: "Mēs darbojamies, pamatojoties uz Ethereum infrastruktūru un integrāciju ar MetaMask.",
+        p2: "Mūsu platforma palīdz klientiem atgūt līdzekļus, kas zaudēti krāpnieciskiem brokeriem, un iesaldē līdz 90% aizdomīgu transakciju juridiskai un tehniskai pārbaudei.",
+        p3: "Mēs izmantojam blokķēdes analīzi un starptautiskus atbilstības standartus, lai nodrošinātu katras operācijas caurspīdīgumu, drošību un likumību.",
+      },
+      legal: {
+        title: "Juridiskā aizsardzība un finanšu ekspertīze",
+        p1: "Juristu un analītiķu komanda veic visaptverošu transakciju analīzi, lai identificētu krāpniecības pazīmes un uzsāktu līdzekļu atgūšanas procesu.",
+        p2: "Mēs darbojamies saskaņā ar starptautiskajiem AML/KYC normām, nodrošinot pilnīgu personas datu konfidencialitāti un sniegtās informācijas drošību.",
+      },
+      process: {
+        title: "Kā darbojas process",
+        step1: "Reģistrācija — izveidojiet personīgo kontu, lai piekļūtu analīzes sistēmai.",
+        step2:
+          "Pieteikuma iesniegšana — aizpildiet formu un pievienojiet kvītis, kvīšus, izrakstus vai citus dokumentus, kas apstiprina jūsu attiecības ar brokeri vai platformu.",
+        step3:
+          "Transakciju pārbaude — mūsu speciālisti veic visu operāciju tehnisko un juridisko auditu.",
+        step4:
+          "Iesaldēšana un atgūšana — apstiprinot krāpniecības darbības, līdzekļi tiek bloķēti, pēc tam sākas atgūšanas procedūra.",
+      },
+      whyChooseUs: {
+        title: "Kāpēc izvēlēties mūs",
+        item1: "Mēs darbojamies, pamatojoties uz Ethereum un integrāciju ar MetaMask",
+        item2: "Starptautisks juridisks atbalsts",
+        item3: "Mūsdienīgas blokķēdes analītikas metodes",
+        item4: "Augsta līdzekļu atgūšanas iespējamība",
+        item5: "Pilnīgs klienta konfidencialitāte",
+      },
+      checkToday: {
+        title: "Pārbaudiet atgūšanas iespējamību šodien",
+        p1: "Reģistrējieties tagad, lai veiktu bezmaksas sākotnējo transakciju analīzi.",
+        p2: "Mūsu speciālisti sazināsieties ar jums 24 stundu laikā, lai sāktu pārbaudes procedūru.",
+      },
+    },
+    profile: {
+      title: "Profils",
+      subtitle: "Jūsu maciņa informācija",
+      connectWallet: "Lūdzu, pievienojiet savu MetaMask maciņu, lai skatītu savu profilu",
+      connectedWallet: {
+        title: "Pievienotais maciņš",
+        subtitle: "Jūsu MetaMask konta detaļas",
+        disconnect: "Atvienot",
+        disconnecting: "Atvieno...",
+      },
+      accountDetails: {
+        title: "Konta detaļas",
+        network: "Tīkls:",
+        networkValue: "Ethereum / Sepolia",
+        connected: "Pievienots:",
+        connectedValue: "Jā",
+      },
+      myRequests: {
+        title: "Mani pieprasījumi",
+        subtitle: "Skatīt un izsekot visus jūsu pieprasījumus",
+        tabs: {
+          all: "Visi pieprasījumi",
+          exchange: "Maiņa",
+          internal: "Iekšējs",
+        },
+        loading: "Ielādē pieprasījumus...",
+        empty: "Nav pieprasījumu",
+        emptyDescription: "Jūs vēl neesat izveidojis nekādus pieprasījumus",
+        expand: "Izvērst sarakstu",
+        collapse: "Sakļaut sarakstu",
+      },
+      status: {
+        pending: "Gaida",
+        processing: "Apstrādā",
+        completed: "Pabeigts",
+        rejected: "Noraidīts",
+        cancelled: "Atcelts",
+      },
+      requestDetails: {
+        title: "Pieprasījuma detaļas",
+        requestType: "Pieprasījuma veids",
+        exchangeType: "💱 Žetona maiņa",
+        internalType: "📝 Iekšējs pieprasījums",
+        viewDetails: "Detaļas",
+      },
+      requestCard: {
+        exchange: "💱 Maiņa",
+        internal: "📝 Iekšējs",
+      },
+    },
+  },
 };
 
 export function getTranslation(
@@ -1486,12 +2932,12 @@ export function getTranslation(
   );
 }
 
-export const availableLocales: Locale[] = ["ru", "en"];
+export const availableLocales: Locale[] = ["ru", "en", "lt", "lv"];
 
 export const defaultLocale: Locale = "en";
 
 export function isLocale(value: string | null | undefined): value is Locale {
-  return value === "ru" || value === "en";
+  return value === "ru" || value === "en" || value === "lt" || value === "lv";
 }
 
 export const translationsRaw = translations;

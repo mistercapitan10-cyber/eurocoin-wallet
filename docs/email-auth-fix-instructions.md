@@ -81,3 +81,4 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NU
 6. Перейдите по ссылке из письма
 7. Должны попасть на главную страницу
 
+

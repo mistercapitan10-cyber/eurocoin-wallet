@@ -1,12 +1,11 @@
 /**
  * NextAuth.js v5 Configuration
- * Unified authentication system supporting OAuth (Google, GitHub) and MetaMask
+ * Unified authentication system supporting OAuth (Google) and MetaMask
  */
 
 import NextAuth, { type DefaultSession } from "next-auth";
 import Email from "next-auth/providers/email";
 import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
 import { Resend } from "resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/database/drizzle";
@@ -99,17 +98,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       allowDangerousEmailAccountLinking: true, // Allow linking email to existing wallet account
-    }),
-
-    GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: "read:user user:email",
-        },
-      },
-      allowDangerousEmailAccountLinking: true,
     }),
   ],
 

@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ProfileIcon } from "@/components/layout/profile-icon";
+import { EmailIcon } from "@/components/layout/email-icon";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "@/hooks/use-translation";
 import { useLanguage } from "@/components/providers/language-provider";
+import { availableLocales, type Locale } from "@/lib/i18n/translations";
 
 const navItems = [
   { href: "/#exchange", key: "common.nav.exchange" },
@@ -22,7 +24,7 @@ function MobileLanguageSwitcher() {
   const { locale, setLocale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleChange = (newLocale: "ru" | "en") => {
+  const handleChange = (newLocale: Locale) => {
     setLocale(newLocale);
     setIsOpen(false);
   };
@@ -47,12 +49,12 @@ function MobileLanguageSwitcher() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-10 w-10 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
+        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-8 w-8 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
         aria-label="Выбрать язык"
       >
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -68,57 +70,42 @@ function MobileLanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 min-w-[120px] rounded-lg border border-outline bg-surface p-2 shadow-lg">
-          <button
-            type="button"
-            onClick={() => handleChange("ru")}
-            className={cn(
-              "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition hover:bg-surfaceAlt",
-              locale === "ru" ? "bg-accent/10 text-accent dark:bg-accent/20" : "text-foreground",
-            )}
-          >
-            <span>Русский</span>
-            {locale === "ru" && (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleChange("en")}
-            className={cn(
-              "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition hover:bg-surfaceAlt",
-              locale === "en" ? "bg-accent/10 text-accent dark:bg-accent/20" : "text-foreground",
-            )}
-          >
-            <span>English</span>
-            {locale === "en" && (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            )}
-          </button>
+        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-10 z-50 min-w-[120px] rounded-lg border border-outline bg-surface p-2 shadow-lg">
+          {availableLocales.map((code) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => handleChange(code)}
+              className={cn(
+                "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition hover:bg-surfaceAlt",
+                locale === code ? "bg-accent/10 text-accent dark:bg-accent/20" : "text-foreground",
+              )}
+            >
+              <span>
+                {({
+                  ru: "Русский",
+                  en: "English",
+                  lt: "Lietuvių",
+                  lv: "Latviešu",
+                } as Record<Locale, string>)[code]}
+              </span>
+              {locale === code && (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -206,6 +193,7 @@ export function SiteHeader() {
         {/* Desktop Right Side */}
         <div className="hidden items-center gap-3 md:flex">
           <ProfileIcon />
+          <EmailIcon />
           <ThemeToggle />
           <LanguageSwitcher />
         </div>
@@ -213,6 +201,7 @@ export function SiteHeader() {
         {/* Mobile Right Side */}
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
           <ProfileIcon />
+          <EmailIcon />
           <ThemeToggle />
           <MobileLanguageSwitcher />
         </div>

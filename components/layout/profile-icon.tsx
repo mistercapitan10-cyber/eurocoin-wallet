@@ -80,12 +80,12 @@ export function ProfileIcon() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-10 w-10 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
+        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-8 w-8 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
         aria-label="Profile"
       >
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +100,7 @@ export function ProfileIcon() {
       </button>
 
       {isOpen && (
-        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 min-w-[240px] rounded-lg border border-outline bg-surface p-3 shadow-lg">
+        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-10 z-50 min-w-[240px] rounded-lg border border-outline bg-surface p-3 shadow-lg">
           {isAuthenticated ? (
             <>
               <div className="dark:text-dark-foreground dark:bg-dark-surfaceAlt mb-3 flex items-center gap-3 rounded-md bg-surfaceAlt px-3 py-2 text-sm">

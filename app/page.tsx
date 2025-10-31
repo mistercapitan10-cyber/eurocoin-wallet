@@ -13,6 +13,7 @@ import {
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { InvestigationProgress } from "@/components/dashboard/investigation-progress";
+import { AllInvestigations } from "@/components/dashboard/all-investigations";
 import { ExchangeSection } from "@/components/exchange";
 import { FAQSection } from "@/components/faq";
 import { useTranslation } from "@/hooks/use-translation";
@@ -124,6 +125,9 @@ export default function Home() {
           <section id="investigation">
             <InvestigationProgress walletAddress={address} userEmail={email} />
           </section>
+
+          {/* All Investigations Section */}
+          <AllInvestigations />
 
           <section id="token-balance" className="flex flex-col gap-6">
             <BalanceCard />

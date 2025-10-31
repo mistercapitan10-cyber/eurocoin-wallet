@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 
 interface ExchangeRate {
-  USD_RUB: number;
+  USD_EUR: number;
   loading: boolean;
   error: string | null;
 }
 
 export function useExchangeRate() {
   const [rate, setRate] = useState<ExchangeRate>({
-    USD_RUB: 100, // Fallback rate
+    USD_EUR: 0.92, // Fallback rate (approximate EUR/USD)
     loading: true,
     error: null,
   });
@@ -16,7 +16,7 @@ export function useExchangeRate() {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        // Try to fetch real USD/RUB rate from a free API
+        // Try to fetch real USD/EUR rate from a free API
         const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD", {
           cache: "no-store",
         });
@@ -26,10 +26,10 @@ export function useExchangeRate() {
         }
 
         const data = await response.json();
-        const usdRubRate = data.rates.RUB;
+        const usdEurRate = data.rates.EUR;
 
         setRate({
-          USD_RUB: usdRubRate,
+          USD_EUR: usdEurRate,
           loading: false,
           error: null,
         });
@@ -37,7 +37,7 @@ export function useExchangeRate() {
         console.error("Error fetching exchange rate:", error);
         // Use fallback rate
         setRate({
-          USD_RUB: 100, // Fallback: approximate RUB/USD
+          USD_EUR: 0.92, // Fallback: approximate EUR/USD
           loading: false,
           error: "Не удалось загрузить курс. Используется примерный курс.",
         });

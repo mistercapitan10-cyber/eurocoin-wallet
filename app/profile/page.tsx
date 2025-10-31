@@ -27,7 +27,6 @@ export default function ProfilePage() {
     if (authType === 'wallet') return 'MetaMask';
     if (authType === 'email') {
       if (email?.includes('@gmail.com')) return 'Google';
-      if (email?.includes('@github')) return 'GitHub';
       return 'Email';
     }
     return '';

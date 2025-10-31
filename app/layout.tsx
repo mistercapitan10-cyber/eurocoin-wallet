@@ -27,6 +27,11 @@ const displayFont = Rubik_Mono_One({
 export const metadata: Metadata = {
   title: "EuroCoin",
   description: "Internal dashboard for managing EuroCoin token balances",
+  icons: {
+    icon: "/coinPNG.png",
+    shortcut: "/coinPNG.png",
+    apple: "/coinPNG.png",
+  },
   // Metadata will be dynamically updated by PageTitle component
 };
 

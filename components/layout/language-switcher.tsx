@@ -44,12 +44,12 @@ export function LanguageSwitcher() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-10 w-10 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
+        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-8 w-8 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
         aria-label="Switch language"
       >
         <svg
-          width="20"
-          height="20"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +65,7 @@ export function LanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 min-w-[120px] rounded-lg border border-outline bg-surface p-2 shadow-lg">
+        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-10 z-50 min-w-[120px] rounded-lg border border-outline bg-surface p-2 shadow-lg">
           {availableLocales.map((item) => (
             <button
               key={item}
@@ -77,7 +77,14 @@ export function LanguageSwitcher() {
                 locale === item ? "bg-accent/10 text-accent dark:bg-accent/20" : "text-foreground",
               )}
             >
-              <span>{item === "ru" ? "Русский" : "English"}</span>
+              <span>
+                {({
+                  ru: "Русский",
+                  en: "English",
+                  lt: "Lietuvių",
+                  lv: "Latviešu",
+                } as Record<Locale, string>)[item]}
+              </span>
               {locale === item && (
                 <svg
                   width="16"
