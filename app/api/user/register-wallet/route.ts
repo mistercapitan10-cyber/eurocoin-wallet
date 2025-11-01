@@ -76,7 +76,17 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[api:user:register-wallet] Failed to upsert wallet user:", error);
-    return NextResponse.json({ error: "Failed to register user" }, { status: 500 });
+    console.error("[api:user:register-wallet] Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return NextResponse.json(
+      {
+        error: "Failed to register user",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
   }
 }
 
