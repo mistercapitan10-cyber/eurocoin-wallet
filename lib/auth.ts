@@ -6,7 +6,10 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Email from "next-auth/providers/email";
 import Google from "next-auth/providers/google";
+import React from "react";
 import { Resend } from "resend";
+import { render } from "@react-email/render";
+import { VerificationEmail } from "@/emails/VerificationEmail";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/database/drizzle";
 import { users, accounts, sessions, verificationTokens } from "@/lib/database/auth-schema";
@@ -88,18 +91,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   providers: [
     ...createEmailProvider(),
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-      allowDangerousEmailAccountLinking: true, // Allow linking email to existing wallet account
-    }),
+    // Only add Google provider if credentials are available
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            authorization: {
+              params: {
+                prompt: "consent",
+                access_type: "offline",
+                response_type: "code",
+              },
+            },
+            allowDangerousEmailAccountLinking: true, // Allow linking email to existing wallet account
+          }),
+        ]
+      : (() => {
+          console.warn(
+            "[AUTH] Google OAuth provider disabled: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set",
+          );
+          return [];
+        })()),
   ],
 
   // ---------------------------------------------------------------------------
@@ -322,8 +335,8 @@ function createEmailProvider() {
           const result = await resend.emails.send({
             from: fromAddress,
             to: identifier,
-            subject: `${appName}: ссылка для входа`,
-            html: buildVerificationEmailHtml({ url, appName }),
+            subject: `${appName}: Sign in link`,
+            html: await buildVerificationEmailHtml({ url, appName }),
             text: buildVerificationEmailText({ url, appName }),
           });
 
@@ -354,51 +367,16 @@ function createEmailProvider() {
   ];
 }
 
-function buildVerificationEmailHtml(params: { url: string; appName: string }) {
+async function buildVerificationEmailHtml(params: { url: string; appName: string }) {
   const { url, appName } = params;
 
-  return `
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <title>${appName} — Sign in</title>
-        <style>
-          body { font-family: Arial, sans-serif; background: #f7f7fb; color: #1a1a1f; padding: 32px; }
-          .container { max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 16px 32px rgba(24, 25, 31, 0.08); }
-          .logo { font-size: 20px; font-weight: 700; color: #2f4cff; text-transform: uppercase; letter-spacing: 0.2em; }
-          .headline { font-size: 24px; font-weight: 600; margin: 24px 0 12px; color: #111827; }
-          .muted { color: #6b7280; font-size: 14px; line-height: 1.6; }
-          .button { display: inline-block; margin: 32px 0; padding: 14px 24px; background: linear-gradient(135deg, #2f4cff, #6c7bff); color: #ffffff !important; text-decoration: none; border-radius: 999px; font-weight: 600; }
-          .link { word-break: break-all; color: #2f4cff; text-decoration: none; font-size: 13px; }
-          .footer { margin-top: 32px; font-size: 12px; color: #9ca3af; line-height: 1.5; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="logo">${appName}</div>
-          <h1 class="headline">Подтверждение входа</h1>
-          <p class="muted">
-            Мы получили запрос на вход в ${appName}. Нажмите на кнопку ниже, чтобы завершить авторизацию.
-            Ссылка действует 24 часа и может быть использована только один раз.
-          </p>
-          <a class="button" href="${url}" style="display: inline-block; margin: 32px 0; padding: 14px 24px; background: linear-gradient(135deg, #2f4cff, #6c7bff); color: #ffffff !important; text-decoration: none; border-radius: 999px; font-weight: 600;">Войти в аккаунт</a>
-          <p class="muted">
-            Если кнопка не работает, скопируйте и вставьте эту ссылку в адресную строку браузера:
-          </p>
-          <p><a class="link" href="${url}">${url}</a></p>
-          <p class="footer">
-            Если вы не запрашивали вход, просто проигнорируйте это письмо. Ссылка станет недействительной автоматически.
-          </p>
-        </div>
-      </body>
-    </html>
-  `;
+  // Render email using React Email
+  return await render(React.createElement(VerificationEmail, { url, appName }));
 }
 
 function buildVerificationEmailText(params: { url: string; appName: string }) {
   const { url, appName } = params;
-  return `Вход в ${appName}\n\nИспользуйте ссылку ниже, чтобы войти в свой аккаунт:\n${url}\n\nЕсли вы не запрашивали вход, просто проигнорируйте это письмо.`;
+  return `Sign in to ${appName}\n\nUse the link below to sign in to your account:\n${url}\n\nIf you didn't request to sign in, please ignore this email.`;
 }
 
 // =============================================================================

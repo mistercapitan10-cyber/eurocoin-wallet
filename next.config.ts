@@ -9,7 +9,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' https://fonts.gstatic.com; " +
       "img-src 'self' data: https: blob:; " +
-      "connect-src 'self' https://*.infura.io https://*.alchemyapi.io https://sepolia.drpc.org https://*.drpc.org https://*.etherscan.io https://api.coingecko.com https://dexscreener.com https://api.telegram.org https://api.resend.com https://api.exchangerate-api.com https://mm-sdk-analytics.api.cx.metamask.io wss://*.infura.io wss://*.alchemyapi.io; " +
+      "connect-src 'self' https://*.infura.io https://*.alchemyapi.io https://sepolia.drpc.org https://*.drpc.org https://*.etherscan.io https://api.coingecko.com https://dexscreener.com https://api.telegram.org https://api.resend.com https://api.exchangerate-api.com https://mm-sdk-analytics.api.cx.metamask.io https://metamask-sdk.api.cx.metamask.io wss://*.infura.io wss://*.alchemyapi.io; " +
       "frame-src 'self' https://dexscreener.com https://*.spline.tool; " +
       "object-src 'none'; " +
       "base-uri 'self'; " +

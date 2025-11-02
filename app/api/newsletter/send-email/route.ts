@@ -1,6 +1,9 @@
+import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/database/db";
 import nodemailer from "nodemailer";
+import { render } from "@react-email/render";
+import { NewsletterEmail } from "@/emails/NewsletterEmail";
 
 // Настройка Nodemailer
 function createTransporter() {
@@ -42,25 +45,22 @@ export async function POST(request: NextRequest) {
       errors: [] as string[],
     };
 
-    // Отправляем письма
+    // Render email using React Email
+    const unsubscribeUrl = process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/newsletter/unsubscribe`
+      : undefined;
+    const emailHtml = await render(
+      React.createElement(NewsletterEmail, { message, unsubscribeUrl }),
+    );
+
+    // Send emails
     for (const subscriber of subscribers.rows) {
       try {
         await transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: subscriber.email,
           subject: "EuroCoin Newsletter",
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #10b981;">EuroCoin Newsletter</h2>
-              <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                ${message.replace(/\n/g, "<br>")}
-              </div>
-              <p style="margin-top: 20px; color: #6b7280; font-size: 14px;">
-                Вы получили это письмо, потому что подписаны на рассылку EuroCoin.<br>
-                <a href="${process.env.NEXT_PUBLIC_APP_URL}/newsletter/unsubscribe" style="color: #10b981;">Отписаться от рассылки</a>
-              </p>
-            </div>
-          `,
+          html: emailHtml,
           text: message,
         });
         results.sent++;
@@ -86,7 +86,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to send newsletter" }, { status: 500 });
   }
 }
-
-
-
-

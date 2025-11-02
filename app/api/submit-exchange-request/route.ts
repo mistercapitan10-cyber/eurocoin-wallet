@@ -1,6 +1,8 @@
+import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { Markup } from "telegraf";
 import { Resend } from "resend";
+import { render } from "@react-email/render";
 import { createExchangeRequest } from "@/lib/database/queries";
 import { notifyNewExchangeRequest } from "@/lib/telegram/notify-admin";
 import {
@@ -10,6 +12,7 @@ import {
 } from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 import { getTelegramApi } from "@/lib/telegram/bot";
+import { ExchangeRequestEmail } from "@/emails/ExchangeRequestEmail";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -160,85 +163,21 @@ ${filesInfo}
       // Don't fail the request if notification fails
     });
 
-    // Send email notification
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-            .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-            .field { margin-bottom: 15px; }
-            .label { font-weight: bold; color: #667eea; display: block; margin-bottom: 5px; }
-            .value { padding: 10px; background: white; border-radius: 4px; border-left: 3px solid #667eea; font-family: monospace; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h2 style="margin: 0;">🔔 Новая заявка на обмен токенов</h2>
-            </div>
-            <div class="content">
-              <div class="field">
-                <span class="label">ID заявки:</span>
-                <div class="value">${requestId}</div>
-              </div>
-              <div class="field">
-                <span class="label">Сумма токенов:</span>
-                <div class="value">${data.tokenAmount} TOKEN</div>
-              </div>
-              <div class="field">
-                <span class="label">Сумма фиата:</span>
-                <div class="value">${data.fiatAmount} EUR</div>
-              </div>
-              <div class="field">
-                <span class="label">Курс:</span>
-                <div class="value">${data.rate}</div>
-              </div>
-              <div class="field">
-                <span class="label">Комиссия:</span>
-                <div class="value">${data.commission}</div>
-              </div>
-              <div class="field">
-                <span class="label">Адрес кошелька:</span>
-                <div class="value">${data.walletAddress}</div>
-              </div>
-              <div class="field">
-                <span class="label">Email клиента:</span>
-                <div class="value">${data.email}</div>
-              </div>
-              ${
-                data.comment
-                  ? `
-              <div class="field">
-                <span class="label">Комментарий:</span>
-                <div class="value">${data.comment}</div>
-              </div>
-              `
-                  : ""
-              }
-              ${
-                data.files && data.files.length > 0
-                  ? `
-              <div class="field">
-                <span class="label">Прикрепленные файлы:</span>
-                <div class="value">${data.files.length} шт.</div>
-              </div>
-              `
-                  : ""
-              }
-              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-              <p style="font-size: 12px; color: #666;">
-                Время: ${new Date().toLocaleString("ru-RU")}
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    // Render email using React Email
+    const emailHtml = await render(
+      React.createElement(ExchangeRequestEmail, {
+        requestId: requestId,
+        tokenAmount: data.tokenAmount,
+        fiatAmount: data.fiatAmount,
+        rate: data.rate,
+        commission: data.commission,
+        walletAddress: data.walletAddress,
+        email: data.email,
+        comment: data.comment,
+        filesCount: data.files?.length,
+        submittedAt: new Date().toLocaleString("en-US"),
+      }),
+    );
 
     if (resend) {
       await resend.emails.send({

@@ -1,13 +1,16 @@
+import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/database/db";
 import nodemailer from "nodemailer";
+import { render } from "@react-email/render";
+import { VerificationCodeEmail } from "@/emails/VerificationCodeEmail";
 
-// Генерация 6-значного кода
+// Generate 6-digit code
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Настройка Nodemailer
+// Configure Nodemailer
 async function sendEmail(email: string, code: string) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -17,22 +20,15 @@ async function sendEmail(email: string, code: string) {
     },
   });
 
+  // Render email using React Email
+  const emailHtml = await render(React.createElement(VerificationCodeEmail, { code }));
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "Код подтверждения подписки - EuroCoin",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #10b981;">Подтверждение подписки на рассылку</h2>
-        <p>Ваш код подтверждения:</p>
-        <div style="background-color: #f3f4f6; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #10b981; border-radius: 8px;">
-          ${code}
-        </div>
-        <p style="margin-top: 20px; color: #6b7280; font-size: 14px;">Этот код действителен в течение 5 минут.</p>
-        <p style="margin-top: 20px; color: #9ca3af; font-size: 12px;">Если вы не запрашивали этот код, просто проигнорируйте это письмо.</p>
-      </div>
-    `,
-    text: `Ваш код подтверждения: ${code}`,
+    subject: "Newsletter Subscription Confirmation - EuroCoin",
+    html: emailHtml,
+    text: `Your verification code: ${code}`,
   };
 
   return await transporter.sendMail(mailOptions);
@@ -67,7 +63,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Отправляем код на email
+    // Send code to email
     try {
       await sendEmail(email, code);
     } catch (emailError) {
@@ -84,7 +80,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to send code" }, { status: 500 });
   }
 }
-
-
-
-

@@ -1,6 +1,8 @@
+import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { Markup } from "telegraf";
+import { render } from "@react-email/render";
 import { createInternalRequest } from "@/lib/database/queries";
 import { notifyNewInternalRequest } from "@/lib/telegram/notify-admin";
 import {
@@ -10,6 +12,7 @@ import {
 } from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 import { getTelegramApi } from "@/lib/telegram/bot";
+import { InternalRequestEmail } from "@/emails/InternalRequestEmail";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -97,74 +100,18 @@ export async function POST(request: NextRequest) {
     // Format email content
     const emailSubject = `[${data.priority.toUpperCase()}] ${requestTypeMap[data.requestType] || data.requestType} - ${data.requester}`;
 
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-            .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-            .field { margin-bottom: 15px; }
-            .label { font-weight: bold; color: #667eea; display: block; margin-bottom: 5px; }
-            .value { padding: 10px; background: white; border-radius: 4px; border-left: 3px solid #667eea; }
-            .priority-badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-            .priority-low { background: #d4edda; color: #155724; }
-            .priority-normal { background: #fff3cd; color: #856404; }
-            .priority-high { background: #f8d7da; color: #721c24; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h2 style="margin: 0;">Internal Token Operation Request</h2>
-            </div>
-            <div class="content">
-              <div class="field">
-                <span class="label">Requester:</span>
-                <div class="value">${data.requester}</div>
-              </div>
-              <div class="field">
-                <span class="label">Department:</span>
-                <div class="value">${departmentMap[data.department] || data.department}</div>
-              </div>
-              <div class="field">
-                <span class="label">Request Type:</span>
-                <div class="value">${requestTypeMap[data.requestType] || data.requestType}</div>
-              </div>
-              <div class="field">
-                <span class="label">Priority:</span>
-                <div class="value">
-                  <span class="priority-badge priority-${data.priority}">
-                    ${data.priority.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-              <div class="field">
-                <span class="label">Description:</span>
-                <div class="value" style="white-space: pre-wrap;">${data.description}</div>
-              </div>
-              ${
-                data.files && data.files.length > 0
-                  ? `
-              <div class="field">
-                <span class="label">Прикрепленные файлы:</span>
-                <div class="value">${data.files.length} шт.</div>
-              </div>
-              `
-                  : ""
-              }
-              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-              <p style="font-size: 12px; color: #666;">
-                This request was submitted through the internal dashboard at ${new Date().toLocaleString()}.
-              </p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    // Render email using React Email
+    const emailHtml = await render(
+      React.createElement(InternalRequestEmail, {
+        requester: data.requester,
+        department: departmentMap[data.department] || data.department,
+        requestType: requestTypeMap[data.requestType] || data.requestType,
+        priority: data.priority,
+        description: data.description,
+        filesCount: data.files?.length,
+        submittedAt: new Date().toLocaleString(),
+      }),
+    );
 
     // Send email using Resend
     let emailData: { id: string } | undefined;
