@@ -5,7 +5,7 @@
  * Displays OAuth provider buttons (Google)
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
 import toast from 'react-hot-toast';
@@ -23,10 +23,38 @@ interface OAuthButtonsProps {
 export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButtonsProps) {
   const t = useTranslation();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGoogleAvailable, setIsGoogleAvailable] = useState(true);
+
+  // Check if Google OAuth is available on mount
+  useEffect(() => {
+    checkGoogleAvailability();
+  }, []);
+
+  // Check if Google OAuth provider is available
+  async function checkGoogleAvailability() {
+    try {
+      const response = await fetch('/api/auth/providers');
+      if (!response.ok) {
+        setIsGoogleAvailable(false);
+        return;
+      }
+      const providers = await response.json();
+      setIsGoogleAvailable(!!providers?.google);
+    } catch (error) {
+      console.warn('[OAuth] Failed to check providers availability:', error);
+      setIsGoogleAvailable(false);
+    }
+  }
 
   const handleGoogleSignIn = async () => {
     try {
       setIsGoogleLoading(true);
+
+      // Get CSRF token first
+      const csrfToken = await getCsrfToken();
+      if (!csrfToken) {
+        throw new Error('Failed to get CSRF token. Please try again later.');
+      }
 
       // Create form and submit to NextAuth Google OAuth endpoint
       const form = document.createElement('form');
@@ -44,7 +72,7 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
       const csrfInput = document.createElement('input');
       csrfInput.type = 'hidden';
       csrfInput.name = 'csrfToken';
-      csrfInput.value = await getCsrfToken();
+      csrfInput.value = csrfToken;
       form.appendChild(csrfInput);
 
       document.body.appendChild(form);
@@ -57,19 +85,45 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
 
       toast.error(message);
       setIsGoogleLoading(false);
+      setIsGoogleAvailable(false);
     }
   };
 
-  // Helper function to get CSRF token
+  // Helper function to get CSRF token with better error handling
   async function getCsrfToken(): Promise<string> {
     try {
       const response = await fetch('/api/auth/csrf');
+      
+      if (!response.ok) {
+        // If server returns error, try to get text to see what's wrong
+        const text = await response.text();
+        console.error('[OAuth] CSRF endpoint returned error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: text.substring(0, 200),
+        });
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) {
+        const text = await response.text();
+        console.error('[OAuth] CSRF endpoint returned non-JSON:', text.substring(0, 200));
+        throw new Error('Invalid response format from server');
+      }
+
       const data = await response.json();
       return data.csrfToken || '';
     } catch (error) {
       console.error('[OAuth] Failed to get CSRF token:', error);
-      return '';
+      throw error; // Re-throw to let handleGoogleSignIn handle it
     }
+  }
+
+  // Don't render Google button if provider is not available
+  if (!isGoogleAvailable) {
+    return null;
   }
 
   return (

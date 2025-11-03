@@ -79,7 +79,42 @@ try {
 // NextAuth Configuration
 // =============================================================================
 
+// Check if NEXTAUTH_SECRET is set (critical for NextAuth to work)
+if (!process.env.NEXTAUTH_SECRET) {
+  console.warn("[AUTH] ⚠️  NEXTAUTH_SECRET is not set. NextAuth may not work correctly.");
+  console.warn("[AUTH] ⚠️  Generate a secret with: openssl rand -base64 32");
+}
+
+// Log environment configuration (without sensitive values)
+console.log("[AUTH] Configuration check:", {
+  hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+  nextAuthUrl: process.env.NEXTAUTH_URL || "not set",
+  hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+  hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+  hasResendApiKey: !!process.env.RESEND_API_KEY,
+  senderEmail: process.env.SENDER_EMAIL || "not set",
+  hasDatabaseUrl: !!process.env.DATABASE_URL,
+  nodeEnv: process.env.NODE_ENV,
+});
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // ---------------------------------------------------------------------------
+  // Secret for JWT signing (required for production)
+  // ---------------------------------------------------------------------------
+  secret: process.env.NEXTAUTH_SECRET,
+
+  // ---------------------------------------------------------------------------
+  // Trust Host (required for production/Vercel)
+  // ---------------------------------------------------------------------------
+  trustHost: true, // Trust the host header from reverse proxy (Vercel)
+
+  // ---------------------------------------------------------------------------
+  // Base URL (explicit for production)
+  // ---------------------------------------------------------------------------
+  ...(process.env.NEXTAUTH_URL && {
+    baseUrl: process.env.NEXTAUTH_URL,
+  }),
+
   // ---------------------------------------------------------------------------
   // Database Adapter (optional)
   // ---------------------------------------------------------------------------
@@ -330,13 +365,30 @@ function createEmailProvider() {
           console.log("[AUTH][EMAIL] Attempting to send verification email", {
             to: identifier,
             from: fromAddress,
+            urlLength: url.length,
+            hasResendApiKey: !!resendApiKey,
           });
 
+          // Build email HTML first
+          let emailHtml: string;
+          try {
+            emailHtml = await buildVerificationEmailHtml({ url, appName });
+            console.log("[AUTH][EMAIL] Email HTML built successfully", {
+              htmlLength: emailHtml.length,
+            });
+          } catch (htmlError) {
+            console.error("[AUTH][EMAIL] Failed to build email HTML:", htmlError);
+            throw new Error(
+              `Failed to build email HTML: ${htmlError instanceof Error ? htmlError.message : String(htmlError)}`,
+            );
+          }
+
+          // Send email via Resend
           const result = await resend.emails.send({
             from: fromAddress,
             to: identifier,
             subject: `${appName}: Sign in link`,
-            html: await buildVerificationEmailHtml({ url, appName }),
+            html: emailHtml,
             text: buildVerificationEmailText({ url, appName }),
           });
 
@@ -345,6 +397,8 @@ function createEmailProvider() {
               error: result.error,
               code: result.error.name,
               message: result.error.message,
+              identifier,
+              from: fromAddress,
             });
             throw result.error;
           }
@@ -352,11 +406,14 @@ function createEmailProvider() {
           console.log("[AUTH][EMAIL] Verification email sent successfully", {
             identifier,
             emailId: result.data?.id,
+            from: fromAddress,
           });
         } catch (error) {
           console.error("[AUTH][EMAIL] Failed to send verification email", {
             identifier,
+            from: fromAddress,
             error: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
             errorDetails: error,
           });
           // Re-throw to let NextAuth handle it
