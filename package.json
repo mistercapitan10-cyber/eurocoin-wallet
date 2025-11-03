@@ -17,6 +17,7 @@
     "test:email": "tsx scripts/test-email-send.ts",
     "auth:migrate": "tsx scripts/apply-auth-migration.ts",
     "auth:create-tables": "tsx scripts/create-nextauth-tables.ts",
+    "auth:fix-userid": "tsx scripts/fix-userid-columns.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
