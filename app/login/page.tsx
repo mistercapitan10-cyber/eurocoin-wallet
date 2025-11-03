@@ -34,7 +34,7 @@ function LoginPageContent() {
     const error = searchParams.get("error");
     if (error && !hasShownError.current) {
       hasShownError.current = true;
-      
+
       let errorMessage = "";
       switch (error) {
         case "Configuration":
@@ -50,10 +50,10 @@ function LoginPageContent() {
         default:
           errorMessage = `Authentication error: ${error}`;
       }
-      
+
       toast.error(errorMessage);
       console.error("[Login] Auth error from URL:", error);
-      
+
       // Remove error from URL after showing
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete("error");
@@ -65,7 +65,11 @@ function LoginPageContent() {
   // NOTE: Server-side middleware handles redirects for page navigation,
   // but we need client-side redirect for real-time authentication state changes
   useEffect(() => {
-    console.log('[Login] useEffect triggered', { isAuthenticated, isLoading, hasRedirected: hasRedirected.current });
+    console.log("[Login] useEffect triggered", {
+      isAuthenticated,
+      isLoading,
+      hasRedirected: hasRedirected.current,
+    });
 
     // Don't redirect if still loading or already redirected
     if (isLoading || hasRedirected.current) {
@@ -74,9 +78,9 @@ function LoginPageContent() {
 
     // If authenticated, redirect to home page
     if (isAuthenticated) {
-      console.log('[Login] User authenticated, redirecting to home...');
+      console.log("[Login] User authenticated, redirecting to home...");
       hasRedirected.current = true;
-      
+
       // Clear any pending timeouts
       if (redirectTimeoutRef.current) {
         clearTimeout(redirectTimeoutRef.current);
@@ -86,8 +90,8 @@ function LoginPageContent() {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
       }
-      
-      router.push('/');
+
+      router.push("/");
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -119,10 +123,10 @@ function LoginPageContent() {
       if (isConnected) {
         Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
         toast.success(t("login.walletConnected"));
-        
+
         // Set flag that redirect will happen
         hasRedirected.current = false;
-        
+
         // Redirect after 1.5 seconds
         redirectTimeoutRef.current = setTimeout(() => {
           hasRedirected.current = true;
@@ -148,10 +152,10 @@ function LoginPageContent() {
       // Set cookie to indicate successful MetaMask connection
       Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
       toast.success(t("login.walletConnectedSuccess"));
-      
+
       // Set flag that redirect will happen
       hasRedirected.current = false;
-      
+
       // Redirect to home page after successful connection
       redirectTimeoutRef.current = setTimeout(() => {
         hasRedirected.current = true;
@@ -179,7 +183,7 @@ function LoginPageContent() {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
       }
-      
+
       const message = error instanceof Error ? error.message : t("login.connectError");
       toast.error(message);
     }
@@ -188,19 +192,19 @@ function LoginPageContent() {
   return (
     <>
       <PageTitle title="Login" description="Connect your MetaMask wallet" />
-      <main className="dark:from-dark-backgroundAlt dark:to-dark-background min-h-screen bg-gradient-to-br from-backgroundAlt to-background">
+      <main className="min-h-screen bg-gradient-to-br from-backgroundAlt to-background dark:from-dark-backgroundAlt dark:to-dark-background">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-12 md:flex-row md:items-center md:justify-between md:gap-10 md:px-10 md:py-16">
           <div className="flex-1 space-y-4 sm:space-y-6">
-            <span className="pill dark:bg-dark-surface dark:text-dark-foreground bg-surface text-xs text-foreground sm:text-sm">
+            <span className="pill bg-surface text-xs text-foreground dark:bg-dark-surface dark:text-dark-foreground sm:text-sm">
               {t("login.badge")}
             </span>
             <h1 className="text-3xl font-bold text-accent sm:text-4xl md:text-5xl">
               {t("login.heading")}
             </h1>
-            <p className="dark:text-dark-foregroundMuted max-w-xl text-sm text-foregroundMuted sm:text-base md:text-lg">
+            <p className="max-w-xl text-sm text-foregroundMuted dark:text-dark-foregroundMuted sm:text-base md:text-lg">
               {t("login.descriptionText")}
             </p>
-            <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-3 rounded-2xl border border-outline bg-surface p-4 shadow-card sm:gap-4 sm:rounded-3xl sm:p-6">
+            <div className="flex flex-col gap-3 rounded-2xl border border-outline bg-surface p-4 shadow-card dark:border-dark-outline dark:bg-dark-surface sm:gap-4 sm:rounded-3xl sm:p-6">
               {/* MetaMask Button */}
               <Button
                 size="lg"
@@ -227,11 +231,11 @@ function LoginPageContent() {
               {/* Email login */}
               <EmailSignInForm callbackUrl="/" disabled={isLoading} />
 
-              <p className="dark:text-dark-foregroundMuted text-[10px] text-foregroundMuted sm:text-xs">
+              <p className="text-[10px] text-foregroundMuted dark:text-dark-foregroundMuted sm:text-xs">
                 {t("login.disclaimer")}
               </p>
             </div>
-            <div className="dark:text-dark-foregroundMuted flex flex-wrap gap-3 text-[10px] text-foregroundMuted sm:gap-4 sm:text-xs">
+            <div className="flex flex-wrap gap-3 text-[10px] text-foregroundMuted dark:text-dark-foregroundMuted sm:gap-4 sm:text-xs">
               <Link href="/info/requests" className="underline hover:text-accent">
                 {t("login.link.requests")}
               </Link>
@@ -272,10 +276,10 @@ function LoginPageContent() {
         <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12 md:px-10">
           <section>
             <div className="mb-4 text-center sm:mb-6">
-              <h2 className="dark:text-dark-foreground mb-2 text-2xl font-bold text-foreground sm:text-3xl">
+              <h2 className="mb-2 text-2xl font-bold text-foreground dark:text-dark-foreground sm:text-3xl">
                 {t("eurocoin.sectionTitle")}
               </h2>
-              <p className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted sm:text-base">
+              <p className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted sm:text-base">
                 {t("eurocoin.sectionDescription")}
               </p>
             </div>
@@ -300,11 +304,13 @@ function LoginPageContent() {
 // Export default with Suspense boundary for useSearchParams
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-current border-t-transparent" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-current border-t-transparent" />
+        </div>
+      }
+    >
       <LoginPageContent />
     </Suspense>
   );

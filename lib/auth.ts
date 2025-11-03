@@ -97,6 +97,22 @@ console.log("[AUTH] Configuration check:", {
   nodeEnv: process.env.NODE_ENV,
 });
 
+// Validate NEXTAUTH_URL format
+const nextAuthUrl = process.env.NEXTAUTH_URL;
+if (nextAuthUrl) {
+  try {
+    const url = new URL(nextAuthUrl);
+    console.log("[AUTH] NEXTAUTH_URL validated:", {
+      protocol: url.protocol,
+      host: url.host,
+      origin: url.origin,
+    });
+  } catch {
+    console.error("[AUTH] ❌ Invalid NEXTAUTH_URL format:", nextAuthUrl);
+    console.error("[AUTH] ❌ NEXTAUTH_URL must be a valid URL (e.g., https://www.euro-coin.eu)");
+  }
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   // Secret for JWT signing (required for production)
@@ -111,8 +127,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   // Base URL (explicit for production)
   // ---------------------------------------------------------------------------
-  ...(process.env.NEXTAUTH_URL && {
-    baseUrl: process.env.NEXTAUTH_URL,
+  ...(nextAuthUrl && {
+    baseUrl: nextAuthUrl,
   }),
 
   // ---------------------------------------------------------------------------
@@ -284,6 +300,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: user.email,
         provider: account?.provider,
         isNewUser,
+        accountId: account?.providerAccountId,
       });
 
       // Here you can send analytics events, notifications, etc.
