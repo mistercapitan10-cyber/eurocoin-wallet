@@ -14,6 +14,7 @@ import { VerificationEmail } from "@/emails/VerificationEmail";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/database/drizzle";
 import { users, accounts, sessions, verificationTokens } from "@/lib/database/auth-schema";
+import { eq, and } from "drizzle-orm";
 import type { AuthType } from "@/types/auth";
 
 // =============================================================================
@@ -50,7 +51,6 @@ try {
   if (process.env.DATABASE_URL || process.env.DATABASE_POSTGRES_URL) {
     // Use DrizzleAdapter with custom schema
     // This ensures it uses the correct table names: users, accounts, sessions, verification_tokens
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adapter = DrizzleAdapter(db, {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       usersTable: users as any,
@@ -60,8 +60,7 @@ try {
       sessionsTable: sessions as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       verificationTokensTable: verificationTokens as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }) as any;
+    }) as ReturnType<typeof DrizzleAdapter>;
     console.log("[AUTH] ✅ Database adapter enabled for email authentication");
     console.log("[AUTH] Adapter details:", {
       hasUsersTable: !!users,
@@ -245,6 +244,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const googleProvider = Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            // Allow linking accounts with same email automatically
+            allowDangerousEmailAccountLinking: true,
           });
 
           console.log("[AUTH] ✅ Google OAuth provider initialized:", {
@@ -281,15 +282,73 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     /**
      * Called when user signs in
      * Good place to check if user exists and update authType
+     * Allows linking OAuth accounts to existing users with same email
      */
     async signIn({ user, account, profile }) {
+      const email = profile?.email || user?.email;
+      const provider = account?.provider;
+
       // Log sign-in attempt
       console.log("[AUTH] Sign in attempt:", {
-        provider: account?.provider,
-        email: profile?.email || user?.email,
+        provider,
+        email,
         userId: user?.id,
         accountId: account?.providerAccountId,
+        hasAdapter: !!adapter,
       });
+
+      // For OAuth providers (Google), check if user with same email exists
+      // and allow linking the account automatically
+      if (provider === "google" && email && adapter) {
+        try {
+          // Check if user with this email already exists
+          const [existingUser] = await db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.email, email))
+            .limit(1);
+
+          if (existingUser) {
+            console.log("[AUTH] User with email exists, allowing account linking:", {
+              email,
+              existingUserId: existingUser.id,
+              newUserId: user?.id,
+            });
+
+            // Check if Google account is already linked
+            const [existingAccount] = await db
+              .select({ id: accounts.id })
+              .from(accounts)
+              .where(
+                and(
+                  eq(accounts.provider, "google"),
+                  eq(accounts.providerAccountId, account?.providerAccountId || ""),
+                ),
+              )
+              .limit(1);
+
+            if (!existingAccount) {
+              console.log("[AUTH] Existing user found with same email, allowing account linking:", {
+                userId: existingUser.id,
+                providerAccountId: account?.providerAccountId,
+                email,
+              });
+              // NextAuth.js will automatically link the account due to allowDangerousEmailAccountLinking: true
+            } else {
+              console.log("[AUTH] Google account already linked to user:", {
+                userId: existingUser.id,
+                accountId: existingAccount.id,
+              });
+            }
+
+            // Allow sign in - NextAuth will handle account linking automatically
+            return true;
+          }
+        } catch (error) {
+          console.error("[AUTH] ❌ Error checking for existing user:", error);
+          // Continue with normal sign-in flow
+        }
+      }
 
       // Always allow sign in (validation happens in other callbacks)
       return true;
