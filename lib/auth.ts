@@ -75,6 +75,36 @@ try {
   adapter = undefined;
 }
 
+// Auto-detect NEXTAUTH_URL for local development if not set
+let nextAuthUrlToUse = process.env.NEXTAUTH_URL;
+if (!nextAuthUrlToUse && process.env.NODE_ENV !== "production") {
+  // Auto-detect from VERCEL_URL or use localhost
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) {
+    nextAuthUrlToUse = `https://${vercelUrl}`;
+    console.log("[AUTH] Using VERCEL_URL for NEXTAUTH_URL:", nextAuthUrlToUse);
+  } else {
+    nextAuthUrlToUse = "http://localhost:3000";
+    console.log("[AUTH] Auto-detected NEXTAUTH_URL for localhost:", nextAuthUrlToUse);
+  }
+}
+
+const nextAuthUrlConfig = normalizeNextAuthUrl(nextAuthUrlToUse);
+const nextAuthUrl = nextAuthUrlConfig.url;
+
+if (nextAuthUrlConfig.warnings.length > 0) {
+  for (const warning of nextAuthUrlConfig.warnings) {
+    console.warn("[AUTH] NEXTAUTH_URL warning:", warning);
+  }
+}
+
+if (nextAuthUrlToUse && !nextAuthUrl) {
+  console.error("[AUTH] ❌ Invalid NEXTAUTH_URL value:", nextAuthUrlToUse);
+  if (nextAuthUrlConfig.error) {
+    console.error("[AUTH] ❌ NEXTAUTH_URL parse error:", nextAuthUrlConfig.error);
+  }
+}
+
 // =============================================================================
 // NextAuth Configuration
 // =============================================================================
@@ -88,7 +118,8 @@ if (!process.env.NEXTAUTH_SECRET) {
 // Log environment configuration (without sensitive values)
 console.log("[AUTH] Configuration check:", {
   hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
-  nextAuthUrl: process.env.NEXTAUTH_URL || "not set",
+  rawNextAuthUrl: process.env.NEXTAUTH_URL || "not set (auto-detecting)",
+  finalNextAuthUrl: nextAuthUrl || "not set",
   hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
   hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
   hasResendApiKey: !!process.env.RESEND_API_KEY,
@@ -106,8 +137,6 @@ if (!adapter && process.env.RESEND_API_KEY) {
   console.error("[AUTH] ⚠️  Set DATABASE_URL and run 'npm run auth:migrate' to enable email login");
 }
 
-// Validate NEXTAUTH_URL format
-const nextAuthUrl = process.env.NEXTAUTH_URL;
 if (nextAuthUrl) {
   try {
     const url = new URL(nextAuthUrl);
@@ -117,9 +146,13 @@ if (nextAuthUrl) {
       origin: url.origin,
     });
   } catch {
-    console.error("[AUTH] ❌ Invalid NEXTAUTH_URL format:", nextAuthUrl);
+    console.error("[AUTH] ❌ Invalid NEXTAUTH_URL format after normalization:", nextAuthUrl);
     console.error("[AUTH] ❌ NEXTAUTH_URL must be a valid URL (e.g., https://www.euro-coin.eu)");
   }
+} else if (process.env.NEXTAUTH_URL) {
+  console.error(
+    "[AUTH] ❌ NEXTAUTH_URL is set but could not be normalized. OAuth callbacks may fail.",
+  );
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -346,7 +379,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   pages: {
     signIn: "/login", // Custom login page
-    error: "/login?error=Configuration", // Redirect errors to login page with error param
+    error: "/login", // NextAuth appends ?error=... automatically
     // signOut: '/login',
     // verifyRequest: '/auth/verify',
   },
@@ -378,6 +411,61 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 // =============================================================================
 // Helper Functions
 // =============================================================================
+
+function normalizeNextAuthUrl(rawUrl?: string) {
+  const warnings: string[] = [];
+
+  if (!rawUrl) {
+    return { url: undefined, warnings } as const;
+  }
+
+  let candidate = rawUrl.trim();
+
+  if (!candidate) {
+    warnings.push("NEXTAUTH_URL is set but empty after trimming whitespace.");
+    return { url: undefined, warnings, error: "Empty NEXTAUTH_URL value" } as const;
+  }
+
+  if (
+    (candidate.startsWith('"') && candidate.endsWith('"')) ||
+    (candidate.startsWith("'") && candidate.endsWith("'"))
+  ) {
+    warnings.push("Removed wrapping quotes from NEXTAUTH_URL value.");
+    candidate = candidate.slice(1, -1).trim();
+  }
+
+  const prefixPattern = /^NEXTAUTH_URL\s*=/i;
+  let safety = 0;
+  while (prefixPattern.test(candidate) && safety < 5) {
+    warnings.push("Removed accidental 'NEXTAUTH_URL=' prefix from NEXTAUTH_URL value.");
+    candidate = candidate.replace(prefixPattern, "").trim();
+    safety += 1;
+  }
+
+  if (!candidate) {
+    warnings.push("NEXTAUTH_URL became empty after sanitization.");
+    return { url: undefined, warnings, error: "Empty after sanitization" } as const;
+  }
+
+  if (candidate.endsWith("/")) {
+    warnings.push("Removed trailing slash from NEXTAUTH_URL value.");
+    candidate = candidate.replace(/\/+$/, "");
+  }
+
+  try {
+    const parsed = new URL(candidate);
+    if (parsed.pathname !== "/" || parsed.search || parsed.hash) {
+      warnings.push("Ignored path, query, or hash in NEXTAUTH_URL; using origin only.");
+    }
+    return { url: parsed.origin, warnings } as const;
+  } catch (error) {
+    return {
+      url: undefined,
+      warnings,
+      error: error instanceof Error ? error.message : String(error),
+    } as const;
+  }
+}
 
 function createEmailProvider() {
   const resendApiKey = process.env.RESEND_API_KEY;

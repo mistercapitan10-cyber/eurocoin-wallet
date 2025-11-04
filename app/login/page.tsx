@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PageTitle } from "@/components/layout/page-title";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, useRef, Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { OAuthButtons, AuthDivider, EmailSignInForm } from "@/components/auth";
@@ -22,12 +22,22 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { connect, isConnecting, isConnected } = useWalletConnection();
-  const { isAuthenticated, authType, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const t = useTranslation();
   const hasRedirected = useRef(false);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasShownError = useRef(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch - use startTransition to avoid cascading renders
+  useEffect(() => {
+    // Use setTimeout to defer state update after initial render
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle authentication errors from URL params
   useEffect(() => {
@@ -210,13 +220,15 @@ function LoginPageContent() {
                 size="lg"
                 fullWidth
                 onClick={handleMetaMaskConnect}
-                disabled={isConnecting || isLoading}
+                disabled={isConnecting || isLoading || !isMounted}
               >
-                {isConnecting
-                  ? t("login.connecting")
-                  : isConnected
-                    ? t("login.continue")
-                    : t("login.connect")}
+                {!isMounted
+                  ? t("login.connect")
+                  : isConnecting
+                    ? t("login.connecting")
+                    : isConnected
+                      ? t("login.continue")
+                      : t("login.connect")}
               </Button>
 
               {/* Divider */}
