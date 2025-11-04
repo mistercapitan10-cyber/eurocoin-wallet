@@ -105,6 +105,24 @@ if (nextAuthUrlToUse && !nextAuthUrl) {
   }
 }
 
+// Ensure sanitized URL is propagated to both legacy and new Auth.js environment variables
+if (nextAuthUrl) {
+  if (process.env.NEXTAUTH_URL !== nextAuthUrl) {
+    console.log("[AUTH] Overriding NEXTAUTH_URL with sanitized value:", nextAuthUrl);
+    process.env.NEXTAUTH_URL = nextAuthUrl;
+  }
+
+  if (!process.env.AUTH_URL || process.env.AUTH_URL !== nextAuthUrl) {
+    console.log("[AUTH] Syncing AUTH_URL with sanitized NEXTAUTH_URL:", nextAuthUrl);
+    process.env.AUTH_URL = nextAuthUrl;
+  }
+
+  if (!process.env.AUTH_TRUST_HOST) {
+    console.log("[AUTH] Setting AUTH_TRUST_HOST=true to trust incoming host headers");
+    process.env.AUTH_TRUST_HOST = "true";
+  }
+}
+
 // =============================================================================
 // NextAuth Configuration
 // =============================================================================
@@ -120,6 +138,7 @@ console.log("[AUTH] Configuration check:", {
   hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
   rawNextAuthUrl: process.env.NEXTAUTH_URL || "not set (auto-detecting)",
   finalNextAuthUrl: nextAuthUrl || "not set",
+  authUrl: process.env.AUTH_URL || "not set",
   hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
   hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
   hasResendApiKey: !!process.env.RESEND_API_KEY,
@@ -336,6 +355,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Events (for logging/analytics)
   // ---------------------------------------------------------------------------
   events: {
+    async error(error) {
+      console.error("[AUTH EVENT] Error encountered:", {
+        name: error?.name,
+        message: error?.message,
+        cause: error?.cause,
+        stack: error?.stack,
+        url: error?.url,
+        type: error?.type,
+      });
+    },
+
     async signIn({ user, account, isNewUser }) {
       console.log("[AUTH EVENT] User signed in:", {
         userId: user.id,
@@ -406,6 +436,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Debug (only in development)
   // ---------------------------------------------------------------------------
   debug: process.env.NODE_ENV === "development",
+
+  logger: {
+    error(code, metadata) {
+      console.error("[AUTH LOGGER][ERROR]", code, metadata);
+    },
+    warn(code, metadata) {
+      console.warn("[AUTH LOGGER][WARN]", code, metadata);
+    },
+  },
 });
 
 // =============================================================================
