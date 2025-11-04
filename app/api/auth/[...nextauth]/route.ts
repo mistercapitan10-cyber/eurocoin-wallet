@@ -12,8 +12,8 @@
  * - GET  /api/auth/providers      - Get available providers
  */
 
-import { handlers } from '@/lib/auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { handlers } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 
 // Export GET and POST handlers from NextAuth config
 const { GET: nextAuthGET, POST: nextAuthPOST } = handlers;
@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
       pathname: request.nextUrl.pathname,
       searchParams: Object.fromEntries(request.nextUrl.searchParams),
     });
-    
+
     const response = await nextAuthGET(request);
-    
+
     console.log("[AUTH ROUTE] GET response:", {
       status: response.status,
       statusText: response.statusText,
     });
-    
+
     return response;
   } catch (error) {
     console.error("[AUTH ROUTE] GET error:", {
@@ -41,10 +41,13 @@ export async function GET(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
       url: request.url,
     });
-    
+
     return NextResponse.json(
-      { error: "Authentication error", message: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      {
+        error: "Authentication error",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
     );
   }
 }
@@ -56,14 +59,14 @@ export async function POST(request: NextRequest) {
       pathname: request.nextUrl.pathname,
       searchParams: Object.fromEntries(request.nextUrl.searchParams),
     });
-    
+
     const response = await nextAuthPOST(request);
-    
+
     console.log("[AUTH ROUTE] POST response:", {
       status: response.status,
       statusText: response.statusText,
     });
-    
+
     return response;
   } catch (error) {
     console.error("[AUTH ROUTE] POST error:", {
@@ -71,10 +74,13 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
       url: request.url,
     });
-    
+
     return NextResponse.json(
-      { error: "Authentication error", message: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      {
+        error: "Authentication error",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
     );
   }
 }
