@@ -30,14 +30,14 @@ export const accounts = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(), // Changed from provider_account_id to providerAccountId
-    refreshToken: text("refreshToken"), // Changed from refresh_token
-    accessToken: text("accessToken"), // Changed from access_token
-    expiresAt: bigint("expiresAt", { mode: "number" }), // Changed from expires_at
-    tokenType: text("tokenType"), // Changed from token_type
+    providerAccountId: text("providerAccountId").notNull(), // camelCase в базе данных
+    refreshToken: text("refresh_token"), // snake_case в базе данных
+    accessToken: text("access_token"), // snake_case в базе данных
+    expiresAt: bigint("expires_at", { mode: "number" }), // snake_case в базе данных
+    tokenType: text("token_type"), // snake_case в базе данных
     scope: text("scope"),
-    idToken: text("idToken"), // Changed from id_token
-    sessionState: text("sessionState"), // Changed from session_state
+    idToken: text("id_token"), // snake_case в базе данных
+    sessionState: text("session_state"), // snake_case в базе данных
   },
   (table) => ({
     providerIdx: index().on(table.provider, table.providerAccountId),
