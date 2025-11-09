@@ -5,6 +5,7 @@ export const FALLBACK_TOKEN_ADDRESS =
   "0x0000000000000000000000000000000000000000";
 const FALLBACK_SYMBOL = "TKN";
 const FALLBACK_DECIMALS = 18;
+const FALLBACK_HISTORY_START_BLOCK = 0;
 const FALLBACK_CHAIN_ID = 11155111;
 
 const parseAddress = (value: string | undefined): Address => {
@@ -40,6 +41,13 @@ export const TOKEN_CONFIG = {
   decimals: parseNumber(
     process.env.NEXT_PUBLIC_TOKEN_DECIMALS,
     FALLBACK_DECIMALS,
+  ),
+  historyStartBlock: Math.max(
+    0,
+    parseNumber(
+      process.env.NEXT_PUBLIC_TOKEN_HISTORY_START_BLOCK,
+      FALLBACK_HISTORY_START_BLOCK,
+    ),
   ),
   abi: ERC20_ABI,
 } as const;

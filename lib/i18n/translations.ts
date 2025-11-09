@@ -278,8 +278,17 @@ const translations: Messages = {
       statistics: {
         title: "Статистика кошелька",
         totalSpent: "Всего потрачено",
-        cancelledAmount: "Заблокировано/Возвращено",
+        receivedAmount: "Всего зачислено",
         loading: "Загрузка...",
+        history: {
+          title: "История EURC",
+          caption: "Последние операции по токену",
+          empty: "История пуста — как только на кошелёк поступят средства, записи появятся здесь.",
+          incoming: "Зачисление",
+          outgoing: "Списание",
+          counterparty: "Контрагент",
+          timestampUnknown: "—",
+        },
       },
       taxCard: {
         title: "Комиссии (Tax)",
@@ -1004,8 +1013,17 @@ const translations: Messages = {
       statistics: {
         title: "Wallet Statistics",
         totalSpent: "Total Spent",
-        cancelledAmount: "Cancelled/Refunded",
+        receivedAmount: "Total Received",
         loading: "Loading...",
+        history: {
+          title: "EURC History",
+          caption: "Latest token movements",
+          empty: "No transfers yet. Incoming EURC will appear here automatically.",
+          incoming: "Incoming",
+          outgoing: "Outgoing",
+          counterparty: "Counterparty",
+          timestampUnknown: "—",
+        },
       },
       taxCard: {
         title: "Fees (Tax)",
@@ -1729,8 +1747,17 @@ const translations: Messages = {
       statistics: {
         title: "Piniginės statistika",
         totalSpent: "Iš viso išleista",
-        cancelledAmount: "Užblokuota/Grąžinta",
+        receivedAmount: "Iš viso gauta",
         loading: "Įkeliama...",
+        history: {
+          title: "EURC istorija",
+          caption: "Naujausi žetono judėjimai",
+          empty: "Dar nėra pervedimų. Gavus EURC jie automatiškai pasirodys čia.",
+          incoming: "Gauta",
+          outgoing: "Išsiųsta",
+          counterparty: "Sandorio šalis",
+          timestampUnknown: "—",
+        },
       },
       taxCard: {
         title: "Mokesčiai (Tax)",
@@ -2456,8 +2483,17 @@ const translations: Messages = {
       statistics: {
         title: "Maciņa statistika",
         totalSpent: "Kopā iztērēts",
-        cancelledAmount: "Bloķēts/Atmaksāts",
+        receivedAmount: "Kopā saņemts",
         loading: "Ielādē...",
+        history: {
+          title: "EURC vēsture",
+          caption: "Pēdējās žetona kustības",
+          empty: "Pārsūtījumu vēl nav. Kad EURC ienāks maciņā, tie parādīsies šeit.",
+          incoming: "Saņemts",
+          outgoing: "Nosūtīts",
+          counterparty: "Darījuma puse",
+          timestampUnknown: "—",
+        },
       },
       taxCard: {
         title: "Maksas (Tax)",
