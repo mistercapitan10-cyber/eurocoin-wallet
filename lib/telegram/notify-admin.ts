@@ -1,11 +1,11 @@
-import { Markup } from 'telegraf';
-import { getBot } from './bot';
+import { Markup } from "telegraf";
+import { getBot } from "./bot";
 
 function getAdminChatId(): string | null {
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
   if (!chatId) {
-    console.warn('⚠️  TELEGRAM_ADMIN_CHAT_ID is not set. Telegram notifications are disabled.');
-    console.warn('    Send /myid command to your bot to get your Chat ID and add it to .env.local');
+    console.warn("⚠️  TELEGRAM_ADMIN_CHAT_ID is not set. Telegram notifications are disabled.");
+    console.warn("    Send /myid command to your bot to get your Chat ID and add it to .env.local");
     return null;
   }
   return chatId;
@@ -27,7 +27,7 @@ export interface ExchangeRequestNotification {
  * Отправляет уведомление о новой заявке на обмен токенов
  */
 export async function notifyNewExchangeRequest(
-  request: ExchangeRequestNotification
+  request: ExchangeRequestNotification,
 ): Promise<void> {
   try {
     const bot = getBot();
@@ -49,17 +49,17 @@ export async function notifyNewExchangeRequest(
 
     const keyboard = Markup.inlineKeyboard([
       [
-        Markup.button.callback('💬 Отправить сообщение', `msg_${request.walletAddress}`),
-        Markup.button.callback('📜 История чата', `history_${request.walletAddress}`),
+        Markup.button.callback("💬 Отправить сообщение", `msg_${request.walletAddress}`),
+        Markup.button.callback("📜 История чата", `history_${request.walletAddress}`),
       ],
     ]);
 
     await bot.telegram.sendMessage(adminChatId, message, {
-      parse_mode: 'MarkdownV2',
+      parse_mode: "MarkdownV2",
       ...keyboard,
     });
   } catch (error) {
-    console.error('Error sending exchange request notification:', error);
+    console.error("Error sending exchange request notification:", error);
     // Don't throw - notification failure shouldn't break the main flow
   }
 }
@@ -81,7 +81,7 @@ export interface InternalRequestNotification {
  * Отправляет уведомление о новой внутренней заявке
  */
 export async function notifyNewInternalRequest(
-  request: InternalRequestNotification
+  request: InternalRequestNotification,
 ): Promise<void> {
   try {
     const bot = getBot();
@@ -93,7 +93,7 @@ export async function notifyNewInternalRequest(
 
     const walletLine = request.walletAddress
       ? `💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress)}\``
-      : '';
+      : "";
 
     const message = `
 🔔 *Новая внутренняя заявка*
@@ -113,19 +113,101 @@ ${walletLine}
     const keyboard = hasValidWallet
       ? Markup.inlineKeyboard([
           [
-            Markup.button.callback('💬 Отправить сообщение', `msg_${request.walletAddress}`),
-            Markup.button.callback('📜 История чата', `history_${request.walletAddress}`),
+            Markup.button.callback("💬 Отправить сообщение", `msg_${request.walletAddress}`),
+            Markup.button.callback("📜 История чата", `history_${request.walletAddress}`),
           ],
         ])
       : undefined;
 
     await bot.telegram.sendMessage(adminChatId, message, {
-      parse_mode: 'MarkdownV2',
+      parse_mode: "MarkdownV2",
       ...(keyboard || {}),
     });
   } catch (error) {
-    console.error('Error sending internal request notification:', error);
+    console.error("Error sending internal request notification:", error);
     // Don't throw - notification failure shouldn't break the main flow
+  }
+}
+
+// ============================================
+// Withdraw Request Notifications
+// ============================================
+
+export interface WithdrawRequestNotification {
+  id: string;
+  walletAddress: string;
+  amount: string;
+  tokenSymbol: string;
+  destinationAddress: string;
+}
+
+export async function notifyNewWithdrawRequest(
+  payload: WithdrawRequestNotification,
+): Promise<void> {
+  try {
+    const bot = getBot();
+    const adminChatId = getAdminChatId();
+
+    if (!adminChatId) {
+      return;
+    }
+
+    const message = `
+🏦 *Новая заявка на вывод*
+
+🧾 *ID:* WR\\-${escapeMarkdown(payload.id)}
+💼 *Кошелек:* \`${escapeMarkdown(payload.walletAddress)}\`
+🎯 *Адрес вывода:* \`${escapeMarkdown(payload.destinationAddress)}\`
+💰 *Сумма:* ${escapeMarkdown(payload.amount)} ${escapeMarkdown(payload.tokenSymbol)}
+    `.trim();
+
+    await bot.telegram.sendMessage(adminChatId, message, {
+      parse_mode: "MarkdownV2",
+    });
+  } catch (error) {
+    console.error("Error sending withdraw request notification:", error);
+  }
+}
+
+export interface WithdrawStatusNotification {
+  id: string;
+  status: string;
+  amount: string;
+  tokenSymbol: string;
+  destinationAddress: string;
+  txHash?: string | null;
+}
+
+export async function notifyWithdrawStatusChange(
+  payload: WithdrawStatusNotification,
+): Promise<void> {
+  try {
+    const bot = getBot();
+    const adminChatId = getAdminChatId();
+
+    if (!adminChatId) {
+      return;
+    }
+
+    const txLine = payload.txHash
+      ? `🔗 *Tx:* [${payload.txHash.slice(0, 10)}…](https://etherscan.io/tx/${payload.txHash})\n`
+      : "";
+
+    const message = `
+⚙️ *Обновление заявки на вывод*
+
+🧾 *ID:* WR\\-${escapeMarkdown(payload.id)}
+📊 *Статус:* ${escapeMarkdown(payload.status)}
+💰 *Сумма:* ${escapeMarkdown(payload.amount)} ${escapeMarkdown(payload.tokenSymbol)}
+🎯 *Адрес:* \`${escapeMarkdown(payload.destinationAddress)}\`
+${txLine}`.trim();
+
+    await bot.telegram.sendMessage(adminChatId, message, {
+      parse_mode: "MarkdownV2",
+      disable_web_page_preview: true,
+    });
+  } catch (error) {
+    console.error("Error sending withdraw status notification:", error);
   }
 }
 
@@ -138,7 +220,7 @@ ${walletLine}
  */
 export async function notifyAdminNewMessage(
   userWallet: string,
-  messageText: string
+  messageText: string,
 ): Promise<void> {
   try {
     const bot = getBot();
@@ -149,9 +231,8 @@ export async function notifyAdminNewMessage(
     }
 
     // Truncate long messages
-    const truncatedText = messageText.length > 500
-      ? messageText.substring(0, 500) + '...'
-      : messageText;
+    const truncatedText =
+      messageText.length > 500 ? messageText.substring(0, 500) + "..." : messageText;
 
     const message = `
 💬 *Новое сообщение от пользователя*
@@ -164,17 +245,17 @@ ${escapeMarkdown(truncatedText)}
 
     const keyboard = Markup.inlineKeyboard([
       [
-        Markup.button.callback('💬 Ответить', `reply_${userWallet}`),
-        Markup.button.callback('📜 История', `history_${userWallet}`),
+        Markup.button.callback("💬 Ответить", `reply_${userWallet}`),
+        Markup.button.callback("📜 История", `history_${userWallet}`),
       ],
     ]);
 
     await bot.telegram.sendMessage(adminChatId, message, {
-      parse_mode: 'MarkdownV2',
+      parse_mode: "MarkdownV2",
       ...keyboard,
     });
   } catch (error) {
-    console.error('Error sending user message notification:', error);
+    console.error("Error sending user message notification:", error);
     // Don't throw - notification failure shouldn't break the main flow
   }
 }
@@ -190,11 +271,43 @@ ${escapeMarkdown(truncatedText)}
 export async function notifyUserNewAdminMessage(
   userWallet: string,
   messageText: string,
-  adminUsername: string
+  adminUsername: string,
 ): Promise<void> {
   // TODO: Implement WebSocket/SSE notification when available
   // For now, the frontend uses polling to fetch new messages
   console.log(`New admin message for user ${userWallet} from ${adminUsername}`);
+}
+
+// ============================================
+// Newsletter Subscription Notifications
+// ============================================
+
+/**
+ * Отправляет уведомление админу о новой подписке на рассылку
+ */
+export async function notifyNewsletterSubscription(email: string): Promise<void> {
+  try {
+    const bot = getBot();
+    const adminChatId = getAdminChatId();
+
+    if (!adminChatId) {
+      return; // Skip if chat ID not configured
+    }
+
+    const message = `
+📧 *Новая подписка на рассылку*
+
+📬 *Email:* ${escapeMarkdown(email)}
+🕐 *Время:* ${escapeMarkdown(new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" }))}
+    `.trim();
+
+    await bot.telegram.sendMessage(adminChatId, message, {
+      parse_mode: "MarkdownV2",
+    });
+  } catch (error) {
+    console.error("Error sending newsletter subscription notification:", error);
+    // Don't throw - notification failure shouldn't break the main flow
+  }
 }
 
 // ============================================
@@ -206,7 +319,26 @@ export async function notifyUserNewAdminMessage(
  */
 function escapeMarkdown(text: string): string {
   // MarkdownV2 special characters that need to be escaped
-  const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+  const specialChars = [
+    "_",
+    "*",
+    "[",
+    "]",
+    "(",
+    ")",
+    "~",
+    "`",
+    ">",
+    "#",
+    "+",
+    "-",
+    "=",
+    "|",
+    "{",
+    "}",
+    ".",
+    "!",
+  ];
   let escaped = text;
 
   for (const char of specialChars) {
@@ -236,7 +368,7 @@ export function isValidWalletAddress(address: string): boolean {
  */
 export function sanitizeMessageText(text: string, maxLength: number = 2000): string {
   // Remove HTML tags
-  let sanitized = text.replace(/<[^>]*>/g, '');
+  let sanitized = text.replace(/<[^>]*>/g, "");
 
   // Trim whitespace
   sanitized = sanitized.trim();
@@ -259,44 +391,42 @@ export function sanitizeMessageText(text: string, maxLength: number = 2000): str
 export async function sendTypingAction(chatId: string | number): Promise<void> {
   try {
     const bot = getBot();
-    await bot.telegram.sendChatAction(chatId, 'typing');
+    await bot.telegram.sendChatAction(chatId, "typing");
   } catch (error) {
-    console.error('Error sending typing action:', error);
+    console.error("Error sending typing action:", error);
   }
 }
 
 /**
  * Format chat history for Telegram display
  */
-export function formatChatHistoryForTelegram(messages: Array<{
-  type: string;
-  text: string;
-  admin_username?: string;
-  created_at: Date | string;
-}>): string {
+export function formatChatHistoryForTelegram(
+  messages: Array<{
+    type: string;
+    text: string;
+    admin_username?: string;
+    created_at: Date | string;
+  }>,
+): string {
   if (messages.length === 0) {
-    return '📭 История чата пуста';
+    return "📭 История чата пуста";
   }
 
   let historyText = `📜 *Последние ${messages.length} сообщений:*\n\n`;
 
   messages.forEach((msg, index) => {
-    const sender = msg.type === 'user'
-      ? '👤 Пользователь'
-      : `👨‍💼 ${msg.admin_username || 'Админ'}`;
+    const sender = msg.type === "user" ? "👤 Пользователь" : `👨‍💼 ${msg.admin_username || "Админ"}`;
 
     const date = new Date(msg.created_at);
-    const dateStr = date.toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    const dateStr = date.toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-    const truncatedText = msg.text.length > 100
-      ? msg.text.substring(0, 100) + '...'
-      : msg.text;
+    const truncatedText = msg.text.length > 100 ? msg.text.substring(0, 100) + "..." : msg.text;
 
     historyText += `${index + 1}\\. ${escapeMarkdown(sender)}\n`;
     historyText += `   ${escapeMarkdown(truncatedText)}\n`;
@@ -315,16 +445,16 @@ export async function sendTestNotification(): Promise<void> {
     const adminChatId = getAdminChatId();
 
     if (!adminChatId) {
-      throw new Error('TELEGRAM_ADMIN_CHAT_ID is not configured. Use /myid command in your bot.');
+      throw new Error("TELEGRAM_ADMIN_CHAT_ID is not configured. Use /myid command in your bot.");
     }
 
     await bot.telegram.sendMessage(
       adminChatId,
-      '✅ Test notification - Support messenger system is working!',
-      { parse_mode: 'Markdown' }
+      "✅ Test notification - Support messenger system is working!",
+      { parse_mode: "Markdown" },
     );
   } catch (error) {
-    console.error('Error sending test notification:', error);
+    console.error("Error sending test notification:", error);
     throw error;
   }
 }

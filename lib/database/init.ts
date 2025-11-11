@@ -91,10 +91,43 @@ async function applyMigrations() {
     if (checkSupportMessagesResult.rows.length === 0) {
       console.log("Applying migration: add-support-messenger tables");
 
-      const supportMessengerMigration = await readMigrationFile("add-support-messenger.sql");
-      await query(supportMessengerMigration);
+      // First check if chatbot_sessions exists (required for foreign key)
+      const checkChatbotSessionsResult = await query(`
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'chatbot_sessions'
+      `);
 
-      console.log("✅ Migration completed: support messenger tables created");
+      if (checkChatbotSessionsResult.rows.length === 0) {
+        console.warn("⚠️  chatbot_sessions table does not exist. Creating it first...");
+        // Create chatbot_sessions table if it doesn't exist
+        await query(`
+          CREATE TABLE IF NOT EXISTS chatbot_sessions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_wallet_address VARCHAR(42) NOT NULL,
+            telegram_chat_id BIGINT,
+            locale VARCHAR(10) DEFAULT 'ru',
+            is_admin_mode BOOLEAN DEFAULT FALSE,
+            last_admin_message_at TIMESTAMP,
+            unread_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        console.log("✅ chatbot_sessions table created");
+      }
+
+      try {
+        const supportMessengerMigration = await readMigrationFile("add-support-messenger.sql");
+        await query(supportMessengerMigration);
+
+        console.log("✅ Migration completed: support messenger tables created");
+      } catch (migrationError) {
+        console.error("❌ Failed to apply support messenger migration:", migrationError);
+        // Don't throw - allow app to continue, but log the error
+        console.warn(
+          "⚠️  Support messaging features will not work until migration is applied manually",
+        );
+      }
     } else {
       console.log("✅ Migration already applied: support messenger tables exist");
     }
@@ -150,6 +183,23 @@ async function applyMigrations() {
       console.log("✅ Migration completed: request_files foreign keys fixed");
     } else {
       console.log("✅ Migration already applied: foreign keys already removed");
+    }
+
+    // Migration: Internal balance tables
+    const checkInternalWallets = await query(`
+      SELECT 1 FROM information_schema.tables
+      WHERE table_name = 'internal_wallets'
+    `);
+
+    if (checkInternalWallets.rows.length === 0) {
+      console.log("Applying migration: internal balance infrastructure");
+
+      const internalBalanceMigration = await readMigrationFile("add-internal-balance-tables.sql");
+      await query(internalBalanceMigration);
+
+      console.log("✅ Migration completed: internal balance tables created");
+    } else {
+      console.log("✅ Migration already applied: internal balance tables exist");
     }
   } catch (error) {
     console.error("Failed to apply migrations:", error);

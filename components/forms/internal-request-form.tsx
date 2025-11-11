@@ -49,6 +49,7 @@ export function InternalRequestForm() {
     { value: "withdraw", label: t("internalForm.requestTypes.withdraw") },
     { value: "balance", label: t("internalForm.requestTypes.balance") },
     { value: "report", label: t("internalForm.requestTypes.report") },
+    { value: "refund", label: t("internalForm.requestTypes.refund") },
   ];
 
   const departments = [
@@ -56,6 +57,7 @@ export function InternalRequestForm() {
     { value: "aml", label: t("internalForm.departments.aml") },
     { value: "investment", label: t("internalForm.departments.investment") },
     { value: "support", label: t("internalForm.departments.support") },
+    { value: "legal", label: t("internalForm.departments.legal") },
   ];
 
   const handleChange = (field: keyof FormState, value: string | FormState["priority"]) => {
@@ -95,9 +97,8 @@ export function InternalRequestForm() {
 
     try {
       // Convert files to base64 if they exist
-      const filesData = attachedFiles.length > 0
-        ? await convertFilesToBase64(attachedFiles)
-        : undefined;
+      const filesData =
+        attachedFiles.length > 0 ? await convertFilesToBase64(attachedFiles) : undefined;
 
       // Send request to API with wallet address, userId, and email
       const response = await fetch("/api/submit-request", {
@@ -138,22 +139,22 @@ export function InternalRequestForm() {
   };
 
   return (
-    <section className="dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface shadow-card">
-      <div className="dark:from-dark-backgroundAlt/40 dark:to-dark-surface/90 flex flex-col gap-6 rounded-3xl bg-gradient-to-br from-backgroundAlt/40 to-surface/90 p-8 md:p-10">
+    <section className="rounded-3xl border border-outline bg-surface shadow-card dark:border-dark-outline dark:bg-dark-surface">
+      <div className="flex flex-col gap-6 rounded-3xl bg-gradient-to-br from-backgroundAlt/40 to-surface/90 p-8 dark:from-dark-backgroundAlt/40 dark:to-dark-surface/90 md:p-10">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <span className="pill dark:bg-dark-surfaceAlt dark:text-dark-foreground bg-surfaceAlt text-foreground">
+            <span className="pill bg-surfaceAlt text-foreground dark:bg-dark-surfaceAlt dark:text-dark-foreground">
               {t("internalForm.badge")}
             </span>
-            <h2 className="dark:text-dark-foreground display-title mt-4 text-3xl font-semibold text-foreground md:text-4xl">
+            <h2 className="display-title mt-4 text-3xl font-semibold text-foreground dark:text-dark-foreground md:text-4xl">
               {t("internalForm.title")}
             </h2>
-            <p className="dark:text-dark-foregroundMuted mt-2 max-w-2xl text-sm text-foregroundMuted md:text-base">
+            <p className="mt-2 max-w-2xl text-sm text-foregroundMuted dark:text-dark-foregroundMuted md:text-base">
               {t("internalForm.description")}
             </p>
           </div>
-          <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted flex w-full max-w-xs flex-col rounded-2xl border border-outline bg-surfaceAlt p-4 text-xs text-foregroundMuted">
-            <span className="dark:text-dark-foreground font-semibold text-foreground">
+          <div className="flex w-full max-w-xs flex-col rounded-2xl border border-outline bg-surfaceAlt p-4 text-xs text-foregroundMuted dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted">
+            <span className="font-semibold text-foreground dark:text-dark-foreground">
               {t("internalForm.regulationTitle")}
             </span>
             <ul className="mt-2 space-y-1">
@@ -166,11 +167,11 @@ export function InternalRequestForm() {
 
         <form className="grid gap-5 md:grid-cols-2" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.requester")}
             </label>
             <input
-              className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+              className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
               placeholder={t("internalForm.placeholders.requester")}
               value={form.requester}
               onChange={(event) => handleChange("requester", event.target.value)}
@@ -179,11 +180,11 @@ export function InternalRequestForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.department")}
             </label>
             <select
-              className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+              className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
               value={form.department}
               onChange={(event) => handleChange("department", event.target.value)}
             >
@@ -197,11 +198,11 @@ export function InternalRequestForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.requestType")}
             </label>
             <select
-              className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+              className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
               value={form.requestType}
               onChange={(event) => handleChange("requestType", event.target.value)}
             >
@@ -215,10 +216,10 @@ export function InternalRequestForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.priority")}
             </label>
-            <div className="dark:border-dark-outline dark:bg-dark-surface flex h-full items-center gap-3 rounded-2xl border border-outline bg-surface px-4 py-3">
+            <div className="flex h-full items-center gap-3 rounded-2xl border border-outline bg-surface px-4 py-3 dark:border-dark-outline dark:bg-dark-surface">
               {(["low", "normal", "high"] as const).map((priority) => (
                 <button
                   key={priority}
@@ -228,7 +229,7 @@ export function InternalRequestForm() {
                     "flex-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition",
                     form.priority === priority
                       ? "bg-accent text-white shadow focus:outline-none"
-                      : "dark:bg-dark-surfaceAlt dark:text-dark-foreground bg-surfaceAlt text-foreground hover:bg-accent/10 dark:hover:bg-accent/10",
+                      : "bg-surfaceAlt text-foreground hover:bg-accent/10 dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-accent/10",
                   )}
                 >
                   {t(`internalForm.priorities.${priority}`)}
@@ -238,11 +239,11 @@ export function InternalRequestForm() {
           </div>
 
           <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.descriptionField")}
             </label>
             <textarea
-              className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground min-h-[140px] resize-y rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+              className="min-h-[140px] resize-y rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
               placeholder={t("internalForm.placeholders.description")}
               value={form.description}
               onChange={(event) => handleChange("description", event.target.value)}
@@ -250,11 +251,11 @@ export function InternalRequestForm() {
           </div>
 
           <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.walletAddress")}
             </label>
             <input
-              className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
               placeholder={t("internalForm.placeholders.walletAddress")}
               value={form.walletAddress}
               onChange={(event) => handleChange("walletAddress", event.target.value)}
@@ -262,7 +263,7 @@ export function InternalRequestForm() {
               autoComplete="off"
             />
             {authType === "wallet" && address && (
-              <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
+              <p className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
                 {t("internalForm.walletAddressAutoFilled")}
               </p>
             )}
@@ -270,18 +271,14 @@ export function InternalRequestForm() {
 
           {/* File Upload */}
           <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="dark:text-dark-foregroundMuted text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted">
+            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
               Attach Files (Optional)
             </label>
-            <FileUploader
-              onFilesChange={setAttachedFiles}
-              maxFiles={5}
-              disabled={isSubmitting}
-            />
+            <FileUploader onFilesChange={setAttachedFiles} maxFiles={5} disabled={isSubmitting} />
           </div>
 
           <div className="flex flex-col gap-3 md:col-span-2 md:flex-row md:items-center md:justify-between">
-            <div className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
+            <div className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
               {t("internalForm.helper")}
             </div>
             <div className="flex gap-3">

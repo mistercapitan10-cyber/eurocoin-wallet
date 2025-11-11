@@ -23,15 +23,8 @@ interface UseWalletConnectionResult {
 
 export function useWalletConnection(): UseWalletConnectionResult {
   const { data: session } = useSession();
-  const {
-    address,
-    chainId,
-    connector,
-    status,
-    isConnected,
-    isConnecting,
-    isReconnecting,
-  } = useAccount();
+  const { address, chainId, connector, status, isConnected, isConnecting, isReconnecting } =
+    useAccount();
   const { connectAsync, connectors, isPending, error } = useConnect();
   const { disconnectAsync, isPending: isDisconnecting } = useDisconnect();
   const chains = useChains();
@@ -182,20 +175,32 @@ export function useWalletConnection(): UseWalletConnectionResult {
           let errorDetails: unknown = null;
 
           try {
-            errorDetails = await response.json();
+            const jsonData = await response.json();
+            errorDetails = jsonData;
           } catch {
             try {
-              errorDetails = await response.text();
+              const textData = await response.text();
+              errorDetails = textData || "Could not parse error response";
             } catch {
-              errorDetails = "Could not parse error response";
+              errorDetails = `HTTP ${response.status} ${response.statusText}`;
             }
           }
 
-          console.error("[wallet] Failed to register wallet user", {
-            status: response.status,
-            details: errorDetails,
-            walletAddress: address,
-          });
+          // Only log non-critical errors (4xx client errors are expected in some cases)
+          if (response.status >= 500) {
+            console.error("[wallet] Failed to register wallet user", {
+              status: response.status,
+              details: errorDetails,
+              walletAddress: address,
+            });
+          } else {
+            // Log 4xx errors at debug level only
+            console.debug("[wallet] Wallet registration skipped", {
+              status: response.status,
+              details: errorDetails,
+              walletAddress: address,
+            });
+          }
 
           // Don't block the user experience - wallet is still connected
           // Registration will be retried on next connection or page reload

@@ -1,7 +1,7 @@
 import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/database/db";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { VerificationCodeEmail } from "@/emails/VerificationCodeEmail";
 
@@ -10,28 +10,58 @@ function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Configure Nodemailer
+// Send email using Resend API
 async function sendEmail(email: string, code: string) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER, // eurocoinfinance@gmail.com
-      pass: process.env.EMAIL_PASSWORD, // App password
-    },
-  });
+  // Проверка переменных окружения
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromAddress = process.env.SENDER_EMAIL || process.env.EMAIL_USER || "noreply@resend.dev";
+
+  if (!resendApiKey) {
+    throw new Error(
+      "Email configuration is missing. Please set RESEND_API_KEY environment variable.",
+    );
+  }
+
+  const resend = new Resend(resendApiKey);
 
   // Render email using React Email
-  const emailHtml = await render(React.createElement(VerificationCodeEmail, { code }));
+  let emailHtml: string;
+  try {
+    emailHtml = await render(React.createElement(VerificationCodeEmail, { code }));
+  } catch (renderError) {
+    console.error("Error rendering email template:", renderError);
+    throw new Error(
+      `Failed to render email template: ${renderError instanceof Error ? renderError.message : "Unknown error"}`,
+    );
+  }
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Newsletter Subscription Confirmation - EuroCoin",
-    html: emailHtml,
-    text: `Your verification code: ${code}`,
-  };
+  // Отправляем email через Resend API с таймаутом
+  try {
+    const sendPromise = resend.emails.send({
+      from: fromAddress,
+      to: email,
+      subject: "Newsletter Subscription Confirmation - EuroCoin",
+      html: emailHtml,
+      text: `Your verification code: ${code}`,
+    });
 
-  return await transporter.sendMail(mailOptions);
+    const result = await Promise.race([
+      sendPromise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Email sending timeout after 15 seconds")), 15000),
+      ),
+    ]);
+
+    if (result.error) {
+      console.error("Resend API error:", result.error);
+      throw new Error(`Resend API error: ${result.error.message || JSON.stringify(result.error)}`);
+    }
+
+    return result.data;
+  } catch (sendError) {
+    console.error("Error sending email via Resend:", sendError);
+    throw sendError;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -42,41 +72,136 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    // Генерируем код
-    const code = generateCode();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 минут
-
-    // Проверяем существующего подписчика
-    const existing = await query("SELECT * FROM newsletter_subscribers WHERE email = $1", [email]);
-
-    if (existing.rows.length > 0) {
-      // Обновляем код
-      await query(
-        "UPDATE newsletter_subscribers SET verification_code = $1, code_expires_at = $2 WHERE email = $3",
-        [code, expiresAt, email],
-      );
-    } else {
-      // Создаем новую запись
-      await query(
-        "INSERT INTO newsletter_subscribers (email, verification_code, code_expires_at) VALUES ($1, $2, $3)",
-        [email, code, expiresAt],
+    // Проверка конфигурации email перед началом работы
+    if (!process.env.RESEND_API_KEY) {
+      console.error("Email configuration missing: RESEND_API_KEY not set");
+      return NextResponse.json(
+        { error: "Email service is not configured. Please contact administrator." },
+        { status: 503 },
       );
     }
 
-    // Send code to email
+    // Генерируем код и убеждаемся, что это строка
+    const code = String(generateCode()).padStart(6, "0"); // Гарантируем 6 цифр и строковый тип
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 минут
+
+    // Нормализуем email (убираем пробелы, приводим к нижнему регистру)
+    const normalizedEmail = email.trim().toLowerCase();
+
+    console.log("[send-code] Generating code:", {
+      email: normalizedEmail,
+      code: code,
+      codeType: typeof code,
+      expiresAt: expiresAt.toISOString(),
+    });
+
+    // Проверяем существующего подписчика
+    let existing;
     try {
-      await sendEmail(email, code);
-    } catch (emailError) {
-      console.error("Error sending email:", emailError);
+      existing = await query(
+        "SELECT * FROM newsletter_subscribers WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))",
+        [normalizedEmail],
+      );
+    } catch (dbError) {
+      console.error("Database error when checking subscriber:", dbError);
       return NextResponse.json(
-        { error: "Failed to send email. Please check email configuration." },
+        { error: "Database error. Please try again later." },
         { status: 500 },
       );
+    }
+
+    if (existing.rows.length > 0) {
+      // Обновляем код
+      try {
+        const updateResult = await query(
+          "UPDATE newsletter_subscribers SET verification_code = $1, code_expires_at = $2 WHERE LOWER(TRIM(email)) = LOWER(TRIM($3)) RETURNING email, verification_code",
+          [code, expiresAt, normalizedEmail],
+        );
+        console.log("[send-code] Updated existing subscriber:", {
+          email: updateResult.rows[0]?.email,
+          storedCode: updateResult.rows[0]?.verification_code,
+        });
+      } catch (dbError) {
+        console.error("Database error when updating subscriber:", dbError);
+        return NextResponse.json(
+          { error: "Database error. Please try again later." },
+          { status: 500 },
+        );
+      }
+    } else {
+      // Создаем новую запись
+      try {
+        const insertResult = await query(
+          "INSERT INTO newsletter_subscribers (email, verification_code, code_expires_at) VALUES ($1, $2, $3) RETURNING email, verification_code",
+          [normalizedEmail, code, expiresAt],
+        );
+        console.log("[send-code] Created new subscriber:", {
+          email: insertResult.rows[0]?.email,
+          storedCode: insertResult.rows[0]?.verification_code,
+        });
+      } catch (dbError) {
+        console.error("Database error when creating subscriber:", dbError);
+        return NextResponse.json(
+          { error: "Database error. Please try again later." },
+          { status: 500 },
+        );
+      }
+    }
+
+    // Send code to email (используем оригинальный email для отправки, но сохраняем нормализованный)
+    try {
+      await sendEmail(email.trim(), code); // Используем оригинальный email для отправки
+      console.log(`Verification code sent successfully to ${email}`);
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+
+      // Удаляем сохраненный код, если email не отправился
+      try {
+        await query(
+          "UPDATE newsletter_subscribers SET verification_code = NULL, code_expires_at = NULL WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))",
+          [normalizedEmail],
+        );
+      } catch (cleanupError) {
+        console.error("Error cleaning up verification code:", cleanupError);
+      }
+
+      const errorMessage = emailError instanceof Error ? emailError.message : "Unknown error";
+
+      // Более детальные сообщения об ошибках
+      if (errorMessage.includes("timeout")) {
+        return NextResponse.json(
+          { error: "Email service timeout. Please try again later." },
+          { status: 504 },
+        );
+      } else if (
+        errorMessage.includes("Resend API") ||
+        errorMessage.includes("configuration") ||
+        errorMessage.includes("RESEND_API_KEY")
+      ) {
+        return NextResponse.json(
+          { error: "Email service configuration error. Please contact administrator." },
+          { status: 503 },
+        );
+      } else {
+        return NextResponse.json(
+          { error: `Failed to send email: ${errorMessage}` },
+          { status: 500 },
+        );
+      }
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error in send-code:", error);
-    return NextResponse.json({ error: "Failed to send code" }, { status: 500 });
+
+    // Обработка ошибок парсинга JSON
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Invalid request format" }, { status: 400 });
+    }
+
+    return NextResponse.json(
+      { error: "Failed to send code. Please try again later." },
+      { status: 500 },
+    );
   }
 }

@@ -12,12 +12,13 @@ import {
   createChatbotMessage,
   getChatbotSessionById,
 } from "@/lib/database/queries";
-import {
-  createSupportMessage,
-  getLatestSessionByWallet,
-} from "@/lib/database/support-queries";
+import { createSupportMessage, getLatestSessionByWallet } from "@/lib/database/support-queries";
 import { query } from "@/lib/database/db";
-import { formatChatHistoryForTelegram, isValidWalletAddress, sanitizeMessageText } from "@/lib/telegram/notify-admin";
+import {
+  formatChatHistoryForTelegram,
+  isValidWalletAddress,
+  sanitizeMessageText,
+} from "@/lib/telegram/notify-admin";
 import { getBot } from "@/lib/telegram/bot";
 import { Telegraf } from "telegraf";
 
@@ -42,38 +43,38 @@ function getAppUrl(request?: NextRequest): string {
   // Try to get URL from environment variable first
   if (process.env.NEXT_PUBLIC_APP_URL) {
     cachedAppUrl = process.env.NEXT_PUBLIC_APP_URL;
-    console.log('[telegram-webhook] Using URL from NEXT_PUBLIC_APP_URL:', cachedAppUrl);
+    console.log("[telegram-webhook] Using URL from NEXT_PUBLIC_APP_URL:", cachedAppUrl);
     return cachedAppUrl;
   }
-  
+
   // In production, try to get from request headers
   if (request) {
-    const host = request.headers.get('host');
-    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const host = request.headers.get("host");
+    const protocol = request.headers.get("x-forwarded-proto") || "https";
     if (host) {
       const url = `${protocol}://${host}`;
       cachedAppUrl = url;
-      console.log('[telegram-webhook] Using URL from request headers:', url);
+      console.log("[telegram-webhook] Using URL from request headers:", url);
       return url;
     }
   }
-  
+
   // Use cached URL if available
   if (cachedAppUrl) {
-    console.log('[telegram-webhook] Using cached URL:', cachedAppUrl);
+    console.log("[telegram-webhook] Using cached URL:", cachedAppUrl);
     return cachedAppUrl;
   }
-  
+
   // Fallback for production
-  if (process.env.NODE_ENV === 'production') {
-    const url = 'https://www.euro-coin.eu';
-    console.log('[telegram-webhook] Using production fallback URL:', url);
+  if (process.env.NODE_ENV === "production") {
+    const url = "https://www.euro-coin.eu";
+    console.log("[telegram-webhook] Using production fallback URL:", url);
     return url;
   }
-  
+
   // Fallback for development
-  const url = 'http://localhost:3000';
-  console.log('[telegram-webhook] Using development fallback URL:', url);
+  const url = "http://localhost:3000";
+  console.log("[telegram-webhook] Using development fallback URL:", url);
   return url;
 }
 
@@ -91,12 +92,12 @@ function isAuthorizedUser(userId: number): boolean {
 
   if (!allowedUserId) {
     console.warn(
-      '[telegram-webhook] ⚠️  TELEGRAM_ALLOWED_USER_ID is not set!\n' +
-      'Bot is open to all users. Add it to .env.local:\n' +
-      'TELEGRAM_ALLOWED_USER_ID=your_user_id'
+      "[telegram-webhook] ⚠️  TELEGRAM_ALLOWED_USER_ID is not set!\n" +
+        "Bot is open to all users. Add it to .env.local:\n" +
+        "TELEGRAM_ALLOWED_USER_ID=your_user_id",
     );
     // Return false in production if not set for security
-    return process.env.NODE_ENV !== 'production';
+    return process.env.NODE_ENV !== "production";
   }
 
   const isAuthorized = userId.toString() === allowedUserId;
@@ -117,18 +118,20 @@ async function checkAccess(ctx: any): Promise<boolean> {
   const userId = ctx.from?.id;
 
   if (!userId) {
-    console.warn('[telegram-webhook] ⚠️  No user ID in context');
+    console.warn("[telegram-webhook] ⚠️  No user ID in context");
     return false;
   }
 
   if (!isAuthorizedUser(userId)) {
-    await ctx.reply(
-      '🔒 У вас нет доступа к этому боту.\n\n' +
-      'Этот бот доступен только для авторизованных администраторов.\n' +
-      'Если вы считаете, что это ошибка, обратитесь к владельцу бота.'
-    ).catch((err: Error) => {
-      console.error('[telegram-webhook] Failed to send unauthorized message:', err);
-    });
+    await ctx
+      .reply(
+        "🔒 У вас нет доступа к этому боту.\n\n" +
+          "Этот бот доступен только для авторизованных администраторов.\n" +
+          "Если вы считаете, что это ошибка, обратитесь к владельцу бота.",
+      )
+      .catch((err: Error) => {
+        console.error("[telegram-webhook] Failed to send unauthorized message:", err);
+      });
     return false;
   }
 
@@ -139,14 +142,11 @@ async function checkAccess(ctx: any): Promise<boolean> {
 async function updateRequestStatus(requestId: string, status: string, request?: NextRequest) {
   try {
     const appUrl = getAppUrl(request);
-    const response = await fetch(
-      `${appUrl}/api/webhook/update-request`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId, status }),
-      },
-    );
+    const response = await fetch(`${appUrl}/api/webhook/update-request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestId, status }),
+    });
 
     if (!response.ok) {
       console.error("Failed to update request status via webhook");
@@ -188,7 +188,7 @@ if (bot) {
   // Start command
   bot.start(async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     const chatId = ctx.chat.id;
     const username = ctx.from.first_name || "User";
@@ -201,7 +201,8 @@ if (bot) {
         `/list - показать все заявки\n` +
         `/exchange - показать заявки на обмен\n` +
         `/internal - показать внутренние заявки\n` +
-        `/details <ID> - детали заявки\n\n` +
+        `/details <ID> - детали заявки\n` +
+        `/credit - начислить баланс пользователю\n\n` +
         `Пример: /details EX-1234567890\n\n` +
         `Используйте /help для подробной справки.`,
     );
@@ -226,7 +227,7 @@ if (bot) {
   // Help command
   bot.command("help", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     const helpMessage = `
 🤖 *Справка по командам бота*
@@ -254,6 +255,18 @@ if (bot) {
   ➡️ Подробная информация о заявке по её ID
   ➡️ Пример: /details EX-1234567890
   ➡️ Отображает полную информацию и кнопки для управления
+
+💰 *Команды для управления балансом:*
+
+/credit - Начислить баланс пользователю
+  ➡️ Пошаговое начисление баланса через диалог
+  ➡️ Требует: адрес кошелька, сумму, описание (опционально)
+  ➡️ Пример использования:
+     1. /credit
+     2. Введите адрес кошелька (0x...)
+     3. Введите сумму (например: 100.5)
+     4. Введите описание или "-" для пропуска
+     5. Подтвердите начисление
 
 ⚙️ *Изменить статус заявки:*
 
@@ -286,7 +299,7 @@ if (bot) {
   // List all requests
   bot.command("list", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const [exchangeRequests, internalRequests] = await Promise.all([
@@ -336,7 +349,7 @@ if (bot) {
   // List exchange requests
   bot.command("exchange", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const requests = await getAllExchangeRequests();
@@ -381,7 +394,7 @@ if (bot) {
   // List internal requests
   bot.command("internal", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const requests = await getAllInternalRequests();
@@ -422,7 +435,7 @@ if (bot) {
   // Chats command - show active chatbot sessions
   bot.command("chats", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       // For now, return a simple response
@@ -445,7 +458,7 @@ if (bot) {
   // Details command
   bot.command("details", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const args = ctx.message.text.split(" ");
@@ -534,7 +547,7 @@ if (bot) {
   // Handle investigation status buttons
   bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) {
+    if (!(await checkAccess(ctx))) {
       await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
       return;
     }
@@ -610,7 +623,7 @@ if (bot) {
   // Handle action buttons
   bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) {
+    if (!(await checkAccess(ctx))) {
       await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
       return;
     }
@@ -661,8 +674,25 @@ if (bot) {
   }
   const pendingReplies = new Map<number, PendingReply>();
   const typingTimeouts = new Map<string, NodeJS.Timeout>();
-  // Track if manager is waiting to send newsletter
-  const pendingNewsletter = new Set<number>();
+  // Track newsletter data for each manager
+  interface PendingNewsletterData {
+    photoFileId?: string;
+    videoFileId?: string;
+    documentFileId?: string;
+    caption?: string;
+    messageText?: string;
+    awaitingMedia: boolean;
+  }
+  const pendingNewsletter = new Map<number, PendingNewsletterData>();
+  // Track balance credit data for each admin
+  interface PendingBalanceCredit {
+    walletAddress?: string;
+    userId?: string;
+    amount?: string;
+    reference?: string;
+    step: "wallet" | "amount" | "reference" | "confirm";
+  }
+  const pendingBalanceCredit = new Map<number, PendingBalanceCredit>();
 
   // ============================================
   // Support Messenger Callback Handlers
@@ -671,7 +701,7 @@ if (bot) {
   // Handle "Send Message" button (msg_WALLET_ADDRESS)
   bot.action(/^msg_(.+)$/, async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) {
+    if (!(await checkAccess(ctx))) {
       await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
       return;
     }
@@ -718,7 +748,7 @@ if (bot) {
   // Handle "Chat History" button (history_WALLET_ADDRESS)
   bot.action(/^history_(.+)$/, async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) {
+    if (!(await checkAccess(ctx))) {
       await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
       return;
     }
@@ -805,7 +835,7 @@ if (bot) {
   // Use negative lookahead to exclude reply_to_chat_ pattern
   bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) {
+    if (!(await checkAccess(ctx))) {
       await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
       return;
     }
@@ -843,11 +873,12 @@ if (bot) {
 
   bot.command("cancel", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     const chatId = ctx.from.id;
     const pending = pendingReplies.get(chatId);
     const isNewsletterPending = pendingNewsletter.has(chatId);
+    const isBalanceCreditPending = pendingBalanceCredit.has(chatId);
 
     if (pending) {
       pendingReplies.delete(chatId);
@@ -863,15 +894,18 @@ if (bot) {
     } else if (isNewsletterPending) {
       pendingNewsletter.delete(chatId);
       ctx.reply("❌ Отправка рассылки отменена");
+    } else if (isBalanceCreditPending) {
+      pendingBalanceCredit.delete(chatId);
+      ctx.reply("❌ Начисление баланса отменено");
     } else {
-      ctx.reply("Нет активной отправки сообщения или рассылки");
+      ctx.reply("Нет активной отправки сообщения, рассылки или начисления баланса");
     }
   });
 
   // Chatbot callback handler - handle reply button click
   bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) {
+    if (!(await checkAccess(ctx))) {
       await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
       return;
     }
@@ -905,6 +939,39 @@ if (bot) {
     }
   });
 
+  // Balance credit command for admins - credit balance to user
+  bot.command("credit", async (ctx) => {
+    console.log("[telegram-webhook] /credit command received from user:", ctx.from.id);
+
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      console.log("[telegram-webhook] /credit command: access denied for user:", ctx.from.id);
+      return;
+    }
+
+    try {
+      const chatId = ctx.from.id;
+      console.log("[telegram-webhook] /credit command: initializing for chat:", chatId);
+
+      // Mark that this chat is waiting for balance credit data
+      pendingBalanceCredit.set(chatId, {
+        step: "wallet",
+      });
+
+      await ctx.reply(
+        `💰 *Начисление баланса пользователю*\n\n` +
+          `Введите адрес кошелька пользователя (0x...)\n\n` +
+          `Для отмены используйте /cancel`,
+        { parse_mode: "Markdown" },
+      );
+
+      console.log("[telegram-webhook] /credit command: reply sent successfully");
+    } catch (error) {
+      console.error("Error in credit command:", error);
+      await ctx.reply("❌ Ошибка при инициализации начисления баланса").catch(() => {});
+    }
+  });
+
   // Unified text handler - listen for admin replies and newsletter
   bot.on("text", async (ctx) => {
     try {
@@ -922,7 +989,7 @@ if (bot) {
       }
 
       // 🔒 Authorization check - must be after command check to allow /myid for everyone
-      if (!await checkAccess(ctx)) return;
+      if (!(await checkAccess(ctx))) return;
 
       const chatId = ctx.from.id;
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
@@ -955,14 +1022,17 @@ if (bot) {
 
           try {
             // Set typing indicator
-            console.log("[telegram-webhook] Setting typing indicator for wallet:", pending.walletAddress);
+            console.log(
+              "[telegram-webhook] Setting typing indicator for wallet:",
+              pending.walletAddress,
+            );
 
             await query(
               `INSERT INTO typing_indicators (user_wallet_address, admin_id, admin_username, is_typing, started_at, expires_at)
                VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 seconds')
                ON CONFLICT (user_wallet_address, admin_id)
                DO UPDATE SET is_typing = $4, started_at = CURRENT_TIMESTAMP, expires_at = CURRENT_TIMESTAMP + INTERVAL '30 seconds', admin_username = $3`,
-              [pending.walletAddress, ctx.from.id, adminUsername, true]
+              [pending.walletAddress, ctx.from.id, adminUsername, true],
             ).catch((err) => {
               console.error("[telegram-webhook] Failed to set typing:", err);
               // Don't fail if typing indicator fails
@@ -991,7 +1061,7 @@ if (bot) {
             if (pending.sessionId) {
               const result = await query(
                 `SELECT id FROM chatbot_sessions WHERE id = $1 AND user_wallet_address = $2`,
-                [pending.sessionId, pending.walletAddress]
+                [pending.sessionId, pending.walletAddress],
               );
               if (result.rows.length === 0) {
                 await ctx.reply("❌ Сессия не найдена").catch(() => {});
@@ -1010,7 +1080,7 @@ if (bot) {
             const message = await createSupportMessage({
               sessionId: session.id,
               walletAddress: pending.walletAddress,
-              type: 'admin',
+              type: "admin",
               text: sanitizedText,
               adminId: ctx.from.id,
               adminUsername,
@@ -1021,13 +1091,13 @@ if (bot) {
               `UPDATE chatbot_sessions
                SET last_admin_message_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
                WHERE id = $1`,
-              [session.id]
+              [session.id],
             );
 
             // Remove typing indicator
             await query(
               `DELETE FROM typing_indicators WHERE user_wallet_address = $1 AND admin_id = $2`,
-              [pending.walletAddress, ctx.from.id]
+              [pending.walletAddress, ctx.from.id],
             );
 
             console.log("[telegram-webhook] Support message saved:", {
@@ -1172,57 +1242,121 @@ if (bot) {
         return;
       }
 
-      // Newsletter handler - only for manager and only if waiting for newsletter
-      if (isManager && pendingNewsletter.has(chatId)) {
-        // Clear the flag
-        pendingNewsletter.delete(chatId);
-
+      // Balance credit handler
+      const balanceCreditData = pendingBalanceCredit.get(chatId);
+      if (balanceCreditData) {
         try {
-          // Get all verified email subscribers
-          const subscribers = await query(
-            "SELECT email FROM newsletter_subscribers WHERE verified = true AND is_active = true AND email IS NOT NULL",
-          );
+          if (balanceCreditData.step === "wallet") {
+            const walletInput = messageText.trim();
 
-          if (subscribers.rows.length === 0) {
-            await ctx.reply("❌ Нет активных подписчиков");
+            if (!isValidWalletAddress(walletInput)) {
+              await ctx.reply(
+                "❌ Неверный формат адреса кошелька.\n\n" +
+                  "Введите корректный Ethereum адрес (начинается с 0x...)\n\n" +
+                  "Для отмены используйте /cancel",
+              );
+              return;
+            }
+
+            balanceCreditData.walletAddress = walletInput.toLowerCase();
+            balanceCreditData.step = "amount";
+
+            await ctx.reply(
+              `✅ Адрес кошелька: \`${walletInput}\`\n\n` +
+                `Введите сумму для начисления (например: 100.5)\n\n` +
+                `Для отмены используйте /cancel`,
+              { parse_mode: "Markdown" },
+            );
             return;
           }
 
-          await ctx.reply(`📤 Отправка рассылки ${subscribers.rows.length} подписчикам...`);
+          if (balanceCreditData.step === "amount") {
+            const amountInput = messageText.trim();
+            const amountNum = parseFloat(amountInput);
 
-          // Call API to send newsletters
-          try {
-            const response = await fetch(
-              `${getAppUrl()}/api/newsletter/send-email`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  message: messageText,
-                  authToken: process.env.NEWSLETTER_AUTH_TOKEN,
-                }),
-              },
-            );
-
-            const data = await response.json();
-
-            if (response.ok) {
+            if (isNaN(amountNum) || amountNum <= 0) {
               await ctx.reply(
-                `✅ Рассылка отправлена!\n\n` +
-                  `Отправлено: ${data.sent}\n` +
-                  `Ошибок: ${data.failed}`,
+                "❌ Неверная сумма.\n\n" +
+                  "Введите положительное число (например: 100.5)\n\n" +
+                  "Для отмены используйте /cancel",
               );
-            } else {
-              await ctx.reply(`❌ Ошибка при отправке: ${data.error}`);
+              return;
             }
-          } catch (error) {
-            console.error("Error calling newsletter API:", error);
-            await ctx.reply("❌ Ошибка при отправке рассылки");
+
+            balanceCreditData.amount = amountInput;
+            balanceCreditData.step = "reference";
+
+            await ctx.reply(
+              `✅ Сумма: ${amountInput}\n\n` +
+                `Введите описание/причину начисления (или отправьте "-" для пропуска)\n\n` +
+                `Для отмены используйте /cancel`,
+            );
+            return;
           }
+
+          if (balanceCreditData.step === "reference") {
+            const referenceInput = messageText.trim();
+            balanceCreditData.reference = referenceInput === "-" ? undefined : referenceInput;
+            balanceCreditData.step = "confirm";
+
+            // Show confirmation
+            const keyboard = Markup.inlineKeyboard([
+              [
+                Markup.button.callback("✅ Подтвердить", "balance_credit_confirm"),
+                Markup.button.callback("❌ Отменить", "balance_credit_cancel"),
+              ],
+            ]);
+
+            await ctx.reply(
+              `📋 *Подтверждение начисления баланса*\n\n` +
+                `💼 Кошелек: \`${balanceCreditData.walletAddress}\`\n` +
+                `💰 Сумма: ${balanceCreditData.amount}\n` +
+                `📝 Описание: ${balanceCreditData.reference || "—"}\n\n` +
+                `Подтвердить начисление?`,
+              { parse_mode: "Markdown", ...keyboard },
+            );
+            return;
+          }
+        } catch (error) {
+          console.error("Error in balance credit handler:", error);
+          await ctx
+            .reply("❌ Ошибка при обработке данных. Попробуйте снова с /credit")
+            .catch(() => {});
+          pendingBalanceCredit.delete(chatId);
+          return;
+        }
+      }
+
+      // Newsletter handler - only for manager and only if waiting for newsletter
+      const newsletterData = pendingNewsletter.get(chatId);
+      if (isManager && newsletterData && newsletterData.awaitingMedia) {
+        try {
+          // Update newsletter data with text message
+          pendingNewsletter.set(chatId, {
+            ...newsletterData,
+            messageText: messageText,
+            awaitingMedia: false,
+          });
+
+          // Ask for confirmation
+          const keyboard = Markup.inlineKeyboard([
+            [
+              Markup.button.callback("✅ Отправить", "newsletter_confirm"),
+              Markup.button.callback("❌ Отменить", "newsletter_cancel"),
+            ],
+          ]);
+
+          await ctx.reply(
+            `📝 *Текстовое сообщение получено!*\n\n` +
+              `Текст: ${messageText.substring(0, 200)}${messageText.length > 200 ? "..." : ""}\n\n` +
+              `Отправить рассылку всем подписчикам?`,
+            { parse_mode: "Markdown", ...keyboard },
+          );
           return;
         } catch (error) {
           console.error("Error in newsletter text handler:", error);
-          // Fall through to default handler
+          await ctx.reply("❌ Ошибка при обработке текста").catch(() => {});
+          return;
         }
       }
 
@@ -1252,7 +1386,7 @@ if (bot) {
   // Newsletter subscription commands
   bot.command("subscribe", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const chatId = ctx.chat.id.toString();
@@ -1291,7 +1425,7 @@ if (bot) {
 
   bot.command("unsubscribe", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const chatId = ctx.chat.id.toString();
@@ -1313,7 +1447,7 @@ if (bot) {
   // Newsletter command for admins - send newsletter to all email subscribers
   bot.command("newsletter", async (ctx) => {
     // 🔒 Authorization check
-    if (!await checkAccess(ctx)) return;
+    if (!(await checkAccess(ctx))) return;
 
     try {
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
@@ -1332,21 +1466,342 @@ if (bot) {
 
       const count = subscribers.rows[0]?.count || 0;
 
-      // Mark that this chat is waiting for newsletter text
-      pendingNewsletter.add(ctx.from.id);
+      // Mark that this chat is waiting for newsletter content
+      pendingNewsletter.set(ctx.from.id, {
+        awaitingMedia: true,
+      });
 
       ctx.reply(
         `📧 *Рассылка для подписчиков*\n\n` +
           `Активных подписчиков: ${count}\n\n` +
-          `Отправьте текст рассылки следующим сообщением:\n` +
-          `Пример:\n` +
-          `\`Отправьте рассылку:\n\nДобро пожаловать в EuroCoin! Новые возможности для вашего бизнеса.\``,
+          `📝 Отправьте контент для рассылки:\n\n` +
+          `• 📸 *Изображение с подписью* - отправьте фото с текстом\n` +
+          `• 📄 *Только текст* - отправьте текстовое сообщение\n` +
+          `• 🎥 *Видео с подписью* - отправьте видео с текстом\n` +
+          `• 📎 *Документ* - отправьте файл\n\n` +
+          `Для отмены используйте /cancel\n\n` +
+          `_Совет: Вы можете использовать Markdown форматирование_`,
         { parse_mode: "Markdown" },
       );
     } catch (error) {
       console.error("Error in newsletter command:", error);
       ctx.reply("❌ Ошибка при получении информации о рассылке");
     }
+  });
+
+  // Handle photo for newsletter
+  bot.on("photo", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) return;
+
+    try {
+      const chatId = ctx.from.id;
+      const newsletterData = pendingNewsletter.get(chatId);
+
+      if (!newsletterData || !newsletterData.awaitingMedia) {
+        return; // Not waiting for newsletter content
+      }
+
+      // Get the largest photo (best quality)
+      const photo = ctx.message.photo[ctx.message.photo.length - 1];
+      const caption = ctx.message.caption || "";
+
+      // Update newsletter data
+      pendingNewsletter.set(chatId, {
+        ...newsletterData,
+        photoFileId: photo.file_id,
+        caption: caption,
+        awaitingMedia: false,
+      });
+
+      // Ask for confirmation
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback("✅ Отправить", "newsletter_confirm"),
+          Markup.button.callback("❌ Отменить", "newsletter_cancel"),
+        ],
+      ]);
+
+      await ctx.reply(
+        `📸 *Изображение получено!*\n\n` +
+          (caption ? `Текст: ${caption}\n\n` : "") +
+          `Отправить рассылку всем подписчикам?`,
+        { parse_mode: "Markdown", ...keyboard },
+      );
+    } catch (error) {
+      console.error("Error handling photo for newsletter:", error);
+      await ctx.reply("❌ Ошибка при обработке изображения").catch(() => {});
+    }
+  });
+
+  // Handle video for newsletter
+  bot.on("video", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) return;
+
+    try {
+      const chatId = ctx.from.id;
+      const newsletterData = pendingNewsletter.get(chatId);
+
+      if (!newsletterData || !newsletterData.awaitingMedia) {
+        return; // Not waiting for newsletter content
+      }
+
+      const video = ctx.message.video;
+      const caption = ctx.message.caption || "";
+
+      // Update newsletter data
+      pendingNewsletter.set(chatId, {
+        ...newsletterData,
+        videoFileId: video.file_id,
+        caption: caption,
+        awaitingMedia: false,
+      });
+
+      // Ask for confirmation
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback("✅ Отправить", "newsletter_confirm"),
+          Markup.button.callback("❌ Отменить", "newsletter_cancel"),
+        ],
+      ]);
+
+      await ctx.reply(
+        `🎥 *Видео получено!*\n\n` +
+          (caption ? `Текст: ${caption}\n\n` : "") +
+          `Отправить рассылку всем подписчикам?`,
+        { parse_mode: "Markdown", ...keyboard },
+      );
+    } catch (error) {
+      console.error("Error handling video for newsletter:", error);
+      await ctx.reply("❌ Ошибка при обработке видео").catch(() => {});
+    }
+  });
+
+  // Handle document for newsletter
+  bot.on("document", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) return;
+
+    try {
+      const chatId = ctx.from.id;
+      const newsletterData = pendingNewsletter.get(chatId);
+
+      if (!newsletterData || !newsletterData.awaitingMedia) {
+        return; // Not waiting for newsletter content
+      }
+
+      const document = ctx.message.document;
+      const caption = ctx.message.caption || "";
+
+      // Update newsletter data
+      pendingNewsletter.set(chatId, {
+        ...newsletterData,
+        documentFileId: document.file_id,
+        caption: caption,
+        awaitingMedia: false,
+      });
+
+      // Ask for confirmation
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback("✅ Отправить", "newsletter_confirm"),
+          Markup.button.callback("❌ Отменить", "newsletter_cancel"),
+        ],
+      ]);
+
+      await ctx.reply(
+        `📎 *Документ получен!*\n\n` +
+          `Файл: ${document.file_name || "Без названия"}\n` +
+          (caption ? `Текст: ${caption}\n\n` : "") +
+          `Отправить рассылку всем подписчикам?`,
+        { parse_mode: "Markdown", ...keyboard },
+      );
+    } catch (error) {
+      console.error("Error handling document for newsletter:", error);
+      await ctx.reply("❌ Ошибка при обработке документа").catch(() => {});
+    }
+  });
+
+  // Handle confirmation buttons for newsletter
+  bot.action("newsletter_confirm", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    await ctx.answerCbQuery().catch(() => {});
+
+    try {
+      const chatId = ctx.from.id;
+      const newsletterData = pendingNewsletter.get(chatId);
+
+      if (!newsletterData) {
+        await ctx.reply("❌ Данные рассылки не найдены");
+        return;
+      }
+
+      // Get count of active Telegram subscribers
+      const subscribers = await query(
+        "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = true AND chat_id IS NOT NULL",
+      );
+
+      const count = subscribers.rows[0]?.count || 0;
+
+      if (count === 0) {
+        await ctx.reply("❌ Нет активных подписчиков");
+        pendingNewsletter.delete(chatId);
+        return;
+      }
+
+      await ctx.reply(`📤 Отправка рассылки ${count} подписчикам...`);
+
+      // Send newsletter via API
+      const response = await fetch(`${getAppUrl()}/api/newsletter/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: newsletterData.caption || newsletterData.messageText || "",
+          photoFileId: newsletterData.photoFileId,
+          videoFileId: newsletterData.videoFileId,
+          documentFileId: newsletterData.documentFileId,
+          authToken: process.env.NEWSLETTER_AUTH_TOKEN,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        await ctx.reply(
+          `✅ Рассылка отправлена!\n\n` + `Отправлено: ${data.sent}\n` + `Ошибок: ${data.failed}`,
+        );
+      } else {
+        await ctx.reply(`❌ Ошибка при отправке: ${data.error}`);
+      }
+
+      // Clear newsletter data
+      pendingNewsletter.delete(chatId);
+    } catch (error) {
+      console.error("Error confirming newsletter:", error);
+      await ctx.reply("❌ Ошибка при отправке рассылки").catch(() => {});
+    }
+  });
+
+  // Handle cancel button for newsletter
+  bot.action("newsletter_cancel", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    await ctx.answerCbQuery().catch(() => {});
+
+    const chatId = ctx.from.id;
+    pendingNewsletter.delete(chatId);
+
+    await ctx.reply("❌ Рассылка отменена");
+  });
+
+  // Handle confirmation button for balance credit
+  bot.action("balance_credit_confirm", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    await ctx.answerCbQuery("⏳ Начисление баланса...").catch(() => {});
+
+    try {
+      const chatId = ctx.from.id;
+      const balanceCreditData = pendingBalanceCredit.get(chatId);
+
+      if (!balanceCreditData || !balanceCreditData.walletAddress || !balanceCreditData.amount) {
+        await ctx.reply("❌ Данные начисления не найдены. Начните заново с /credit");
+        pendingBalanceCredit.delete(chatId);
+        return;
+      }
+
+      // Call API to credit balance
+      const appUrl = getAppUrl();
+      const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
+
+      if (!adminSecret) {
+        await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+        pendingBalanceCredit.delete(chatId);
+        return;
+      }
+
+      const response = await fetch(`${appUrl}/api/internal-balance/credit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-admin-token": adminSecret,
+        },
+        body: JSON.stringify({
+          walletAddress: balanceCreditData.walletAddress,
+          amount: balanceCreditData.amount,
+          reference: balanceCreditData.reference,
+          createdBy: ctx.from.first_name || ctx.from.username || "telegram-admin",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error || "Неизвестная ошибка";
+        await ctx.reply(
+          `❌ Ошибка при начислении баланса:\n\n` +
+            `\`${errorMessage}\`\n\n` +
+            `Проверьте, что пользователь зарегистрирован в системе.`,
+          { parse_mode: "Markdown" },
+        );
+        pendingBalanceCredit.delete(chatId);
+        return;
+      }
+
+      // Success
+      const balance = data.balance?.balance || "0";
+      const tokenSymbol = data.tokenSymbol || "EURC";
+      const decimals = data.decimals || 18;
+
+      // Format balance for display
+      const balanceFormatted = (parseFloat(balance) / Math.pow(10, decimals)).toFixed(2);
+
+      await ctx.reply(
+        `✅ *Баланс успешно начислен!*\n\n` +
+          `💼 Кошелек: \`${balanceCreditData.walletAddress}\`\n` +
+          `💰 Начислено: ${balanceCreditData.amount} ${tokenSymbol}\n` +
+          `📊 Новый баланс: ${balanceFormatted} ${tokenSymbol}\n` +
+          (balanceCreditData.reference ? `📝 Описание: ${balanceCreditData.reference}\n` : ""),
+        { parse_mode: "Markdown" },
+      );
+
+      pendingBalanceCredit.delete(chatId);
+    } catch (error) {
+      console.error("Error confirming balance credit:", error);
+      await ctx.reply("❌ Ошибка при начислении баланса").catch(() => {});
+      const chatId = ctx.from.id;
+      pendingBalanceCredit.delete(chatId);
+    }
+  });
+
+  // Handle cancel button for balance credit
+  bot.action("balance_credit_cancel", async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    await ctx.answerCbQuery().catch(() => {});
+
+    const chatId = ctx.from.id;
+    pendingBalanceCredit.delete(chatId);
+
+    await ctx.reply("❌ Начисление баланса отменено");
   });
 } // End of if (bot) block
 

@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
       withdraw: "Token Withdrawal",
       balance: "Balance Review",
       report: "Report Request",
+      refund: "Refund Request",
     };
 
     // Map departments to readable labels
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
       aml: "AML/KYC Department",
       investment: "Investment Team",
       support: "Customer Support",
+      legal: "Legal Department",
     };
 
     // Format email content

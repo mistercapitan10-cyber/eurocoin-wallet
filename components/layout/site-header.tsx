@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ProfileIcon } from "@/components/layout/profile-icon";
 import { EmailIcon } from "@/components/layout/email-icon";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { MegaMenu } from "@/components/layout/mega-menu";
 import { useTranslation } from "@/hooks/use-translation";
 import { useLanguage } from "@/components/providers/language-provider";
 import { availableLocales, type Locale } from "@/lib/i18n/translations";
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#exchange", key: "common.nav.exchange" },
   { href: "/#contact", key: "common.nav.contact" },
+  { href: "/#internal-balance", key: "common.nav.internalBalance" },
   { href: "/#investigation", key: "common.nav.investigation" },
   { href: "/#faq", key: "common.nav.faq" },
 ];
@@ -118,7 +120,15 @@ export function SiteHeader() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["wallet", "token-balance", "exchange", "contact", "investigation", "faq"];
+      const sections = [
+        "wallet",
+        "token-balance",
+        "exchange",
+        "contact",
+        "internal-balance",
+        "investigation",
+        "faq",
+      ];
       const scrollPosition = window.scrollY + 100; // Header offset
 
       let activeSection = "";
@@ -174,20 +184,29 @@ export function SiteHeader() {
 
         {/* Desktop Navigation */}
         <nav className="dark:text-dark-foregroundMuted hidden items-center gap-3 text-sm font-medium text-foregroundMuted md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "rounded-full px-4 py-2 transition",
-                isActive(item)
-                  ? "bg-accent text-white shadow"
-                  : "dark:hover:bg-dark-backgroundAlt hover:bg-backgroundAlt",
-              )}
-            >
-              {t(item.key)}
-            </Link>
-          ))}
+          <MegaMenu />
+          <Link
+            href="/#token-balance"
+            className={cn(
+              "rounded-full px-4 py-2 transition",
+              activeSection === "token-balance"
+                ? "bg-accent text-white shadow"
+                : "hover:bg-backgroundAlt dark:hover:bg-dark-backgroundAlt",
+            )}
+          >
+            {t("common.nav.token")}
+          </Link>
+          <Link
+            href="/#faq"
+            className={cn(
+              "rounded-full px-4 py-2 transition",
+              activeSection === "faq"
+                ? "bg-accent text-white shadow"
+                : "hover:bg-backgroundAlt dark:hover:bg-dark-backgroundAlt",
+            )}
+          >
+            {t("common.nav.faq")}
+          </Link>
         </nav>
 
         {/* Desktop Right Side */}

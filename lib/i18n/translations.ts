@@ -25,6 +25,7 @@ const translations: Messages = {
         faq: "FAQ",
         contact: "Связаться",
         investigation: "Расследование",
+        internalBalance: "Внутренний баланс",
       },
       footer: {
         contact: "Контакты: eurocoinfinance@gmail.com",
@@ -43,6 +44,32 @@ const translations: Messages = {
         send: "Отправить",
         copy: "Скопировать",
         download: "Скачать",
+      },
+    },
+    megaMenu: {
+      features: "Особенности",
+      exploreTitle: "Изучите возможности платформы",
+      exploreSubtitle: "Все необходимые инструменты для управления токенами",
+      wallet: {
+        description: "Подключите MetaMask и управляйте вашими активами",
+      },
+      token: {
+        description: "Отслеживайте баланс и курс токена в реальном времени",
+      },
+      exchange: {
+        description: "Безопасный обмен токенов по актуальному курсу",
+      },
+      internalBalance: {
+        description: "Управление внутренними балансами и операциями",
+      },
+      investigation: {
+        description: "Расследование мошеннических операций брокеров",
+      },
+      faq: {
+        description: "Ответы на часто задаваемые вопросы",
+      },
+      contact: {
+        description: "Свяжитесь с нами для поддержки",
       },
     },
     language: {
@@ -199,12 +226,14 @@ const translations: Messages = {
         withdraw: "Списание токенов",
         balance: "Проверка баланса",
         report: "Запрос отчёта",
+        refund: "Возврат средств",
       },
       departments: {
         finance: "Финансовый отдел",
         aml: "Отдел AML/KYC",
         investment: "Инвестиционный отдел",
         support: "Поддержка клиентов",
+        legal: "Юридический отдел",
       },
       validationTitle: "Заполните обязательные поля",
       validationDescription: "Пожалуйста, укажите инициатора, отдел, тип заявки и описание.",
@@ -218,6 +247,89 @@ const translations: Messages = {
         low: "low",
         normal: "normal",
         high: "high",
+      },
+    },
+    internalPayout: {
+      badge: "Treasury",
+      title: "Withdraw to your wallet",
+      description:
+        "Lock part of your internal EURC balance and submit a payout request. Treasury reviews each request manually for compliance.",
+      helper:
+        "Average review time — up to 2 hours. You will receive an email/Telegram update once the status changes.",
+      amountLabel: "Amount (tokens)",
+      addressLabel: "Destination wallet",
+      noteLabel: "Comment for treasury (optional)",
+      submit: "Submit withdrawal request",
+      useMax: "Use max",
+      success: "Request created. Treasury will prepare the transaction after verification.",
+      error: "Failed to create request. Please try again later.",
+      validation: {
+        amount: "Enter an amount greater than zero.",
+        destination: "Enter a wallet address.",
+        destinationInvalid: "Destination must be a valid Ethereum address.",
+        insufficient: "Not enough funds on the internal balance.",
+        destinationBlocked: "This address is blocked by treasury compliance.",
+        dailyLimit: "Daily withdrawal limit reached.",
+        monthlyLimit: "Monthly withdrawal limit reached.",
+      },
+      table: {
+        title: "Withdrawal history",
+        empty: "No withdrawal requests yet.",
+        columns: {
+          amount: "Amount",
+          destination: "Destination",
+          status: "Status",
+          created: "Created",
+          txHash: "Tx hash",
+        },
+        status: {
+          pending: "Pending",
+          approved: "Approved",
+          processing: "Processing",
+          completed: "Completed",
+          rejected: "Rejected",
+        },
+      },
+    },
+    internalPayout: {
+      badge: "Казначейство",
+      title: "Вывод на корпоративный кошелёк",
+      description:
+        "Создайте заявку и укажите адрес вывода. Баланс резервируется мгновенно, а команда казначейства подтверждает транзакцию вручную.",
+      helper: "Заявки обрабатываются в течение 2 часов. О статусе сообщим по email/Telegram.",
+      amountLabel: "Сумма в токенах",
+      addressLabel: "Адрес кошелька для вывода",
+      noteLabel: "Комментарий для казначейства (необязательно)",
+      submit: "Отправить заявку на вывод",
+      useMax: "Заполнить максимум",
+      success: "Заявка создана. Казначейство подготовит транзакцию после проверки.",
+      error: "Не удалось создать заявку. Попробуйте позже.",
+      validation: {
+        amount: "Укажите сумму больше нуля.",
+        destination: "Укажите адрес кошелька.",
+        destinationInvalid: "Введите корректный адрес Ethereum.",
+        insufficient: "Недостаточно средств на внутреннем балансе.",
+        destinationBlocked: "Этот адрес заблокирован внутренним комплаенсом.",
+        dailyLimit: "Превышен дневной лимит вывода.",
+        monthlyLimit: "Превышен месячный лимит вывода.",
+      },
+      table: {
+        title: "История заявок на вывод",
+        empty: "У вас ещё нет заявок на вывод.",
+        columns: {
+          amount: "Сумма",
+          destination: "Адрес",
+          status: "Статус",
+          created: "Создано",
+          txHash: "Tx hash",
+        },
+        status: {
+          pending: "На рассмотрении",
+          approved: "Одобрено",
+          processing: "Выполняется",
+          completed: "Завершено",
+          rejected: "Отклонено",
+        },
       },
     },
     wallet: {
@@ -277,6 +389,7 @@ const translations: Messages = {
       },
       statistics: {
         title: "Статистика кошелька",
+        onchainUnavailable: "Подключите MetaMask, чтобы видеть ончейн-операции по EURC.",
         totalSpent: "Всего потрачено",
         receivedAmount: "Всего зачислено",
         loading: "Загрузка...",
@@ -288,6 +401,23 @@ const translations: Messages = {
           outgoing: "Списание",
           counterparty: "Контрагент",
           timestampUnknown: "—",
+          requiresWallet: "Подключите кошелёк, чтобы увидеть ончейн-операции.",
+        },
+        internal: {
+          title: "Внутренний баланс",
+          available: "Доступно сейчас",
+          total: "Всего начислено",
+          pending: "В ожидании вывода",
+          historyTitle: "Журнал внутренних операций",
+          empty: "Внутренние операции пока отсутствуют.",
+          loading: "Обновление…",
+          updated: "Обновлено {time}",
+          entry: {
+            credit: "Начисление",
+            debit: "Списание",
+            adjustment: "Коррекция",
+            payout: "Выплата",
+          },
         },
       },
       taxCard: {
@@ -761,6 +891,7 @@ const translations: Messages = {
         faq: "FAQ",
         contact: "Contact",
         investigation: "Investigation",
+        internalBalance: "Internal balance",
       },
       footer: {
         contact: "Contact: eurocoinfinance@gmail.com",
@@ -779,6 +910,32 @@ const translations: Messages = {
         send: "Send",
         copy: "Copy",
         download: "Download",
+      },
+    },
+    megaMenu: {
+      features: "Features",
+      exploreTitle: "Explore platform capabilities",
+      exploreSubtitle: "All the essential tools for token management",
+      wallet: {
+        description: "Connect MetaMask and manage your assets",
+      },
+      token: {
+        description: "Track token balance and price in real-time",
+      },
+      exchange: {
+        description: "Secure token exchange at current rates",
+      },
+      internalBalance: {
+        description: "Manage internal balances and operations",
+      },
+      investigation: {
+        description: "Investigation of fraudulent broker operations",
+      },
+      faq: {
+        description: "Answers to frequently asked questions",
+      },
+      contact: {
+        description: "Get in touch with us for support",
       },
     },
     language: {
@@ -936,12 +1093,14 @@ const translations: Messages = {
         withdraw: "Token withdrawal",
         balance: "Balance review",
         report: "Report request",
+        refund: "Refund request",
       },
       departments: {
         finance: "Finance department",
         aml: "AML/KYC department",
         investment: "Investment team",
         support: "Customer support",
+        legal: "Legal department",
       },
       validationTitle: "Fill in the required fields",
       validationDescription: "Specify requester, department, request type and description.",
@@ -1012,6 +1171,7 @@ const translations: Messages = {
       },
       statistics: {
         title: "Wallet Statistics",
+        onchainUnavailable: "Connect MetaMask to see on-chain EURC activity.",
         totalSpent: "Total Spent",
         receivedAmount: "Total Received",
         loading: "Loading...",
@@ -1023,6 +1183,23 @@ const translations: Messages = {
           outgoing: "Outgoing",
           counterparty: "Counterparty",
           timestampUnknown: "—",
+          requiresWallet: "Connect your wallet to view on-chain activity.",
+        },
+        internal: {
+          title: "Internal Balance",
+          available: "Available now",
+          total: "Total balance",
+          pending: "Pending payout",
+          historyTitle: "Internal ledger",
+          empty: "No internal transactions yet.",
+          loading: "Updating…",
+          updated: "Updated {time}",
+          entry: {
+            credit: "Credit",
+            debit: "Debit",
+            adjustment: "Adjustment",
+            payout: "Payout",
+          },
         },
       },
       taxCard: {
@@ -1492,6 +1669,7 @@ const translations: Messages = {
         faq: "DUK",
         contact: "Kontaktai",
         investigation: "Tyrimas",
+        internalBalance: "Vidinis balansas",
       },
       footer: {
         contact: "Kontaktai: eurocoinfinance@gmail.com",
@@ -1510,6 +1688,32 @@ const translations: Messages = {
         send: "Siųsti",
         copy: "Kopijuoti",
         download: "Atsisiųsti",
+      },
+    },
+    megaMenu: {
+      features: "Funkcijos",
+      exploreTitle: "Ištyrinėkite platformos galimybes",
+      exploreSubtitle: "Visos būtinos priemonės žetonų valdymui",
+      wallet: {
+        description: "Prijunkite MetaMask ir valdykite savo turtą",
+      },
+      token: {
+        description: "Stebėkite žetono balansą ir kainą realiuoju laiku",
+      },
+      exchange: {
+        description: "Saugus žetonų keitimas dabartiniu kursu",
+      },
+      internalBalance: {
+        description: "Valdykite vidinius balansus ir operacijas",
+      },
+      investigation: {
+        description: "Sukčiavimo brokerių operacijų tyrimas",
+      },
+      faq: {
+        description: "Atsakymai į dažniausiai užduodamus klausimus",
+      },
+      contact: {
+        description: "Susisiekite su mumis dėl pagalbos",
       },
     },
     language: {
@@ -1689,6 +1893,48 @@ const translations: Messages = {
         high: "aukštas",
       },
     },
+    internalPayout: {
+      badge: "Iždas",
+      title: "Išmokėti į savo piniginę",
+      description:
+        "Rezervuokite dalį vidinio EURC balanso ir pateikite išėmimo užklausą. Iždo komanda kiekvieną užklausą patvirtina rankiniu būdu.",
+      helper:
+        "Vidutinis patvirtinimo laikas – iki 2 valandų. Apie būsenos pasikeitimą informuosime el. paštu arba Telegram.",
+      amountLabel: "Suma (žetonais)",
+      addressLabel: "Gavėjo piniginė",
+      noteLabel: "Komentaras iždui (nebūtina)",
+      submit: "Pateikti išmokėjimo užklausą",
+      useMax: "Naudoti maksimumą",
+      success: "Užklausa sukurta. Iždo komanda paruoš transakciją po patikros.",
+      error: "Nepavyko sukurti užklausos. Bandykite dar kartą.",
+      validation: {
+        amount: "Įveskite sumą, didesnę nei nulis.",
+        destination: "Įveskite piniginės adresą.",
+        destinationInvalid: "Reikalingas teisingas Ethereum adresas.",
+        insufficient: "Vidinio balanso nepakanka.",
+        destinationBlocked: "Šis adresas yra sankcionuotame sąraše.",
+        dailyLimit: "Viršytas dienos išmokėjimo limitas.",
+        monthlyLimit: "Viršytas mėnesio išmokėjimo limitas.",
+      },
+      table: {
+        title: "Išmokėjimų istorija",
+        empty: "Dar neturite išmokėjimo užklausų.",
+        columns: {
+          amount: "Suma",
+          destination: "Adresas",
+          status: "Būsena",
+          created: "Sukurta",
+          txHash: "Tx hash",
+        },
+        status: {
+          pending: "Vykdoma",
+          approved: "Patvirtinta",
+          processing: "Vykdoma grandinėje",
+          completed: "Užbaigta",
+          rejected: "Atmesta",
+        },
+      },
+    },
     wallet: {
       connect: "Prijungti MetaMask",
       connecting: "Jungiamasi...",
@@ -1746,6 +1992,7 @@ const translations: Messages = {
       },
       statistics: {
         title: "Piniginės statistika",
+        onchainUnavailable: "Prijunkite MetaMask, kad matytumėte on-chain EURC veiklą.",
         totalSpent: "Iš viso išleista",
         receivedAmount: "Iš viso gauta",
         loading: "Įkeliama...",
@@ -1757,6 +2004,23 @@ const translations: Messages = {
           outgoing: "Išsiųsta",
           counterparty: "Sandorio šalis",
           timestampUnknown: "—",
+          requiresWallet: "Prijunkite piniginę, kad matytumėte on-chain veiklą.",
+        },
+        internal: {
+          title: "Vidinis balansas",
+          available: "Prieinama dabar",
+          total: "Visas balansas",
+          pending: "Laukiantis išmokėjimas",
+          historyTitle: "Vidinių operacijų žurnalas",
+          empty: "Vidinių operacijų kol kas nėra.",
+          loading: "Atnaujinama…",
+          updated: "Atnaujinta {time}",
+          entry: {
+            credit: "Papildymas",
+            debit: "Nurašymas",
+            adjustment: "Korekcija",
+            payout: "Išmokėjimas",
+          },
         },
       },
       taxCard: {
@@ -2229,6 +2493,7 @@ const translations: Messages = {
         faq: "BUJ",
         contact: "Kontakti",
         investigation: "Izmeklēšana",
+        internalBalance: "Iekšējais atlikums",
       },
       footer: {
         contact: "Kontakti: eurocoinfinance@gmail.com",
@@ -2247,6 +2512,32 @@ const translations: Messages = {
         send: "Sūtīt",
         copy: "Kopēt",
         download: "Lejupielādēt",
+      },
+    },
+    megaMenu: {
+      features: "Iespējas",
+      exploreTitle: "Izpētiet platformas iespējas",
+      exploreSubtitle: "Visas nepieciešamās rīki žetonu pārvaldībai",
+      wallet: {
+        description: "Pievienojiet MetaMask un pārvaldiet savus aktīvus",
+      },
+      token: {
+        description: "Sekojiet žetona bilancei un cenai reāllaikā",
+      },
+      exchange: {
+        description: "Droša žetonu apmaiņa pašreizējā kursā",
+      },
+      internalBalance: {
+        description: "Pārvaldiet iekšējās bilances un operācijas",
+      },
+      investigation: {
+        description: "Krāpniecisku brokeru darbību izmeklēšana",
+      },
+      faq: {
+        description: "Atbildes uz bieži uzdotiem jautājumiem",
+      },
+      contact: {
+        description: "Sazinieties ar mums atbalstam",
       },
     },
     language: {
@@ -2427,6 +2718,47 @@ const translations: Messages = {
         high: "augsts",
       },
     },
+    internalPayout: {
+      badge: "Kasieris",
+      title: "Izmaksāt uz savu maku",
+      description:
+        "Rezervējiet daļu iekšējā EURC atlikuma un iesniedziet izmaksas pieprasījumu. Kasiera komanda manuāli pārbauda katru operāciju.",
+      helper: "Apstrādes laiks līdz 2 stundām. Par statusu informēsim e‑pastā vai Telegram.",
+      amountLabel: "Summa (žetoni)",
+      addressLabel: "Mērķa maks",
+      noteLabel: "Komentārs kasierim (nav obligāts)",
+      submit: "Iesniegt izmaksas pieprasījumu",
+      useMax: "Maksimālā summa",
+      success: "Pieprasījums izveidots. Kasieris sagatavos transakciju pēc pārbaudes.",
+      error: "Neizdevās izveidot pieprasījumu. Mēģiniet vēlreiz.",
+      validation: {
+        amount: "Ievadiet summu, kas lielāka par nulli.",
+        destination: "Norādiet maku.",
+        destinationInvalid: "Nepieciešama derīga Ethereum adrese.",
+        insufficient: "Iekšējā atlikuma nepietiek.",
+        destinationBlocked: "Šis maks ir bloķēts atbilstības noteikumu dēļ.",
+        dailyLimit: "Sasniegts dienas izmaksu limits.",
+        monthlyLimit: "Sasniegts mēneša izmaksu limits.",
+      },
+      table: {
+        title: "Izmaksu vēsture",
+        empty: "Jums vēl nav izmaksu pieprasījumu.",
+        columns: {
+          amount: "Summa",
+          destination: "Adrese",
+          status: "Statuss",
+          created: "Izveidots",
+          txHash: "Tx hash",
+        },
+        status: {
+          pending: "Tiek izskatīts",
+          approved: "Apstiprināts",
+          processing: "Apstrādē",
+          completed: "Pabeigts",
+          rejected: "Noraidīts",
+        },
+      },
+    },
     wallet: {
       connect: "Pievienot MetaMask",
       connecting: "Savienojas...",
@@ -2482,6 +2814,7 @@ const translations: Messages = {
       },
       statistics: {
         title: "Maciņa statistika",
+        onchainUnavailable: "Pievienojiet MetaMask, lai redzētu on-chain EURC aktivitāti.",
         totalSpent: "Kopā iztērēts",
         receivedAmount: "Kopā saņemts",
         loading: "Ielādē...",
@@ -2493,6 +2826,23 @@ const translations: Messages = {
           outgoing: "Nosūtīts",
           counterparty: "Darījuma puse",
           timestampUnknown: "—",
+          requiresWallet: "Pievienojiet maciņu, lai apskatītu on-chain aktivitāti.",
+        },
+        internal: {
+          title: "Iekšējā bilance",
+          available: "Pieejams tagad",
+          total: "Kopējais atlikums",
+          pending: "Gaida izmaksu",
+          historyTitle: "Iekšējo darījumu žurnāls",
+          empty: "Iekšējo darījumu vēl nav.",
+          loading: "Atjaunina…",
+          updated: "Atjaunināts {time}",
+          entry: {
+            credit: "Iemaksa",
+            debit: "Norakstījums",
+            adjustment: "Korekcija",
+            payout: "Izmaksa",
+          },
         },
       },
       taxCard: {

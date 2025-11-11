@@ -18,9 +18,11 @@
     "auth:migrate": "tsx scripts/apply-auth-migration.ts",
     "auth:create-tables": "tsx scripts/create-nextauth-tables.ts",
     "auth:fix-userid": "tsx scripts/fix-userid-columns.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "treasury:process": "tsx scripts/process-withdrawals.ts"
   },
   "dependencies": {
+    "24": "^0.0.0",
     "@auth/drizzle-adapter": "^1.11.1",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
@@ -36,11 +38,13 @@
     "drizzle-kit": "^0.31.5",
     "drizzle-orm": "^0.44.7",
     "ethers": "^6.13.4",
+    "framer-motion": "^12.23.24",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.548.0",
     "next": "16.0.0",
     "next-auth": "^5.0.0-beta.30",
     "next-themes": "^0.4.6",
+    "node": "^25.1.0",
     "nodemailer": "^7.0.10",
     "pg": "^8.16.3",
     "react": "19.2.0",

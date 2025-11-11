@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { ethers } from "ethers";
 import { useAccount } from "wagmi";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
+import { InternalPayoutForm } from "@/components/forms/internal-payout-form";
 import {
   BalanceCard,
   PriceTicker,
@@ -64,9 +65,6 @@ export default function Home() {
             className="dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface p-8 shadow-card"
           >
             <div className="space-y-5">
-              <span className="pill dark:bg-dark-surfaceAlt dark:text-dark-foreground inline-flex bg-surfaceAlt text-foreground">
-                {t("home.hero.badge")}
-              </span>
               <h1 className="display-title text-4xl text-accent md:text-5xl">
                 {t("home.hero.title")}
               </h1>
@@ -129,6 +127,11 @@ export default function Home() {
           {/* Internal Request Form Section */}
           <section id="contact">
             <InternalRequestForm />
+          </section>
+
+          {/* Internal Balance Section */}
+          <section id="internal-balance">
+            <InternalPayoutForm />
           </section>
 
           {/* Investigation & Reports Section */}

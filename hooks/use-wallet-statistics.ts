@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
-import {
-  formatUnits,
-  parseAbiItem,
-  type Address,
-  type PublicClient,
-} from "viem";
+import { formatUnits, parseAbiItem, type Address, type PublicClient } from "viem";
 import { TOKEN_CONFIG, isTokenConfigured } from "@/config/token";
 import { useSupportedNetwork } from "@/hooks/use-supported-network";
 
@@ -43,10 +38,8 @@ interface TokenStatistics {
   history: WalletHistoryEntry[];
 }
 
-const ETHERSCAN_API_KEY =
-  process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY ?? "";
-const CUSTOM_ETHERSCAN_BASE_URL =
-  process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL ?? "";
+const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY ?? "";
+const CUSTOM_ETHERSCAN_BASE_URL = process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL ?? "";
 
 const EXPLORER_URLS: Record<number, string> = {
   1: "https://api.etherscan.io/api",
@@ -57,9 +50,7 @@ const TRANSFER_EVENT = parseAbiItem(
   "event Transfer(address indexed from, address indexed to, uint256 value)",
 );
 
-const TOKEN_DECIMALS = Number.isFinite(TOKEN_CONFIG.decimals)
-  ? TOKEN_CONFIG.decimals
-  : 18;
+const TOKEN_DECIMALS = Number.isFinite(TOKEN_CONFIG.decimals) ? TOKEN_CONFIG.decimals : 18;
 
 const START_BLOCK = BigInt(Math.max(0, TOKEN_CONFIG.historyStartBlock));
 const FALLBACK_LOOKBACK = BigInt(5_000_000); // ~2 years of Ethereum blocks
@@ -93,8 +84,7 @@ const isChunkTooLargeError = (error: unknown): boolean => {
   }
 
   const message =
-    ((error as { shortMessage?: string }).shortMessage ?? "")
-      .toLowerCase() ||
+    ((error as { shortMessage?: string }).shortMessage ?? "").toLowerCase() ||
     ((error as { details?: string }).details ?? "").toLowerCase() ||
     ((error as Error).message ?? "").toLowerCase();
 
@@ -107,13 +97,59 @@ const isChunkTooLargeError = (error: unknown): boolean => {
   );
 };
 
-const normalizeAddress = (value: string | undefined): string =>
-  value?.toLowerCase() ?? "";
+const normalizeAddress = (value: string | undefined): string => value?.toLowerCase() ?? "";
 
 const parseBlockNumber = (value: string | undefined): number => {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) ? parsed : 0;
 };
+
+const BLOCK_NUMBER_TTL = 30_000; // 30 seconds
+const BLOCK_DETAILS_TTL = 60_000; // 60 seconds
+
+type BlockNumberCacheEntry = { value: bigint; expiresAt: number };
+type BlockDetailsCacheEntry = { timestamp: number; expiresAt: number };
+
+const blockNumberCache = new Map<number, BlockNumberCacheEntry>();
+const blockDetailsCache = new Map<string, BlockDetailsCacheEntry>();
+
+const getCacheKeyForBlockNumber = (client: PublicClient): number =>
+  client.chain?.id ?? TOKEN_CONFIG.chainId ?? 0;
+
+const getCacheKeyForBlockDetails = (client: PublicClient, blockNumber: bigint): string =>
+  `${client.chain?.id ?? TOKEN_CONFIG.chainId ?? 0}-${blockNumber.toString()}`;
+
+async function getLatestBlockNumberWithCache(client: PublicClient): Promise<bigint> {
+  const cacheKey = getCacheKeyForBlockNumber(client);
+  const now = Date.now();
+  const cached = blockNumberCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.value;
+  }
+
+  const latestBlock = await client.getBlockNumber();
+  blockNumberCache.set(cacheKey, { value: latestBlock, expiresAt: now + BLOCK_NUMBER_TTL });
+  return latestBlock;
+}
+
+async function getBlockTimestampWithCache(
+  client: PublicClient,
+  blockNumber: bigint,
+): Promise<number> {
+  const cacheKey = getCacheKeyForBlockDetails(client, blockNumber);
+  const now = Date.now();
+  const cached = blockDetailsCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.timestamp;
+  }
+
+  const block = await client.getBlock({ blockNumber });
+  const timestamp = Number(block.timestamp);
+  blockDetailsCache.set(cacheKey, { timestamp, expiresAt: now + BLOCK_DETAILS_TTL });
+  return timestamp;
+}
 
 async function fetchTotalsViaExplorer(
   walletAddress: string,
@@ -172,7 +208,7 @@ async function fetchTotalsViaExplorer(
           blockNumber: parseBlockNumber(tx.blockNumber),
           timestamp: tx.timeStamp ? Number.parseInt(tx.timeStamp, 10) : undefined,
           direction: isIncoming ? "incoming" : "outgoing",
-          counterparty: isIncoming ? tx.from ?? "" : tx.to ?? "",
+          counterparty: isIncoming ? (tx.from ?? "") : (tx.to ?? ""),
           value,
         });
       }
@@ -189,23 +225,18 @@ async function fetchTotalsViaExplorer(
     return { ...ZERO_TOTALS, history: [] };
   }
 
-  if (
-    typeof data.message === "string" &&
-    data.message.toLowerCase().includes("rate limit")
-  ) {
+  if (typeof data.message === "string" && data.message.toLowerCase().includes("rate limit")) {
     throw new Error("Превышен лимит Etherscan. Попробуйте через минуту.");
   }
 
-  throw new Error(
-    data.result ?? data.message ?? "Неизвестная ошибка ответа Etherscan.",
-  );
+  throw new Error(data.result ?? data.message ?? "Неизвестная ошибка ответа Etherscan.");
 }
 
 async function fetchTotalsViaLogs(
   walletAddress: Address,
   client: PublicClient,
 ): Promise<TokenStatistics> {
-  const latestBlock = await client.getBlockNumber();
+  const latestBlock = await getLatestBlockNumberWithCache(client);
   const fromBlock =
     START_BLOCK > ZERO_BIGINT
       ? START_BLOCK
@@ -215,7 +246,7 @@ async function fetchTotalsViaLogs(
 
   let spent = ZERO_BIGINT;
   let received = ZERO_BIGINT;
-   const latestIncoming: Array<{
+  const latestIncoming: Array<{
     blockNumber: bigint;
     logIndex: bigint;
     transactionHash: string;
@@ -236,10 +267,7 @@ async function fetchTotalsViaLogs(
     }
   };
 
-  const collect = async (
-    direction: "from" | "to",
-    target: typeof latestIncoming,
-  ) => {
+  const collect = async (direction: "from" | "to", target: typeof latestIncoming) => {
     let cursor = fromBlock;
     let chunkSize = MAX_LOG_CHUNK;
 
@@ -253,27 +281,20 @@ async function fetchTotalsViaLogs(
         const logs = await client.getLogs({
           address: TOKEN_CONFIG.address,
           event: TRANSFER_EVENT,
-          args:
-            direction === "from"
-              ? { from: walletAddress }
-              : { to: walletAddress },
+          args: direction === "from" ? { from: walletAddress } : { to: walletAddress },
           fromBlock: cursor,
           toBlock: rangeEnd,
         });
 
         for (const log of logs) {
-          if (
-            !log.args?.value ||
-            !log.transactionHash ||
-            typeof log.logIndex === "undefined"
-          ) {
+          if (!log.args?.value || !log.transactionHash || typeof log.logIndex === "undefined") {
             continue;
           }
 
           const counterparty =
             direction === "from"
-              ? (log.args.to as string | undefined) ?? ""
-              : (log.args.from as string | undefined) ?? "";
+              ? ((log.args.to as string | undefined) ?? "")
+              : ((log.args.from as string | undefined) ?? "");
 
           if (direction === "from") {
             spent += log.args.value;
@@ -304,9 +325,7 @@ async function fetchTotalsViaLogs(
           continue;
         }
 
-        throw error instanceof Error
-          ? error
-          : new Error("Не удалось получить логи токена.");
+        throw error instanceof Error ? error : new Error("Не удалось получить логи токена.");
       }
     }
   };
@@ -323,26 +342,22 @@ async function fetchTotalsViaLogs(
     })
     .slice(0, HISTORY_LIMIT);
 
-  const uniqueBlocks = Array.from(
-    new Set(mergedLogs.map((entry) => entry.blockNumber)),
-  );
+  const uniqueBlocks = Array.from(new Set(mergedLogs.map((entry) => entry.blockNumber)));
 
   const blockTimestamps = new Map<bigint, number>();
-  await Promise.all(
-    uniqueBlocks.map(async (blockNumber) => {
-      const block = await client.getBlock({ blockNumber });
-      blockTimestamps.set(blockNumber, Number(block.timestamp));
-    }),
-  );
+  for (const blockNumber of uniqueBlocks) {
+    const timestamp = await getBlockTimestampWithCache(client, blockNumber);
+    blockTimestamps.set(blockNumber, timestamp);
+  }
 
   const history = mergedLogs.map((entry) => ({
-      hash: entry.transactionHash,
-      blockNumber: Number(entry.blockNumber),
-      timestamp: blockTimestamps.get(entry.blockNumber),
-      direction: entry.direction,
-      counterparty: entry.counterparty,
-      value: entry.value,
-    }));
+    hash: entry.transactionHash,
+    blockNumber: Number(entry.blockNumber),
+    timestamp: blockTimestamps.get(entry.blockNumber),
+    direction: entry.direction,
+    counterparty: entry.counterparty,
+    value: entry.value,
+  }));
 
   return { spent, received, history };
 }
@@ -383,21 +398,14 @@ export function useWalletStatistics(): WalletStatistics {
 
         if (!aggregatedTotals) {
           if (!publicClient) {
-            throw new Error(
-              "Нет RPC-клиента для чтения истории. Проверьте конфигурацию wagmi.",
-            );
+            throw new Error("Нет RPC-клиента для чтения истории. Проверьте конфигурацию wagmi.");
           }
 
-          aggregatedTotals = await fetchTotalsViaLogs(
-            address as Address,
-            publicClient,
-          );
+          aggregatedTotals = await fetchTotalsViaLogs(address as Address, publicClient);
         }
 
         if (!aggregatedTotals) {
-          throw new Error(
-            "Не удалось получить историю EURC ни через Etherscan, ни напрямую.",
-          );
+          throw new Error("Не удалось получить историю EURC ни через Etherscan, ни напрямую.");
         }
 
         if (cancelled) {
@@ -416,7 +424,9 @@ export function useWalletStatistics(): WalletStatistics {
           setHistory([]);
           setError(
             err instanceof Error
-              ? err.message
+              ? /429|rate limit/i.test(err.message)
+                ? "Похоже, достигнут лимит запросов RPC. Подождите немного и попробуйте снова."
+                : err.message
               : "Не удалось получить историю EURC. Проверьте RPC или ключ Etherscan.",
           );
         }
@@ -442,12 +452,8 @@ export function useWalletStatistics(): WalletStatistics {
       };
     }
 
-    const totalSpent = Number.parseFloat(
-      formatUnits(totals.spent, TOKEN_DECIMALS),
-    );
-    const received = Number.parseFloat(
-      formatUnits(totals.received, TOKEN_DECIMALS),
-    );
+    const totalSpent = Number.parseFloat(formatUnits(totals.spent, TOKEN_DECIMALS));
+    const received = Number.parseFloat(formatUnits(totals.received, TOKEN_DECIMALS));
 
     if (!Number.isFinite(totalSpent) || !Number.isFinite(received)) {
       return {

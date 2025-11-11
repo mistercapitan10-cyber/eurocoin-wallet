@@ -8,7 +8,7 @@ export function ConsoleFilter() {
     const originalWarn = console.warn;
 
     // Filter out SES/Enigma errors from MetaMask
-    const filterFunction = (...args: unknown[]) => {
+    const shouldFilter = (...args: unknown[]): boolean => {
       const message = args[0];
       if (
         typeof message === "string" &&
@@ -20,20 +20,30 @@ export function ConsoleFilter() {
           message.includes("%WeakMapPrototype%") ||
           message.includes("%DatePrototype%"))
       ) {
-        return;
+        return true;
       }
-      return message;
+      return false;
     };
 
     console.error = (...args: unknown[]) => {
-      if (filterFunction(...args)) {
-        originalError.apply(console, args);
+      if (!shouldFilter(...args)) {
+        try {
+          originalError.apply(console, args);
+        } catch {
+          // Fallback to direct call if apply fails
+          originalError(...args);
+        }
       }
     };
 
     console.warn = (...args: unknown[]) => {
-      if (filterFunction(...args)) {
-        originalWarn.apply(console, args);
+      if (!shouldFilter(...args)) {
+        try {
+          originalWarn.apply(console, args);
+        } catch {
+          // Fallback to direct call if apply fails
+          originalWarn(...args);
+        }
       }
     };
 
