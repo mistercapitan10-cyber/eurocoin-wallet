@@ -77,6 +77,64 @@ function getAppUrl(request?: NextRequest): string {
   return url;
 }
 
+// =============================================================================
+// Authorization Middleware
+// =============================================================================
+
+/**
+ * Check if a user is authorized to use the bot
+ * @param userId - Telegram User ID to check
+ * @returns true if authorized, false otherwise
+ */
+function isAuthorizedUser(userId: number): boolean {
+  const allowedUserId = process.env.TELEGRAM_ALLOWED_USER_ID;
+
+  if (!allowedUserId) {
+    console.warn(
+      '[telegram-webhook] ⚠️  TELEGRAM_ALLOWED_USER_ID is not set!\n' +
+      'Bot is open to all users. Add it to .env.local:\n' +
+      'TELEGRAM_ALLOWED_USER_ID=your_user_id'
+    );
+    // Return false in production if not set for security
+    return process.env.NODE_ENV !== 'production';
+  }
+
+  const isAuthorized = userId.toString() === allowedUserId;
+
+  if (!isAuthorized) {
+    console.log(`[telegram-webhook] 🚫 Unauthorized access attempt from User ID: ${userId}`);
+  }
+
+  return isAuthorized;
+}
+
+/**
+ * Check access and reply with error message if unauthorized
+ * @param ctx - Telegraf context
+ * @returns true if authorized, false otherwise
+ */
+async function checkAccess(ctx: any): Promise<boolean> {
+  const userId = ctx.from?.id;
+
+  if (!userId) {
+    console.warn('[telegram-webhook] ⚠️  No user ID in context');
+    return false;
+  }
+
+  if (!isAuthorizedUser(userId)) {
+    await ctx.reply(
+      '🔒 У вас нет доступа к этому боту.\n\n' +
+      'Этот бот доступен только для авторизованных администраторов.\n' +
+      'Если вы считаете, что это ошибка, обратитесь к владельцу бота.'
+    ).catch((err: Error) => {
+      console.error('[telegram-webhook] Failed to send unauthorized message:', err);
+    });
+    return false;
+  }
+
+  return true;
+}
+
 // Helper function to call webhook
 async function updateRequestStatus(requestId: string, status: string, request?: NextRequest) {
   try {
@@ -128,7 +186,10 @@ function getStatusName(status: string): string {
 
 if (bot) {
   // Start command
-  bot.start((ctx) => {
+  bot.start(async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     const chatId = ctx.chat.id;
     const username = ctx.from.first_name || "User";
 
@@ -163,7 +224,10 @@ if (bot) {
   });
 
   // Help command
-  bot.command("help", (ctx) => {
+  bot.command("help", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     const helpMessage = `
 🤖 *Справка по командам бота*
 
@@ -221,6 +285,9 @@ if (bot) {
 
   // List all requests
   bot.command("list", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const [exchangeRequests, internalRequests] = await Promise.all([
         getAllExchangeRequests(),
@@ -268,6 +335,9 @@ if (bot) {
 
   // List exchange requests
   bot.command("exchange", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const requests = await getAllExchangeRequests();
 
@@ -310,6 +380,9 @@ if (bot) {
 
   // List internal requests
   bot.command("internal", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const requests = await getAllInternalRequests();
 
@@ -348,6 +421,9 @@ if (bot) {
 
   // Chats command - show active chatbot sessions
   bot.command("chats", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       // For now, return a simple response
       // In full implementation, this would query the database
@@ -368,6 +444,9 @@ if (bot) {
 
   // Details command
   bot.command("details", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const args = ctx.message.text.split(" ");
       if (args.length < 2) {
@@ -454,6 +533,12 @@ if (bot) {
 
   // Handle investigation status buttons
   bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
     const match = ctx.match;
     const requestId = match[1];
     const newStage = match[2];
@@ -524,6 +609,12 @@ if (bot) {
 
   // Handle action buttons
   bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
     const match = ctx.match;
     const requestId = match[1];
     const newStatus = match[2];
@@ -579,6 +670,12 @@ if (bot) {
 
   // Handle "Send Message" button (msg_WALLET_ADDRESS)
   bot.action(/^msg_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
     const walletAddress = ctx.match[1];
     const chatId = ctx.from.id;
 
@@ -620,6 +717,12 @@ if (bot) {
 
   // Handle "Chat History" button (history_WALLET_ADDRESS)
   bot.action(/^history_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
     const walletAddress = ctx.match[1];
 
     // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
@@ -701,6 +804,12 @@ if (bot) {
   // Handle "Reply" button (reply_WALLET_ADDRESS) - but NOT reply_to_chat_
   // Use negative lookahead to exclude reply_to_chat_ pattern
   bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
     const walletAddress = ctx.match[1];
     const chatId = ctx.from.id;
 
@@ -732,7 +841,10 @@ if (bot) {
   // Cancel Command
   // ============================================
 
-  bot.command("cancel", (ctx) => {
+  bot.command("cancel", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     const chatId = ctx.from.id;
     const pending = pendingReplies.get(chatId);
     const isNewsletterPending = pendingNewsletter.has(chatId);
@@ -758,6 +870,12 @@ if (bot) {
 
   // Chatbot callback handler - handle reply button click
   bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
     const sessionId = ctx.match[1];
     const chatId = ctx.chat?.id || ctx.from?.id;
 
@@ -802,6 +920,9 @@ if (bot) {
       if (messageText.startsWith("/")) {
         return;
       }
+
+      // 🔒 Authorization check - must be after command check to allow /myid for everyone
+      if (!await checkAccess(ctx)) return;
 
       const chatId = ctx.from.id;
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
@@ -1130,6 +1251,9 @@ if (bot) {
 
   // Newsletter subscription commands
   bot.command("subscribe", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const chatId = ctx.chat.id.toString();
       const username = ctx.from.first_name || "User";
@@ -1166,6 +1290,9 @@ if (bot) {
   });
 
   bot.command("unsubscribe", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const chatId = ctx.chat.id.toString();
 
@@ -1185,11 +1312,14 @@ if (bot) {
 
   // Newsletter command for admins - send newsletter to all email subscribers
   bot.command("newsletter", async (ctx) => {
+    // 🔒 Authorization check
+    if (!await checkAccess(ctx)) return;
+
     try {
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
       const chatId = ctx.chat.id.toString();
 
-      // Check if user is admin
+      // Check if user is admin (additional check for manager-specific command)
       if (chatId !== managerChatId) {
         ctx.reply("❌ У вас нет доступа к этой команде");
         return;
