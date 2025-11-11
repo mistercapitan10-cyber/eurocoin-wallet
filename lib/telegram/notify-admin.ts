@@ -204,7 +204,6 @@ ${txLine}`.trim();
 
     await bot.telegram.sendMessage(adminChatId, message, {
       parse_mode: "MarkdownV2",
-      disable_web_page_preview: true,
     });
   } catch (error) {
     console.error("Error sending withdraw status notification:", error);

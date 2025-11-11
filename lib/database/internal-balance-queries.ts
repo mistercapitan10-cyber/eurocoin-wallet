@@ -160,7 +160,7 @@ function calculateAvailableAmount(balanceRow: Record<string, unknown>): bigint {
   const pending = BigInt(toNumericString(balanceRow.pending_onchain));
   const locked = BigInt(toNumericString(balanceRow.locked_amount));
   const available = total - pending - locked;
-  return available > 0n ? available : 0n;
+  return available > BigInt(0) ? available : BigInt(0);
 }
 
 async function ensureInternalWalletRecord(
@@ -316,7 +316,7 @@ async function mutateInternalBalance(
   params: BalanceMutationParams,
   direction: "credit" | "debit",
 ): Promise<BalanceMutationResult> {
-  if (params.amount <= 0n) {
+  if (params.amount <= BigInt(0)) {
     throw new Error("Amount must be greater than zero");
   }
 
@@ -418,7 +418,7 @@ export interface WithdrawCreationResult {
 export async function createWithdrawRequestRecord(
   params: WithdrawIdentifier,
 ): Promise<WithdrawCreationResult> {
-  if (params.amount <= 0n) {
+  if (params.amount <= BigInt(0)) {
     throw new Error("Amount must be greater than zero");
   }
 

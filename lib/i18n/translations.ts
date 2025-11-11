@@ -250,48 +250,6 @@ const translations: Messages = {
       },
     },
     internalPayout: {
-      badge: "Treasury",
-      title: "Withdraw to your wallet",
-      description:
-        "Lock part of your internal EURC balance and submit a payout request. Treasury reviews each request manually for compliance.",
-      helper:
-        "Average review time — up to 2 hours. You will receive an email/Telegram update once the status changes.",
-      amountLabel: "Amount (tokens)",
-      addressLabel: "Destination wallet",
-      noteLabel: "Comment for treasury (optional)",
-      submit: "Submit withdrawal request",
-      useMax: "Use max",
-      success: "Request created. Treasury will prepare the transaction after verification.",
-      error: "Failed to create request. Please try again later.",
-      validation: {
-        amount: "Enter an amount greater than zero.",
-        destination: "Enter a wallet address.",
-        destinationInvalid: "Destination must be a valid Ethereum address.",
-        insufficient: "Not enough funds on the internal balance.",
-        destinationBlocked: "This address is blocked by treasury compliance.",
-        dailyLimit: "Daily withdrawal limit reached.",
-        monthlyLimit: "Monthly withdrawal limit reached.",
-      },
-      table: {
-        title: "Withdrawal history",
-        empty: "No withdrawal requests yet.",
-        columns: {
-          amount: "Amount",
-          destination: "Destination",
-          status: "Status",
-          created: "Created",
-          txHash: "Tx hash",
-        },
-        status: {
-          pending: "Pending",
-          approved: "Approved",
-          processing: "Processing",
-          completed: "Completed",
-          rejected: "Rejected",
-        },
-      },
-    },
-    internalPayout: {
       badge: "Казначейство",
       title: "Вывод на корпоративный кошелёк",
       description:

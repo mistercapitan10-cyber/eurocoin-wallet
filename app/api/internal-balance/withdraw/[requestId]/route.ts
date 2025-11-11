@@ -39,7 +39,7 @@ function serialize(record: Awaited<ReturnType<typeof updateWithdrawRequestStatus
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { requestId: string } },
+  { params }: { params: Promise<{ requestId: string }> },
 ) {
   const authError = ensureAdminToken(request);
   if (authError) {
@@ -47,6 +47,7 @@ export async function PATCH(
   }
 
   try {
+    const { requestId } = await params;
     const payload = (await request.json()) as {
       status?: WithdrawStatus;
       reviewerId?: string;
@@ -63,8 +64,8 @@ export async function PATCH(
     }
 
     const record = await updateWithdrawRequestStatus({
-      requestId: params.requestId,
-      status: payload.status,
+      requestId,
+      status: payload.status as Exclude<WithdrawStatus, "pending">,
       reviewerId: payload.reviewerId ?? null,
       txHash: payload.txHash ?? null,
       notes: payload.notes ?? null,
