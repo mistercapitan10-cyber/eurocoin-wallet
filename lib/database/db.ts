@@ -39,10 +39,24 @@ export async function query(text: string, params?: any[]) {
   try {
     const res = await poolInstance.query(text, params);
     const duration = Date.now() - start;
-    console.log("Executed query", { text, duration, rows: res.rowCount });
+    console.log("[db] Executed query", { 
+      text: text.substring(0, 200), // Truncate long queries
+      duration, 
+      rows: res.rowCount,
+      params: params ? params.map(p => typeof p === 'string' && p.length > 50 ? p.substring(0, 50) + '...' : p) : undefined,
+    });
     return res;
   } catch (error) {
-    console.error("Database query error", { text, error });
+    const pgError = error as any;
+    console.error("[db] Database query error", { 
+      text: text.substring(0, 200),
+      error: error instanceof Error ? error.message : String(error),
+      code: pgError?.code,
+      detail: pgError?.detail,
+      hint: pgError?.hint,
+      position: pgError?.position,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw error;
   }
 }

@@ -128,7 +128,63 @@ export async function upsertWalletUser(
 export async function getUserByWalletAddress(
   walletAddress: `0x${string}`,
 ): Promise<UserSelect | null> {
-  const [user] = await db.select().from(users).where(eq(users.walletAddress, walletAddress)).limit(1);
-  return user ?? null;
+  try {
+    console.log("[user-queries] getUserByWalletAddress called:", {
+      walletAddress,
+      normalized: walletAddress.toLowerCase(),
+      hasDb: !!db,
+    });
+
+    const normalizedAddress = walletAddress.toLowerCase() as `0x${string}`;
+    
+    // Try direct SQL query first as fallback
+    try {
+      const { query } = await import("./db");
+      console.log("[user-queries] Attempting direct SQL query as fallback");
+      const result = await query(
+        'SELECT id, name, email, "emailVerified", image, auth_type as "authType", wallet_address as "walletAddress", created_at as "createdAt", updated_at as "updatedAt" FROM users WHERE LOWER(wallet_address) = $1 LIMIT 1',
+        [normalizedAddress],
+      );
+      
+      if (result.rows.length > 0) {
+        const user = result.rows[0] as UserSelect;
+        console.log("[user-queries] User found via direct SQL:", { userId: user.id, email: user.email });
+        return user;
+      } else {
+        console.log("[user-queries] User not found via direct SQL for wallet:", normalizedAddress);
+        return null;
+      }
+    } catch (sqlError) {
+      console.error("[user-queries] Direct SQL query failed, trying Drizzle:", {
+        error: sqlError instanceof Error ? sqlError.message : String(sqlError),
+      });
+    }
+
+    // Try Drizzle ORM query
+    console.log("[user-queries] Attempting Drizzle ORM query");
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.walletAddress, normalizedAddress))
+      .limit(1);
+
+    if (user) {
+      console.log("[user-queries] User found via Drizzle:", { userId: user.id, email: user.email });
+    } else {
+      console.log("[user-queries] User not found via Drizzle for wallet:", normalizedAddress);
+    }
+
+    return user ?? null;
+  } catch (error) {
+    console.error("[user-queries] Error in getUserByWalletAddress:", {
+      walletAddress,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      errorCode: (error as any)?.code,
+      errorDetail: (error as any)?.detail,
+      errorHint: (error as any)?.hint,
+    });
+    throw error;
+  }
 }
 

@@ -10,7 +10,7 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
   email: text("email").unique(),
-  emailVerified: timestamp("email_verified", { mode: "date", withTimezone: true }),
+  emailVerified: timestamp("emailVerified", { mode: "date", withTimezone: true }), // camelCase в БД
   image: text("image"),
 
   // Custom fields from auth_users schema (optional)
@@ -30,7 +30,7 @@ export const accounts = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(), // camelCase в базе данных
+    providerAccountId: text("provider_account_id").notNull(), // snake_case в базе данных
     refreshToken: text("refresh_token"), // snake_case в базе данных
     accessToken: text("access_token"), // snake_case в базе данных
     expiresAt: bigint("expires_at", { mode: "number" }), // snake_case в базе данных
