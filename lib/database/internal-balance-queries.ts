@@ -177,11 +177,22 @@ async function ensureInternalWalletRecord(
     ? identifier.defaultWithdrawAddress
     : null;
 
-  const existing = await (executor
-    ? executor.query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [
-        identifier.userId,
-      ])
-    : query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [identifier.userId]));
+  let existing;
+  try {
+    existing = await (executor
+      ? executor.query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [
+          identifier.userId,
+        ])
+      : query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [identifier.userId]));
+  } catch (queryError) {
+    console.error("[internal-balance-queries] Failed to query internal_wallets:", {
+      userId: identifier.userId,
+      error: queryError instanceof Error ? queryError.message : String(queryError),
+    });
+    throw new Error(
+      `Database query failed: ${queryError instanceof Error ? queryError.message : String(queryError)}`,
+    );
+  }
 
   if (existing.rows.length > 0) {
     const walletRow = existing.rows[0] as Record<string, unknown>;
@@ -209,19 +220,35 @@ async function ensureInternalWalletRecord(
     return mapWalletRow(walletRow);
   }
 
-  const inserted = await (executor
-    ? executor.query(
-        `INSERT INTO internal_wallets (user_id, wallet_address, default_withdraw_address)
-         VALUES ($1, $2, $3)
-         RETURNING *`,
-        [identifier.userId, walletAddress, defaultWithdrawAddress],
-      )
-    : query(
-        `INSERT INTO internal_wallets (user_id, wallet_address, default_withdraw_address)
-         VALUES ($1, $2, $3)
-         RETURNING *`,
-        [identifier.userId, walletAddress, defaultWithdrawAddress],
-      ));
+  let inserted;
+  try {
+    inserted = await (executor
+      ? executor.query(
+          `INSERT INTO internal_wallets (user_id, wallet_address, default_withdraw_address)
+           VALUES ($1, $2, $3)
+           RETURNING *`,
+          [identifier.userId, walletAddress, defaultWithdrawAddress],
+        )
+      : query(
+          `INSERT INTO internal_wallets (user_id, wallet_address, default_withdraw_address)
+           VALUES ($1, $2, $3)
+           RETURNING *`,
+          [identifier.userId, walletAddress, defaultWithdrawAddress],
+        ));
+  } catch (insertError) {
+    console.error("[internal-balance-queries] Failed to insert internal_wallet:", {
+      userId: identifier.userId,
+      walletAddress,
+      error: insertError instanceof Error ? insertError.message : String(insertError),
+    });
+    throw new Error(
+      `Failed to create internal wallet: ${insertError instanceof Error ? insertError.message : String(insertError)}`,
+    );
+  }
+
+  if (!inserted.rows || inserted.rows.length === 0) {
+    throw new Error("Failed to create internal wallet: no rows returned");
+  }
 
   return mapWalletRow(inserted.rows[0] as Record<string, unknown>);
 }
@@ -235,67 +262,137 @@ async function ensureInternalBalanceRecord(
 
   const normalizedSymbol = tokenSymbol.toUpperCase();
 
-  if (executor) {
-    await executor.query(
+  try {
+    if (executor) {
+      await executor.query(
+        `INSERT INTO internal_balances (wallet_id, token_symbol)
+         VALUES ($1, $2)
+         ON CONFLICT (wallet_id, token_symbol) DO NOTHING`,
+        [walletId, normalizedSymbol],
+      );
+
+      const result = await executor.query(
+        `SELECT * FROM internal_balances
+         WHERE wallet_id = $1 AND token_symbol = $2
+         LIMIT 1`,
+        [walletId, normalizedSymbol],
+      );
+
+      if (!result.rows || result.rows.length === 0) {
+        throw new Error(
+          `Balance record not found after insert for wallet ${walletId} and token ${normalizedSymbol}`,
+        );
+      }
+
+      return mapBalanceRow(result.rows[0] as Record<string, unknown>);
+    }
+
+    await query(
       `INSERT INTO internal_balances (wallet_id, token_symbol)
        VALUES ($1, $2)
        ON CONFLICT (wallet_id, token_symbol) DO NOTHING`,
       [walletId, normalizedSymbol],
     );
 
-    const result = await executor.query(
+    const result = await query(
       `SELECT * FROM internal_balances
        WHERE wallet_id = $1 AND token_symbol = $2
        LIMIT 1`,
       [walletId, normalizedSymbol],
     );
+
+    if (!result.rows || result.rows.length === 0) {
+      throw new Error(
+        `Balance record not found after insert for wallet ${walletId} and token ${normalizedSymbol}`,
+      );
+    }
+
     return mapBalanceRow(result.rows[0] as Record<string, unknown>);
+  } catch (error) {
+    console.error("[internal-balance-queries] Failed to ensure balance record:", {
+      walletId,
+      tokenSymbol: normalizedSymbol,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
-
-  await query(
-    `INSERT INTO internal_balances (wallet_id, token_symbol)
-     VALUES ($1, $2)
-     ON CONFLICT (wallet_id, token_symbol) DO NOTHING`,
-    [walletId, normalizedSymbol],
-  );
-
-  const result = await query(
-    `SELECT * FROM internal_balances
-     WHERE wallet_id = $1 AND token_symbol = $2
-     LIMIT 1`,
-    [walletId, normalizedSymbol],
-  );
-
-  return mapBalanceRow(result.rows[0] as Record<string, unknown>);
 }
 
 export async function getInternalBalanceSnapshot(
   identifier: BalanceIdentifier,
   options?: { ledgerLimit?: number },
 ): Promise<BalanceSnapshot> {
-  const wallet = await ensureInternalWalletRecord(identifier);
-  const balance = await ensureInternalBalanceRecord(wallet.id, DEFAULT_TOKEN_SYMBOL);
+  try {
+    if (!identifier.userId) {
+      throw new Error("getInternalBalanceSnapshot: userId is required");
+    }
 
-  const ledgerLimit = options?.ledgerLimit ?? DEFAULT_LEDGER_LIMIT;
+    console.log("[internal-balance-queries] getInternalBalanceSnapshot called:", {
+      userId: identifier.userId,
+      walletAddress: identifier.walletAddress,
+    });
 
-  const ledgerResult = await query(
-    `SELECT *
-     FROM internal_ledger
-     WHERE wallet_id = $1
-     ORDER BY created_at DESC
-     LIMIT $2`,
-    [wallet.id, ledgerLimit],
-  );
+    let wallet: InternalWalletRecord;
+    try {
+      wallet = await ensureInternalWalletRecord(identifier);
+      console.log("[internal-balance-queries] Wallet ensured:", { walletId: wallet.id });
+    } catch (walletError) {
+      console.error("[internal-balance-queries] Failed to ensure wallet:", walletError);
+      throw new Error(
+        `Failed to ensure internal wallet: ${walletError instanceof Error ? walletError.message : String(walletError)}`,
+      );
+    }
 
-  const ledger = ledgerResult.rows.map((row) => mapLedgerRow(row));
+    let balance: InternalBalanceRecord;
+    try {
+      balance = await ensureInternalBalanceRecord(wallet.id, DEFAULT_TOKEN_SYMBOL);
+      console.log("[internal-balance-queries] Balance ensured:", { balanceId: balance.id });
+    } catch (balanceError) {
+      console.error("[internal-balance-queries] Failed to ensure balance:", balanceError);
+      throw new Error(
+        `Failed to ensure internal balance: ${balanceError instanceof Error ? balanceError.message : String(balanceError)}`,
+      );
+    }
 
-  return {
-    wallet,
-    balance,
-    ledger,
-    tokenSymbol: DEFAULT_TOKEN_SYMBOL,
-    decimals: DEFAULT_TOKEN_DECIMALS,
-  };
+    const ledgerLimit = options?.ledgerLimit ?? DEFAULT_LEDGER_LIMIT;
+
+    let ledgerResult;
+    try {
+      ledgerResult = await query(
+        `SELECT *
+         FROM internal_ledger
+         WHERE wallet_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [wallet.id, ledgerLimit],
+      );
+      console.log("[internal-balance-queries] Ledger loaded:", {
+        entries: ledgerResult.rows.length,
+      });
+    } catch (ledgerError) {
+      console.error("[internal-balance-queries] Failed to load ledger:", ledgerError);
+      throw new Error(
+        `Failed to load ledger: ${ledgerError instanceof Error ? ledgerError.message : String(ledgerError)}`,
+      );
+    }
+
+    const ledger = ledgerResult.rows.map((row) => mapLedgerRow(row));
+
+    return {
+      wallet,
+      balance,
+      ledger,
+      tokenSymbol: DEFAULT_TOKEN_SYMBOL,
+      decimals: DEFAULT_TOKEN_DECIMALS,
+    };
+  } catch (error) {
+    console.error("[internal-balance-queries] getInternalBalanceSnapshot error:", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      identifier,
+    });
+    throw error;
+  }
 }
 
 interface BalanceMutationParams extends BalanceIdentifier {

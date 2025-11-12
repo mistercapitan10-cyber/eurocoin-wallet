@@ -152,6 +152,7 @@ export function useInternalBalance(): UseInternalBalanceResult {
 
       if (!response.ok) {
         let errorMessage = "Failed to load internal balance information";
+        let errorDetails: string | undefined;
         const contentType = response.headers.get("content-type");
 
         try {
@@ -159,7 +160,11 @@ export function useInternalBalance(): UseInternalBalanceResult {
             const errorBody = await response.json();
             if (errorBody && typeof errorBody.error === "string") {
               errorMessage = errorBody.error;
-            } else if (typeof errorBody === "string") {
+            }
+            if (errorBody && typeof errorBody.details === "string") {
+              errorDetails = errorBody.details;
+            }
+            if (typeof errorBody === "string") {
               errorMessage = errorBody;
             } else if (errorBody && typeof errorBody === "object" && "message" in errorBody) {
               errorMessage = String(errorBody.message);
@@ -174,7 +179,17 @@ export function useInternalBalance(): UseInternalBalanceResult {
           // Use default error message if parsing fails
           errorMessage = `HTTP ${response.status}: ${response.statusText || "Unknown error"}`;
         }
-        throw new Error(errorMessage);
+
+        const fullErrorMessage = errorDetails ? `${errorMessage} (${errorDetails})` : errorMessage;
+
+        console.error("[hooks:useInternalBalance] API error:", {
+          status: response.status,
+          statusText: response.statusText,
+          errorMessage,
+          errorDetails,
+        });
+
+        throw new Error(fullErrorMessage);
       }
 
       const payload = (await response.json()) as ApiBalanceResponse;
