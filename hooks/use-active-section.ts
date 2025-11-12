@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 const SECTION_IDS = [
-  "exchange",
   "contact",
-  "wallet",
   "investigation",
   "token-balance",
+  "wallet",
+  "exchange",
   "faq",
 ];
 

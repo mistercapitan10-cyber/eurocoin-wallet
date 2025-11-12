@@ -1446,32 +1446,42 @@ if (bot) {
 
   // Newsletter command for admins - send newsletter to all email subscribers
   bot.command("newsletter", async (ctx) => {
+    console.log("[newsletter] Command received from user:", ctx.from?.id, "chat:", ctx.chat?.id);
+
     // 🔒 Authorization check
-    if (!(await checkAccess(ctx))) return;
+    if (!(await checkAccess(ctx))) {
+      console.log("[newsletter] Access denied by checkAccess");
+      return;
+    }
 
     try {
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
       const chatId = ctx.chat.id.toString();
 
+      console.log("[newsletter] Manager chat ID:", managerChatId, "Current chat ID:", chatId);
+
       // Check if user is admin (additional check for manager-specific command)
       if (chatId !== managerChatId) {
-        ctx.reply("❌ У вас нет доступа к этой команде");
+        console.log("[newsletter] Access denied: chat ID mismatch");
+        await ctx.reply("❌ У вас нет доступа к этой команде");
         return;
       }
 
       // Get count of verified subscribers
+      console.log("[newsletter] Querying database for subscribers...");
       const subscribers = await query(
         "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE verified = true AND is_active = true",
       );
 
       const count = subscribers.rows[0]?.count || 0;
+      console.log("[newsletter] Found subscribers:", count);
 
       // Mark that this chat is waiting for newsletter content
       pendingNewsletter.set(ctx.from.id, {
         awaitingMedia: true,
       });
 
-      ctx.reply(
+      await ctx.reply(
         `📧 *Рассылка на email подписчикам*\n\n` +
           `Активных подписчиков с подтвержденным email: ${count}\n\n` +
           `📝 Отправьте контент для рассылки:\n\n` +
@@ -1481,9 +1491,16 @@ if (bot) {
           `_Совет: Вы можете использовать Markdown форматирование и ссылки [текст](https://example.com)_`,
         { parse_mode: "Markdown" },
       );
+
+      console.log("[newsletter] Successfully sent instructions to user");
     } catch (error) {
-      console.error("Error in newsletter command:", error);
-      ctx.reply("❌ Ошибка при получении информации о рассылке");
+      console.error("[newsletter] Error in newsletter command:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await ctx
+        .reply(`❌ Ошибка при получении информации о рассылке: ${errorMessage}`)
+        .catch((err) => {
+          console.error("[newsletter] Failed to send error message:", err);
+        });
     }
   });
 

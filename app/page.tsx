@@ -59,6 +59,27 @@ export default function Home() {
       <PageTitle title="Dashboard" description="Token management dashboard" enableSectionTracking />
       <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 md:px-10">
+          {/* Internal Request Form Section */}
+          <section id="contact">
+            <InternalRequestForm />
+          </section>
+
+          {/* Investigation & Reports Section */}
+          <section id="investigation" className="space-y-8">
+            <InvestigationProgress walletAddress={address} userEmail={email} />
+            <AllInvestigations />
+          </section>
+
+          {/* Token Analytics Section */}
+          <section id="token-balance" className="flex flex-col gap-6">
+            <BalanceCard />
+            <div className="grid gap-6 md:grid-cols-2">
+              <PriceTicker />
+              <TaxCard />
+            </div>
+            <DexscreenerChart />
+          </section>
+
           {/* Wallet Section */}
           <header
             id="wallet"
@@ -109,35 +130,14 @@ export default function Home() {
             </div>
           </header>
 
-          {/* Token Analytics Section */}
-          <section id="token-balance" className="flex flex-col gap-6">
-            <BalanceCard />
-            <div className="grid gap-6 md:grid-cols-2">
-              <PriceTicker />
-              <TaxCard />
-            </div>
-            <DexscreenerChart />
-          </section>
-
           {/* Exchange Section */}
           <section id="exchange">
             <ExchangeSection />
           </section>
 
-          {/* Internal Request Form Section */}
-          <section id="contact">
-            <InternalRequestForm />
-          </section>
-
           {/* Internal Balance Section */}
           <section id="internal-balance">
             <InternalPayoutForm />
-          </section>
-
-          {/* Investigation & Reports Section */}
-          <section id="investigation" className="space-y-8">
-            <InvestigationProgress walletAddress={address} userEmail={email} />
-            <AllInvestigations />
           </section>
         </div>
 
