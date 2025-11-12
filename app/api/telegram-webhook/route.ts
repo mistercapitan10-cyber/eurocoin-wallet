@@ -18,9 +18,10 @@ import {
   formatChatHistoryForTelegram,
   isValidWalletAddress,
   sanitizeMessageText,
+  escapeMarkdown,
 } from "@/lib/telegram/notify-admin";
 import { getBot } from "@/lib/telegram/bot";
-import { Telegraf } from "telegraf";
+import { Telegraf, Context } from "telegraf";
 
 // Bot instance - will be null during build if TELEGRAM_API_KEY is not set
 // This is OK - the bot is only needed at runtime when webhook is called
@@ -114,7 +115,7 @@ function isAuthorizedUser(userId: number): boolean {
  * @param ctx - Telegraf context
  * @returns true if authorized, false otherwise
  */
-async function checkAccess(ctx: any): Promise<boolean> {
+async function checkAccess(ctx: Context): Promise<boolean> {
   const userId = ctx.from?.id;
 
   if (!userId) {
@@ -1815,6 +1816,176 @@ if (bot) {
     pendingBalanceCredit.delete(chatId);
 
     await ctx.reply("❌ Начисление баланса отменено");
+  });
+
+  // ============================================
+  // Withdrawal Request Actions
+  // ============================================
+
+  // Handle withdraw approve button
+  bot.action(/^withdraw_approve_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const requestId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Одобрение заявки...").catch(() => {});
+
+    try {
+      const appUrl = getAppUrl();
+      const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
+
+      if (!adminSecret) {
+        await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+        return;
+      }
+
+      const response = await fetch(`${appUrl}/api/internal-balance/withdraw/${requestId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-admin-token": adminSecret,
+        },
+        body: JSON.stringify({
+          status: "approved",
+          reviewerId: ctx.from.id.toString(),
+          notes: `Одобрено через Telegram бота пользователем ${ctx.from.first_name || ctx.from.username || "admin"}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error || "Неизвестная ошибка";
+        await ctx.reply(`❌ Ошибка при одобрении заявки:\n\n\`${errorMessage}\``, {
+          parse_mode: "Markdown",
+        });
+        return;
+      }
+
+      await ctx.reply(
+        `✅ Заявка WR-${requestId} одобрена!\n\n` +
+          `Статус изменен на: одобрено\n` +
+          `Заявка будет обработана автоматически.`,
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error approving withdraw request:", error);
+      await ctx.reply("❌ Ошибка при одобрении заявки").catch(() => {});
+    }
+  });
+
+  // Handle withdraw reject button
+  bot.action(/^withdraw_reject_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const requestId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Отклонение заявки...").catch(() => {});
+
+    try {
+      const appUrl = getAppUrl();
+      const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
+
+      if (!adminSecret) {
+        await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+        return;
+      }
+
+      const response = await fetch(`${appUrl}/api/internal-balance/withdraw/${requestId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-admin-token": adminSecret,
+        },
+        body: JSON.stringify({
+          status: "rejected",
+          reviewerId: ctx.from.id.toString(),
+          notes: `Отклонено через Telegram бота пользователем ${ctx.from.first_name || ctx.from.username || "admin"}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.error || "Неизвестная ошибка";
+        await ctx.reply(`❌ Ошибка при отклонении заявки:\n\n\`${errorMessage}\``, {
+          parse_mode: "Markdown",
+        });
+        return;
+      }
+
+      await ctx.reply(`❌ Заявка WR-${requestId} отклонена.\n\nСтатус изменен на: отклонено`);
+    } catch (error) {
+      console.error("[telegram-webhook] Error rejecting withdraw request:", error);
+      await ctx.reply("❌ Ошибка при отклонении заявки").catch(() => {});
+    }
+  });
+
+  // Handle withdraw details button
+  bot.action(/^withdraw_details_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const requestId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Загрузка деталей...").catch(() => {});
+
+    try {
+      const { getWithdrawRequestById } = await import("@/lib/database/internal-balance-queries");
+      const request = await getWithdrawRequestById(requestId);
+
+      if (!request) {
+        await ctx.reply("❌ Заявка не найдена");
+        return;
+      }
+
+      const statusLabels: Record<string, string> = {
+        pending: "⏳ Ожидает",
+        approved: "✅ Одобрено",
+        processing: "🔄 В обработке",
+        completed: "✅ Завершено",
+        rejected: "❌ Отклонено",
+      };
+
+      const statusLabel = statusLabels[request.status] || request.status;
+
+      const txLine = request.txHash ? `🔗 *Tx Hash:* \`${request.txHash}\`\n` : "";
+      const notesLine = request.notes ? `📝 *Примечания:* ${escapeMarkdown(request.notes)}\n` : "";
+
+      const message = `
+📋 *Детали заявки на вывод*
+
+🧾 *ID:* WR\\-${escapeMarkdown(request.id)}
+💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress || "N/A")}\`
+🎯 *Адрес вывода:* \`${escapeMarkdown(request.destinationAddress)}\`
+💰 *Сумма:* ${escapeMarkdown(request.amount)} ${escapeMarkdown(request.tokenSymbol)}
+📊 *Статус:* ${statusLabel}
+${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLocaleString("ru-RU")}
+🕐 *Обновлена:* ${new Date(request.updatedAt).toLocaleString("ru-RU")}
+      `.trim();
+
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback("✅ Одобрить", `withdraw_approve_${request.id}`),
+          Markup.button.callback("❌ Отклонить", `withdraw_reject_${request.id}`),
+        ],
+      ]);
+
+      await ctx.reply(message, {
+        parse_mode: "MarkdownV2",
+        ...keyboard,
+      });
+    } catch (error) {
+      console.error("[telegram-webhook] Error getting withdraw details:", error);
+      await ctx.reply("❌ Ошибка при получении деталей заявки").catch(() => {});
+    }
   });
 } // End of if (bot) block
 

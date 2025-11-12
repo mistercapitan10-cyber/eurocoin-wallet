@@ -152,6 +152,8 @@ export async function notifyNewWithdrawRequest(
       return;
     }
 
+    const requestId = `WR-${payload.id}`;
+
     const message = `
 🏦 *Новая заявка на вывод*
 
@@ -161,8 +163,20 @@ export async function notifyNewWithdrawRequest(
 💰 *Сумма:* ${escapeMarkdown(payload.amount)} ${escapeMarkdown(payload.tokenSymbol)}
     `.trim();
 
+    const keyboard = Markup.inlineKeyboard([
+      [
+        Markup.button.callback("✅ Одобрить", `withdraw_approve_${payload.id}`),
+        Markup.button.callback("❌ Отклонить", `withdraw_reject_${payload.id}`),
+      ],
+      [
+        Markup.button.callback("📋 Детали", `withdraw_details_${payload.id}`),
+        Markup.button.callback("💬 Сообщение", `msg_${payload.walletAddress}`),
+      ],
+    ]);
+
     await bot.telegram.sendMessage(adminChatId, message, {
       parse_mode: "MarkdownV2",
+      ...keyboard,
     });
   } catch (error) {
     console.error("Error sending withdraw request notification:", error);
@@ -316,7 +330,7 @@ export async function notifyNewsletterSubscription(email: string): Promise<void>
 /**
  * Escapes special characters for Telegram MarkdownV2
  */
-function escapeMarkdown(text: string): string {
+export function escapeMarkdown(text: string): string {
   // MarkdownV2 special characters that need to be escaped
   const specialChars = [
     "_",

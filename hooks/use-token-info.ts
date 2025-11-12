@@ -2,10 +2,7 @@
 
 import { useMemo } from "react";
 import { DEFAULT_CHAIN } from "@/config/chains";
-import {
-  TOKEN_CONFIG,
-  isTokenConfigured,
-} from "@/config/token";
+import { TOKEN_CONFIG, isTokenConfigured } from "@/config/token";
 import { useReadContract } from "wagmi";
 import { useSupportedNetwork } from "./use-supported-network";
 
@@ -21,6 +18,19 @@ export function useTokenInfo(): UseTokenInfoResult {
   const { activeChainId, isSupported } = useSupportedNetwork();
   const chainId = activeChainId ?? DEFAULT_CHAIN.id;
   const enabled = isTokenConfigured && (!activeChainId || isSupported);
+
+  // Debug logging
+  if (typeof window !== "undefined") {
+    console.log("[useTokenInfo] Configuration:", {
+      isTokenConfigured,
+      tokenAddress: TOKEN_CONFIG.address,
+      chainId,
+      activeChainId,
+      isSupported,
+      enabled,
+      defaultChainId: DEFAULT_CHAIN.id,
+    });
+  }
 
   const symbolQuery = useReadContract({
     abi: TOKEN_CONFIG.abi,
@@ -48,9 +58,18 @@ export function useTokenInfo(): UseTokenInfoResult {
 
   const isLoading = symbolQuery.isLoading || decimalsQuery.isLoading;
   const error =
-    (symbolQuery.error as Error | undefined) ??
-    (decimalsQuery.error as Error | undefined) ??
-    null;
+    (symbolQuery.error as Error | undefined) ?? (decimalsQuery.error as Error | undefined) ?? null;
+
+  // Debug logging for errors
+  if (error && typeof window !== "undefined") {
+    console.error("[useTokenInfo] Error fetching token info:", {
+      error: error.message,
+      symbolError: symbolQuery.error,
+      decimalsError: decimalsQuery.error,
+      tokenAddress: TOKEN_CONFIG.address,
+      chainId,
+    });
+  }
 
   const symbol = useMemo(() => {
     if (!symbolQuery.data) {

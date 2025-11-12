@@ -604,6 +604,31 @@ export async function listWithdrawRequests(
   return result.rows.map((row) => mapWithdrawRow(row));
 }
 
+export async function getWithdrawRequestById(
+  requestId: string,
+): Promise<(WithdrawRequestRecord & { walletAddress?: string | null }) | null> {
+  const result = await query(
+    `SELECT wr.*, iw.user_id, iw.wallet_address
+     FROM withdraw_requests wr
+     JOIN internal_wallets iw ON wr.wallet_id = iw.id
+     WHERE wr.id = $1
+     LIMIT 1`,
+    [requestId],
+  );
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  const row = result.rows[0] as Record<string, unknown>;
+  const withdrawRecord = mapWithdrawRow(row);
+
+  return {
+    ...withdrawRecord,
+    walletAddress: (row.wallet_address as string) ?? null,
+  };
+}
+
 interface WithdrawStatusUpdateParams {
   requestId: string;
   status: Exclude<WithdrawStatus, "pending">;
