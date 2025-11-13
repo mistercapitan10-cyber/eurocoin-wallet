@@ -30,15 +30,15 @@ export async function GET(request: NextRequest) {
     if (!userId && normalizedWallet) {
       try {
         console.log("[api:internal-balance] Fetching user by wallet:", normalizedWallet);
-        const walletUser = await getUserByWalletAddress(normalizedWallet as `0x${string}`);
-        if (!walletUser) {
+      const walletUser = await getUserByWalletAddress(normalizedWallet as `0x${string}`);
+      if (!walletUser) {
           console.log("[api:internal-balance] User not found for wallet:", normalizedWallet);
-          return NextResponse.json(
-            { error: "Wallet is not registered in the system" },
-            { status: 404 },
-          );
-        }
-        userId = walletUser.id;
+        return NextResponse.json(
+          { error: "Wallet is not registered in the system" },
+          { status: 404 },
+        );
+      }
+      userId = walletUser.id;
         console.log("[api:internal-balance] User found:", userId);
       } catch (dbError) {
         console.error("[api:internal-balance] Database error when fetching user:", dbError);
@@ -80,28 +80,28 @@ export async function GET(request: NextRequest) {
         walletId: snapshot.wallet.id,
         balance: snapshot.balance.balance,
         ledgerEntries: snapshot.ledger.length,
-      });
+    });
 
-      const serializeLedger = snapshot.ledger.map((entry) => ({
-        ...entry,
-        createdAt: entry.createdAt.toISOString(),
-      }));
+    const serializeLedger = snapshot.ledger.map((entry) => ({
+      ...entry,
+      createdAt: entry.createdAt.toISOString(),
+    }));
 
-      return NextResponse.json({
-        tokenSymbol: snapshot.tokenSymbol,
-        decimals: snapshot.decimals,
-        wallet: {
-          ...snapshot.wallet,
-          createdAt: snapshot.wallet.createdAt.toISOString(),
-          updatedAt: snapshot.wallet.updatedAt.toISOString(),
-        },
-        balance: {
-          ...snapshot.balance,
-          createdAt: snapshot.balance.createdAt.toISOString(),
-          updatedAt: snapshot.balance.updatedAt.toISOString(),
-        },
-        ledger: serializeLedger,
-      });
+    return NextResponse.json({
+      tokenSymbol: snapshot.tokenSymbol,
+      decimals: snapshot.decimals,
+      wallet: {
+        ...snapshot.wallet,
+        createdAt: snapshot.wallet.createdAt.toISOString(),
+        updatedAt: snapshot.wallet.updatedAt.toISOString(),
+      },
+      balance: {
+        ...snapshot.balance,
+        createdAt: snapshot.balance.createdAt.toISOString(),
+        updatedAt: snapshot.balance.updatedAt.toISOString(),
+      },
+      ledger: serializeLedger,
+    });
     } catch (snapshotError) {
       console.error("[api:internal-balance] Failed to load balance snapshot:", snapshotError);
       console.error("[api:internal-balance] Error details:", {

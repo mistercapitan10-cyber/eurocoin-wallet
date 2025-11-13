@@ -19,8 +19,8 @@ const resolveTransport = (chainId: number) => {
       return http(RPC_URL_MAINNET);
     }
     // Use generic RPC URL if provided and matches default chain
-    if (RPC_URL && chainId === DEFAULT_CHAIN.id) {
-      return http(RPC_URL);
+  if (RPC_URL && chainId === DEFAULT_CHAIN.id) {
+    return http(RPC_URL);
     }
     // Fallback to public RPC (no rate limits)
     return http(PUBLIC_RPC_MAINNET);

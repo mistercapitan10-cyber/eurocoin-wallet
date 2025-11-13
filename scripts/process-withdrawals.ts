@@ -38,6 +38,21 @@ console.log("[treasury] Starting withdrawal processor", {
 
 const randomTxHash = () => `0x${crypto.randomBytes(32).toString("hex")}`;
 
+async function checkTreasuryBalance(amount: bigint): Promise<boolean> {
+  if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
+    return false;
+  }
+
+  if (!signer || !provider) {
+    return false;
+  }
+
+  const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+  const treasuryAddress = await signer.getAddress();
+  const balance = await contract.balanceOf(treasuryAddress);
+  return balance >= amount;
+}
+
 async function dispatchOnChainTransfer(destination: string, amount: bigint): Promise<string> {
   if (!tokenAddress || tokenAddress === "0x0000000000000000000000000000000000000000") {
     console.warn("[treasury] Token address is not configured, skipping on-chain transfer");
@@ -46,6 +61,19 @@ async function dispatchOnChainTransfer(destination: string, amount: bigint): Pro
 
   if (!signer || !provider) {
     return randomTxHash();
+  }
+
+  // Check treasury balance before attempting transfer
+  const hasBalance = await checkTreasuryBalance(amount);
+  if (!hasBalance) {
+    const treasuryAddress = await signer.getAddress();
+    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+    const balance = await contract.balanceOf(treasuryAddress);
+    const humanBalance = ethers.formatUnits(balance, tokenDecimals);
+    const humanAmount = ethers.formatUnits(amount, tokenDecimals);
+    throw new Error(
+      `Insufficient treasury balance: ${humanBalance} < ${humanAmount} (treasury: ${treasuryAddress})`,
+    );
   }
 
   const contract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
@@ -109,12 +137,22 @@ async function processQueue() {
 
       console.log(`[treasury] Completed request ${request.id} · tx ${txHash}`);
     } catch (error) {
-      console.error(`[treasury] Failed to process request ${request.id}:`, error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[treasury] Failed to process request ${request.id}:`, errorMessage);
+
+      // Determine rejection reason
+      let rejectionNote = "auto rejection due to processor failure";
+      if (errorMessage.includes("Insufficient treasury balance")) {
+        rejectionNote = `auto rejection: insufficient treasury balance - ${errorMessage}`;
+      } else if (errorMessage.includes("insufficient funds")) {
+        rejectionNote = `auto rejection: insufficient funds for gas - ${errorMessage}`;
+      }
+
       await updateWithdrawRequestStatus({
         requestId: request.id,
         status: "rejected",
         reviewerId: WORKER_ID,
-        notes: "auto rejection due to processor failure",
+        notes: rejectionNote,
       }).catch((rejectError: unknown) => {
         console.error("[treasury] Failed to rollback request:", rejectError);
       });

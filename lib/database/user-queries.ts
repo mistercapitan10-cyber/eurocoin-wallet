@@ -174,7 +174,7 @@ export async function getUserByWalletAddress(
       console.log("[user-queries] User not found via Drizzle for wallet:", normalizedAddress);
     }
 
-    return user ?? null;
+  return user ?? null;
   } catch (error) {
     console.error("[user-queries] Error in getUserByWalletAddress:", {
       walletAddress,
