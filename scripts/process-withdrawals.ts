@@ -10,7 +10,10 @@ import {
   type WithdrawStatus,
 } from "@/lib/database/internal-balance-queries";
 import { closePool } from "@/lib/database/db";
-import { notifyWithdrawStatusChange } from "@/lib/telegram/notify-admin";
+import {
+  notifyWithdrawStatusChange,
+  notifyTreasuryBalanceAlert,
+} from "@/lib/telegram/notify-admin";
 
 config({ path: resolve(process.cwd(), ".env.local") });
 config({ path: resolve(process.cwd(), ".env") });
@@ -23,6 +26,14 @@ const BATCH_SIZE = Number(process.env.TREASURY_BATCH_SIZE || 5);
 const CONFIRMATIONS = Number(process.env.TREASURY_TX_CONFIRMATIONS || 1);
 const DRY_RUN = !TREASURY_PRIVATE_KEY || !RPC_URL;
 const EXECUTION_STATUSES: WithdrawStatus[] = ["approved"];
+
+// Treasury balance thresholds (in token units, not wei)
+const TREASURY_BALANCE_LOW_THRESHOLD = process.env.TREASURY_BALANCE_LOW_THRESHOLD
+  ? Number(process.env.TREASURY_BALANCE_LOW_THRESHOLD)
+  : null;
+const TREASURY_BALANCE_CRITICAL_THRESHOLD = process.env.TREASURY_BALANCE_CRITICAL_THRESHOLD
+  ? Number(process.env.TREASURY_BALANCE_CRITICAL_THRESHOLD)
+  : null;
 
 const provider = !DRY_RUN ? new ethers.JsonRpcProvider(RPC_URL) : null;
 const signer = !DRY_RUN && provider ? new ethers.Wallet(TREASURY_PRIVATE_KEY, provider) : null;
@@ -71,6 +82,18 @@ async function dispatchOnChainTransfer(destination: string, amount: bigint): Pro
     const balance = await contract.balanceOf(treasuryAddress);
     const humanBalance = ethers.formatUnits(balance, tokenDecimals);
     const humanAmount = ethers.formatUnits(amount, tokenDecimals);
+
+    // Send critical alert about insufficient balance
+    await notifyTreasuryBalanceAlert({
+      treasuryAddress,
+      currentBalance: humanBalance,
+      requiredAmount: humanAmount,
+      tokenSymbol: TOKEN_CONFIG.symbol,
+      status: "insufficient",
+    }).catch((err) => {
+      console.error("[treasury] Failed to send balance alert:", err);
+    });
+
     throw new Error(
       `Insufficient treasury balance: ${humanBalance} < ${humanAmount} (treasury: ${treasuryAddress})`,
     );
@@ -84,7 +107,51 @@ async function dispatchOnChainTransfer(destination: string, amount: bigint): Pro
   return receipt.hash;
 }
 
+async function checkAndNotifyBalanceThresholds() {
+  if (!signer || !provider || DRY_RUN) {
+    return;
+  }
+
+  try {
+    const treasuryAddress = await signer.getAddress();
+    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+    const balance = await contract.balanceOf(treasuryAddress);
+    const humanBalance = Number(ethers.formatUnits(balance, tokenDecimals));
+
+    // Check critical threshold
+    if (
+      TREASURY_BALANCE_CRITICAL_THRESHOLD !== null &&
+      humanBalance <= TREASURY_BALANCE_CRITICAL_THRESHOLD
+    ) {
+      await notifyTreasuryBalanceAlert({
+        treasuryAddress,
+        currentBalance: humanBalance.toString(),
+        threshold: TREASURY_BALANCE_CRITICAL_THRESHOLD.toString(),
+        tokenSymbol: TOKEN_CONFIG.symbol,
+        status: "critical",
+      }).catch(() => {});
+      return;
+    }
+
+    // Check low threshold
+    if (TREASURY_BALANCE_LOW_THRESHOLD !== null && humanBalance <= TREASURY_BALANCE_LOW_THRESHOLD) {
+      await notifyTreasuryBalanceAlert({
+        treasuryAddress,
+        currentBalance: humanBalance.toString(),
+        threshold: TREASURY_BALANCE_LOW_THRESHOLD.toString(),
+        tokenSymbol: TOKEN_CONFIG.symbol,
+        status: "low",
+      }).catch(() => {});
+    }
+  } catch (error) {
+    console.error("[treasury] Failed to check balance thresholds:", error);
+  }
+}
+
 async function processQueue() {
+  // Check balance thresholds before processing
+  await checkAndNotifyBalanceThresholds();
+
   const queue = await getWithdrawExecutionQueue(EXECUTION_STATUSES, BATCH_SIZE);
 
   if (queue.length === 0) {

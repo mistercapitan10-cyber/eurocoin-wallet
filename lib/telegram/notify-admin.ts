@@ -324,6 +324,72 @@ export async function notifyNewsletterSubscription(email: string): Promise<void>
 }
 
 // ============================================
+// Treasury Balance Notifications
+// ============================================
+
+export interface TreasuryBalanceNotification {
+  treasuryAddress: string;
+  currentBalance: string;
+  requiredAmount?: string;
+  threshold?: string;
+  tokenSymbol: string;
+  status: "low" | "critical" | "insufficient";
+}
+
+/**
+ * Отправляет уведомление админу о низком балансе казначейства
+ */
+export async function notifyTreasuryBalanceAlert(
+  payload: TreasuryBalanceNotification,
+): Promise<void> {
+  try {
+    const bot = getBot();
+    const adminChatId = getAdminChatId();
+
+    if (!adminChatId) {
+      return; // Skip if chat ID not configured
+    }
+
+    let statusEmoji = "⚠️";
+    let statusText = "Низкий баланс";
+    if (payload.status === "critical") {
+      statusEmoji = "🔴";
+      statusText = "Критически низкий баланс";
+    } else if (payload.status === "insufficient") {
+      statusEmoji = "🚨";
+      statusText = "Недостаточно средств";
+    }
+
+    const requiredLine = payload.requiredAmount
+      ? `💰 *Требуется:* ${escapeMarkdown(payload.requiredAmount)} ${escapeMarkdown(payload.tokenSymbol)}\n`
+      : "";
+    const thresholdLine = payload.threshold
+      ? `📊 *Порог:* ${escapeMarkdown(payload.threshold)} ${escapeMarkdown(payload.tokenSymbol)}\n`
+      : "";
+
+    const message = `
+${statusEmoji} *${statusText} казначейства*
+
+💼 *Адрес казначейства:*
+\`${escapeMarkdown(payload.treasuryAddress)}\`
+
+💰 *Текущий баланс:* ${escapeMarkdown(payload.currentBalance)} ${escapeMarkdown(payload.tokenSymbol)}
+${requiredLine}${thresholdLine}
+🕐 *Время:* ${escapeMarkdown(new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" }))}
+
+⚠️ *Требуется пополнение баланса казначейства*
+    `.trim();
+
+    await bot.telegram.sendMessage(adminChatId, message, {
+      parse_mode: "MarkdownV2",
+    });
+  } catch (error) {
+    console.error("Error sending treasury balance notification:", error);
+    // Don't throw - notification failure shouldn't break the main flow
+  }
+}
+
+// ============================================
 // Utility Functions
 // ============================================
 

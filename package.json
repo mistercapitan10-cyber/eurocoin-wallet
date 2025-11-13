@@ -25,6 +25,7 @@
     "auth:fix-userid": "tsx scripts/fix-userid-columns.ts",
     "type-check": "tsc --noEmit",
     "treasury:process": "tsx scripts/process-withdrawals.ts",
+    "treasury:check-balance": "tsx scripts/check-treasury-balance.ts",
     "test:balance-credit": "tsx scripts/test-balance-credit.ts",
     "test:balance-credit-full": "tsx scripts/test-balance-credit-full.ts",
     "diagnose:balance": "tsx scripts/diagnose-balance-error.ts"
