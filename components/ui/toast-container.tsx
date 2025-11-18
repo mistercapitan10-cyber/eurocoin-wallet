@@ -8,8 +8,12 @@ export function ToastContainer() {
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // Prevent hydration mismatch - use setTimeout to defer state update after initial render
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Determine current theme
@@ -34,9 +38,6 @@ export function ToastContainer() {
       theme={toastTheme}
       className="toast-container"
       toastClassName="toast-notification"
-      bodyClassName="toast-body"
-      progressClassName="toast-progress"
     />
   );
 }
-
