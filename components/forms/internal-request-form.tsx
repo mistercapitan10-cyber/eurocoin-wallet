@@ -36,6 +36,14 @@ export function InternalRequestForm() {
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = useTranslation();
+  const requesterStorageKey = "eurocoin_requester_name";
+
+  const resetFormPreservingRequester = (requesterValue?: string) => {
+    setForm({
+      ...initialState,
+      requester: requesterValue ?? "",
+    });
+  };
 
   // Auto-fill wallet address for MetaMask users only
   useEffect(() => {
@@ -46,6 +54,17 @@ export function InternalRequestForm() {
       setForm((prev) => ({ ...prev, walletAddress: "" }));
     }
   }, [authType, address]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const savedRequester = window.localStorage.getItem(requesterStorageKey);
+    if (savedRequester && !form.requester) {
+      setForm((prev) => ({ ...prev, requester: savedRequester }));
+    }
+  }, [form.requester, requesterStorageKey]);
 
   const requestTypes = [
     { value: "topUp", label: t("internalForm.requestTypes.topUp") },
@@ -140,7 +159,13 @@ export function InternalRequestForm() {
       window.dispatchEvent(new CustomEvent("new-request-submitted", { detail: data }));
 
       toast.success(t("internalForm.successTitle"));
-      setForm(initialState);
+      if (typeof window !== "undefined") {
+        const trimmedRequester = form.requester.trim();
+        if (trimmedRequester) {
+          window.localStorage.setItem(requesterStorageKey, trimmedRequester);
+        }
+      }
+      resetFormPreservingRequester(form.requester.trim());
       setAttachedFiles([]);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -300,7 +325,13 @@ export function InternalRequestForm() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setForm(initialState)}
+                onClick={() => {
+                  const savedRequester =
+                    typeof window !== "undefined"
+                      ? (window.localStorage.getItem(requesterStorageKey) ?? "")
+                      : "";
+                  resetFormPreservingRequester(savedRequester);
+                }}
                 disabled={isSubmitting}
               >
                 {t("internalForm.buttons.clear")}
