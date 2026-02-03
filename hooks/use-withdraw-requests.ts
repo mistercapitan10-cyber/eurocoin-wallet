@@ -2,6 +2,8 @@
 
 import { useAccount } from "wagmi";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { formatUnits } from "viem";
+import { TOKEN_CONFIG } from "@/config/token";
 import { useAuth } from "@/hooks/use-auth";
 
 export interface WithdrawRequestView {
@@ -25,6 +27,19 @@ interface ApiResponse {
     txHash?: string | null;
   }>;
 }
+
+const TOKEN_DECIMALS =
+  Number.isFinite(TOKEN_CONFIG.decimals) && Number(TOKEN_CONFIG.decimals) > 0
+    ? Number(TOKEN_CONFIG.decimals)
+    : 18;
+
+const formatAmount = (value: string): string => {
+  try {
+    return formatUnits(BigInt(value), TOKEN_DECIMALS);
+  } catch {
+    return value;
+  }
+};
 
 export function useWithdrawRequests() {
   const { address } = useAccount();
@@ -68,7 +83,7 @@ export function useWithdrawRequests() {
       setRequests(
         data.requests.map((request) => ({
           id: request.id,
-          amount: request.amount,
+          amount: formatAmount(request.amount),
           tokenSymbol: request.tokenSymbol,
           destinationAddress: request.destinationAddress,
           status: request.status,

@@ -4,13 +4,7 @@ import { ethers } from "ethers";
 import { useAccount } from "wagmi";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
 import { InternalPayoutForm } from "@/components/forms/internal-payout-form";
-import {
-  BalanceCard,
-  PriceTicker,
-  TaxCard,
-  WalletStatistics,
-  DexscreenerChart,
-} from "@/components/wallet";
+import { BalanceCard, PriceTicker, WalletStatistics } from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { InvestigationProgress } from "@/components/dashboard/investigation-progress";
@@ -69,22 +63,6 @@ export default function Home() {
             <InternalPayoutForm />
           </section>
 
-          {/* Investigation & Reports Section */}
-          <section id="investigation" className="space-y-8">
-            <InvestigationProgress walletAddress={address} userEmail={email} />
-            <AllInvestigations />
-          </section>
-
-          {/* Token Analytics Section */}
-          <section id="token-balance" className="flex flex-col gap-6">
-            <BalanceCard />
-            <div className="grid gap-6 md:grid-cols-2">
-              <PriceTicker />
-              <TaxCard />
-            </div>
-            <DexscreenerChart />
-          </section>
-
           {/* Wallet Section */}
           <header
             id="wallet"
@@ -113,11 +91,6 @@ export default function Home() {
             {/* Divider */}
             <div className="mt-10 border-t border-outline dark:border-dark-outline" />
 
-            {/* Wallet Statistics Section */}
-            <div className="mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card dark:border-dark-outline dark:bg-dark-surfaceAlt">
-              <WalletStatistics />
-            </div>
-
             {/* Wallet Connection Section */}
             <div className="mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card dark:border-dark-outline dark:bg-dark-surfaceAlt">
               <div className="space-y-4">
@@ -134,6 +107,24 @@ export default function Home() {
               </div>
             </div>
           </header>
+
+          <section id="wallet-statistics">
+            <div className="rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card dark:border-dark-outline dark:bg-dark-surfaceAlt">
+              <WalletStatistics />
+            </div>
+          </section>
+
+          {/* Investigation & Reports Section */}
+          <section id="investigation" className="space-y-8">
+            <InvestigationProgress walletAddress={address} userEmail={email} />
+            <AllInvestigations />
+          </section>
+
+          {/* Token Analytics Section */}
+          <section id="token-balance" className="flex flex-col gap-6">
+            <BalanceCard />
+            <PriceTicker />
+          </section>
 
           {/* Exchange Section */}
           <section id="exchange">

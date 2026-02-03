@@ -1136,9 +1136,9 @@ import { InternalBalanceCard } from "@/components/wallet/internal-balance-card-r
   <InternalBalanceCard /> {/* NEW */}
   <div className="grid gap-6 md:grid-cols-2">
     <PriceTicker />
-    <TaxCard />
+    
   </div>
-  <DexscreenerChart />
+  
 </section>
 ```
 

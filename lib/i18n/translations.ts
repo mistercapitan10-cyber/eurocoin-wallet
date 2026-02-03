@@ -28,7 +28,7 @@ const translations: Messages = {
         internalBalance: "Внутренний баланс",
       },
       footer: {
-        contact: "Контакты: eurocoinfinance@gmail.com",
+        contact: "Контакты: support@euro-coin.eu",
         policy: "Политика безопасности",
         copyright: "Все права защищены.",
         version: "v0.4.0-beta",
@@ -475,7 +475,7 @@ const translations: Messages = {
         description:
           "Подача заявок на вывод средств через MetaMask с использованием смарт-контрактов Ethereum",
         content: `<p>Наша платформа позволяет подавать заявки на вывод средств напрямую через ваш кошелёк MetaMask.</p>
-        
+
 <p><strong>Как это работает:</strong></p>
 <ul>
   <li>Подключите ваш MetaMask кошелёк</li>
@@ -852,7 +852,7 @@ const translations: Messages = {
         internalBalance: "Internal balance",
       },
       footer: {
-        contact: "Contact: eurocoinfinance@gmail.com",
+        contact: "Contact: support@euro-coin.eu",
         policy: "Security policy",
         copyright: "All rights reserved.",
         version: "v0.4.0-beta",
@@ -1255,7 +1255,7 @@ const translations: Messages = {
         title: "Withdrawal Requests",
         description: "Submit withdrawal requests through MetaMask using Ethereum smart contracts",
         content: `<p>Our platform allows you to submit withdrawal requests directly through your MetaMask wallet.</p>
-        
+
 <p><strong>How it works:</strong></p>
 <ul>
   <li>Connect your MetaMask wallet</li>
@@ -1672,7 +1672,7 @@ const translations: Messages = {
         internalBalance: "Vidinis balansas",
       },
       footer: {
-        contact: "Kontaktai: eurocoinfinance@gmail.com",
+        contact: "Kontaktai: support@euro-coin.eu",
         policy: "Saugumo politika",
         copyright: "Visos teisės saugomos.",
         version: "v0.4.0-beta",
@@ -2120,7 +2120,7 @@ const translations: Messages = {
         description:
           "Pateikite išėmimo užklausas per MetaMask naudojant Ethereum protingąsias sutartis",
         content: `<p>Mūsų platforma leidžia jums pateikti išėmimo užklausas tiesiogiai per jūsų MetaMask piniginę.</p>
-        
+
 <p><strong>Kaip tai veikia:</strong></p>
 <ul>
   <li>Prijunkite savo MetaMask piniginę</li>
@@ -2497,7 +2497,7 @@ const translations: Messages = {
         internalBalance: "Iekšējais atlikums",
       },
       footer: {
-        contact: "Kontakti: eurocoinfinance@gmail.com",
+        contact: "Kontakti: support@euro-coin.eu",
         policy: "Drošības politika",
         copyright: "Visas tiesības aizsargātas.",
         version: "v0.4.0-beta",
@@ -2942,7 +2942,7 @@ const translations: Messages = {
         description:
           "Iesniedziet izņemšanas pieprasījumus caur MetaMask, izmantojot Ethereum gudros līgumus",
         content: `<p>Mūsu platforma ļauj jums iesniegt izņemšanas pieprasījumus tieši caur jūsu MetaMask maciņu.</p>
-        
+
 <p><strong>Kā tas darbojas:</strong></p>
 <ul>
   <li>Pievienojiet savu MetaMask maciņu</li>

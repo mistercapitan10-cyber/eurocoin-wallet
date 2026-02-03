@@ -25,8 +25,6 @@ function LoginPageContent() {
   const { isAuthenticated, isLoading } = useAuth();
   const t = useTranslation();
   const hasRedirected = useRef(false);
-  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasShownError = useRef(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -75,7 +73,7 @@ function LoginPageContent() {
   // NOTE: Server-side middleware handles redirects for page navigation,
   // but we need client-side redirect for real-time authentication state changes
   useEffect(() => {
-    console.log("[Login] useEffect triggered", {
+    console.log("[Login] Authentication state changed", {
       isAuthenticated,
       isLoading,
       hasRedirected: hasRedirected.current,
@@ -86,116 +84,54 @@ function LoginPageContent() {
       return;
     }
 
-    // If authenticated, redirect to home page
+    // If authenticated, redirect to home page immediately
     if (isAuthenticated) {
       console.log("[Login] User authenticated, redirecting to home...");
       hasRedirected.current = true;
 
-      // Clear any pending timeouts
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-        redirectTimeoutRef.current = null;
-      }
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
-        fallbackTimeoutRef.current = null;
-      }
-
-      router.push("/");
+      // Use window.location.href for guaranteed redirect (works even if router fails)
+      window.location.href = "/";
     }
-  }, [isAuthenticated, isLoading, router]);
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-      }
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [isAuthenticated, isLoading]);
 
   const handleMetaMaskConnect = async () => {
     try {
-      // Clear any existing timeouts
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-        redirectTimeoutRef.current = null;
-      }
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
-        fallbackTimeoutRef.current = null;
-      }
-
       // If already connected, just set cookie and redirect
       if (isConnected) {
+        console.log("[Login] MetaMask already connected, setting cookie and redirecting...");
         Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
         toast.success(t("login.walletConnected"));
 
-        // Set flag that redirect will happen
-        hasRedirected.current = false;
+        // Mark as redirected to prevent duplicate redirects
+        hasRedirected.current = true;
 
-        // Redirect after 1.5 seconds
-        redirectTimeoutRef.current = setTimeout(() => {
-          hasRedirected.current = true;
-          if (fallbackTimeoutRef.current) {
-            clearTimeout(fallbackTimeoutRef.current);
-            fallbackTimeoutRef.current = null;
-          }
-          router.push("/");
-        }, 1500);
-
-        // Fallback: reload page if redirect didn't happen in 3 seconds
-        fallbackTimeoutRef.current = setTimeout(() => {
-          if (!hasRedirected.current) {
-            console.log("[Login] Redirect timeout, reloading page...");
-            window.location.reload();
-          }
-        }, 3000);
+        // Use window.location.href for guaranteed redirect
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
         return;
       }
 
       // If not connected, try to connect
+      console.log("[Login] Connecting to MetaMask...");
       await connect();
+
       // Set cookie to indicate successful MetaMask connection
       Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
       toast.success(t("login.walletConnectedSuccess"));
 
-      // Set flag that redirect will happen
-      hasRedirected.current = false;
+      // Mark as redirected to prevent duplicate redirects
+      hasRedirected.current = true;
 
       // Redirect to home page after successful connection
-      redirectTimeoutRef.current = setTimeout(() => {
-        hasRedirected.current = true;
-        if (fallbackTimeoutRef.current) {
-          clearTimeout(fallbackTimeoutRef.current);
-          fallbackTimeoutRef.current = null;
-        }
-        router.push("/");
-      }, 1500);
-
-      // Fallback: reload page if redirect didn't happen in 3 seconds
-      fallbackTimeoutRef.current = setTimeout(() => {
-        if (!hasRedirected.current) {
-          console.log("[Login] Redirect timeout after MetaMask connection, reloading page...");
-          window.location.reload();
-        }
-      }, 3000);
+      // Small delay to let the user see the success message
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     } catch (error) {
-      // Clear timeouts on error
-      if (redirectTimeoutRef.current) {
-        clearTimeout(redirectTimeoutRef.current);
-        redirectTimeoutRef.current = null;
-      }
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current);
-        fallbackTimeoutRef.current = null;
-      }
-
       const message = error instanceof Error ? error.message : t("login.connectError");
       toast.error(message);
+      console.error("[Login] MetaMask connection error:", error);
     }
   };
 

@@ -5,6 +5,8 @@ import { Markup } from "telegraf";
 import { render } from "@react-email/render";
 import { createInternalRequest } from "@/lib/database/queries";
 import { notifyNewInternalRequest } from "@/lib/telegram/notify-admin";
+import { auth } from "@/lib/auth";
+import { getUserByWalletAddress } from "@/lib/database/user-queries";
 import {
   createRequestFile,
   getRequestFilesByRequestId,
@@ -23,7 +25,6 @@ interface RequestFormData {
   description: string;
   priority: "low" | "normal" | "high";
   walletAddress?: string;
-  userId?: string; // For OAuth users
   email?: string; // For OAuth users
   files?: Array<{
     fileName: string;
@@ -35,7 +36,18 @@ interface RequestFormData {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
     const data: RequestFormData = await request.json();
+    let userId = session?.user?.id || null;
+
+    if (!userId && data.walletAddress) {
+      try {
+        const walletUser = await getUserByWalletAddress(data.walletAddress as `0x${string}`);
+        userId = walletUser?.id ?? null;
+      } catch (lookupError) {
+        console.warn("[submit-request] Wallet lookup failed:", lookupError);
+      }
+    }
 
     // Validate required fields
     if (!data.requester || !data.department || !data.requestType || !data.description) {
@@ -56,7 +68,7 @@ export async function POST(request: NextRequest) {
         description: data.description,
         email: data.email || undefined, // Use email from form data
         wallet_address: data.walletAddress || undefined,
-        user_id: data.userId, // For OAuth users
+        user_id: userId ?? undefined,
       });
 
       // Save files if provided
@@ -145,8 +157,8 @@ export async function POST(request: NextRequest) {
         // Show wallet address for wallet users, userId for email users
         const userIdentifier = data.walletAddress
           ? `💼 Кошелек: \`${data.walletAddress}\``
-          : data.userId
-            ? `🆔 ID пользователя: \`${data.userId}\``
+          : userId
+            ? `🆔 ID пользователя: \`${userId}\``
             : "";
 
         const telegramMessage =
@@ -215,7 +227,7 @@ export async function POST(request: NextRequest) {
       id: requestId,
       requester: data.requester,
       walletAddress: data.walletAddress, // Only for wallet users
-      userId: data.userId, // For email users
+      userId: userId ?? undefined, // For email users
       email: data.email, // For email users
       department: departmentMap[data.department] || data.department,
       requestType: requestTypeMap[data.requestType] || data.requestType,

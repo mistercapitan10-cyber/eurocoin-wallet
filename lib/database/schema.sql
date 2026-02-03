@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS exchange_requests (
   comment TEXT,
   status VARCHAR(20) DEFAULT 'pending' NOT NULL,
   current_stage VARCHAR(50),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,6 +18,7 @@ CREATE TABLE IF NOT EXISTS exchange_requests (
 CREATE INDEX IF NOT EXISTS idx_exchange_requests_wallet ON exchange_requests(wallet_address);
 CREATE INDEX IF NOT EXISTS idx_exchange_requests_status ON exchange_requests(status);
 CREATE INDEX IF NOT EXISTS idx_exchange_requests_stage ON exchange_requests(current_stage);
+CREATE INDEX IF NOT EXISTS idx_exchange_requests_user_id ON exchange_requests(user_id);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -46,12 +48,14 @@ CREATE TABLE IF NOT EXISTS internal_requests (
   description TEXT NOT NULL,
   status VARCHAR(20) DEFAULT 'pending' NOT NULL,
   current_stage VARCHAR(50),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_internal_requests_wallet ON internal_requests(wallet_address);
 CREATE INDEX IF NOT EXISTS idx_internal_requests_status ON internal_requests(status);
+CREATE INDEX IF NOT EXISTS idx_internal_requests_user_id ON internal_requests(user_id);
 
 -- Trigger for internal_requests
 DROP TRIGGER IF EXISTS update_internal_requests_updated_at ON internal_requests;

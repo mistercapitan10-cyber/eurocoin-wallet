@@ -182,7 +182,7 @@ npm run dev
 
 Убедитесь, что в `.env.local` настроены:
 ```bash
-EMAIL_USER=eurocoinfinance@gmail.com
+EMAIL_USER=support@euro-coin.eu
 EMAIL_PASSWORD=your_app_password_here
 ```
 

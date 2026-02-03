@@ -819,11 +819,35 @@ posthog.capture("wallet_connected", {
 
 ---
 
+## 🧩 Интеграция userId в заявки и баланс
+
+### Что важно знать
+
+- Все пользователи (OAuth и MetaMask) имеют `users.id` (UUID).
+- `exchange_requests.user_id` и `internal_requests.user_id` ссылаются на `users.id`.
+- `internal_wallets.user_id` связывает кошелек с пользователем.
+
+### Использование userId
+
+- Для OAuth-пользователей `userId` приходит в сессии и используется в запросах.
+- Для кошельков отображается и `wallet_address`, и `userId` (если он есть).
+- В Telegram уведомлениях всегда показывается `userId` (если отсутствует — выводится подсказка).
+
+### Проверка и миграции
+
+- Исправленная миграция: `lib/database/migrations/add-user-id-to-requests.sql`.
+- Идемпотентная проверка: `lib/database/migrations/verify-user-id-columns.sql`.
+- Скрипт проверки: `scripts/verify-user-id-migration.ts`.
+
+### Отладка проблем с userId
+
+1. Проверьте, что `exchange_requests.user_id` и `internal_requests.user_id` существуют.
+2. Убедитесь, что внешний ключ ссылается на `users(id)`.
+3. Проверьте логи NextAuth в `createUser`, `jwt`, `session` — там выводится валидность UUID.
+4. Если `userId` отсутствует в уведомлениях, проверьте, что API получает `userId` из сессии.
+
+---
+
 **Версия плана:** 1.0  
 **Дата создания:** 2025-01-XX  
 **Статус:** Готов к реализации
-
-
-
-
-

@@ -5,6 +5,8 @@ import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { createExchangeRequest } from "@/lib/database/queries";
 import { notifyNewExchangeRequest } from "@/lib/telegram/notify-admin";
+import { auth } from "@/lib/auth";
+import { getUserByWalletAddress } from "@/lib/database/user-queries";
 import {
   createRequestFile,
   getRequestFilesByRequestId,
@@ -24,7 +26,6 @@ interface ExchangeRequest {
   commission: string;
   rate: string;
   comment?: string;
-  userId?: string; // For OAuth users
   files?: Array<{
     fileName: string;
     fileType: string;
@@ -35,7 +36,18 @@ interface ExchangeRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
     const data: ExchangeRequest = await request.json();
+    let userId = session?.user?.id || null;
+
+    if (!userId && data.walletAddress) {
+      try {
+        const walletUser = await getUserByWalletAddress(data.walletAddress as `0x${string}`);
+        userId = walletUser?.id ?? null;
+      } catch (lookupError) {
+        console.warn("[submit-exchange-request] Wallet lookup failed:", lookupError);
+      }
+    }
 
     // Validate required fields
     if (!data.tokenAmount || !data.fiatAmount || !data.walletAddress || !data.email) {
@@ -56,7 +68,7 @@ export async function POST(request: NextRequest) {
         rate: data.rate,
         commission: data.commission,
         comment: data.comment,
-        user_id: data.userId, // For OAuth users
+        user_id: userId ?? undefined,
       });
 
       // Save files if provided
@@ -155,6 +167,7 @@ ${filesInfo}
     await notifyNewExchangeRequest({
       id: requestId,
       walletAddress: data.walletAddress,
+      userId: userId ?? undefined,
       email: data.email,
       tokenAmount: data.tokenAmount,
       fiatAmount: data.fiatAmount,

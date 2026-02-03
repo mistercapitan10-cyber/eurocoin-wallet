@@ -39,6 +39,13 @@ declare module "next-auth" {
   }
 }
 
+function isValidUuid(value?: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
 // =============================================================================
 // Database Adapter Configuration
 // =============================================================================
@@ -367,6 +374,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         console.log("[AUTH] JWT created:", {
           userId: user.id,
+          userIdValid: isValidUuid(user.id),
           authType: "email",
           email: user.email,
           provider: account?.provider,
@@ -378,6 +386,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (trigger === "update") {
         console.log("[AUTH] JWT updated:", {
           userId: token.userId,
+          userIdValid: isValidUuid(token.userId as string | undefined),
           email: token.email,
         });
       }
@@ -396,6 +405,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         hasToken: !!token,
         tokenUserId: token?.userId,
         tokenAuthType: token?.authType,
+        tokenUserIdValid: isValidUuid(token?.userId as string | undefined),
       });
 
       if (session.user) {
@@ -405,6 +415,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         console.log("[AUTH] Session updated:", {
           userId: session.user.id,
+          userIdValid: isValidUuid(session.user.id),
           email: session.user.email,
           authType: session.user.authType,
         });
@@ -427,23 +438,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Allows relative callback URLs
       if (url.startsWith("/")) {
         const redirectUrl = `${baseUrl}${url}`;
-        console.log("[AUTH] Redirect to relative URL:", redirectUrl);
+        console.log("[AUTH] ✅ Redirect to relative URL:", redirectUrl);
         return redirectUrl;
       }
 
       // Allows callback URLs on the same origin
       try {
         const urlObj = new URL(url);
-        if (urlObj.origin === baseUrl) {
-          console.log("[AUTH] Redirect to same origin:", url);
+        const baseUrlObj = new URL(baseUrl);
+
+        // Compare origins (protocol + hostname + port)
+        if (urlObj.origin === baseUrlObj.origin) {
+          console.log("[AUTH] ✅ Redirect to same origin:", url);
           return url;
         }
+
+        console.warn("[AUTH] ⚠️  Different origin detected:", {
+          urlOrigin: urlObj.origin,
+          baseOrigin: baseUrlObj.origin,
+          willRedirectToBase: true,
+        });
       } catch (error) {
-        console.warn("[AUTH] Invalid URL in redirect:", url, error);
+        console.warn("[AUTH] ⚠️  Invalid URL in redirect:", url, error);
       }
 
       // Default redirect to home page
-      console.log("[AUTH] Default redirect to baseUrl:", baseUrl);
+      console.log("[AUTH] ✅ Default redirect to baseUrl:", baseUrl);
       return baseUrl;
     },
   },
@@ -473,12 +493,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async createUser({ user }) {
       console.log("[AUTH EVENT] New user created:", {
         userId: user.id,
+        userIdValid: isValidUuid(user.id),
         email: user.email,
         hasAdapter: !!adapter,
       });
 
       // Send welcome email, create initial data, etc.
-      
+
       // Send notification to Telegram bot about new registration
       if (user.email) {
         try {
@@ -486,7 +507,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           await notifyNewUserRegistration(user.email);
           console.log("[AUTH EVENT] New user registration notification sent to Telegram");
         } catch (error) {
-          console.error("[AUTH EVENT] Failed to send registration notification to Telegram:", error);
+          console.error(
+            "[AUTH EVENT] Failed to send registration notification to Telegram:",
+            error,
+          );
           // Don't throw - notification failure shouldn't break the registration flow
         }
       }

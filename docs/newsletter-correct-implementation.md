@@ -51,7 +51,7 @@ ALTER TABLE newsletter_subscribers ADD COLUMN verified BOOLEAN DEFAULT FALSE;
 
 - [ ] Интеграция с email сервисом (SendGrid/Mailgun/Nodemailer)
 - [ ] Конфигурация SMTP
-- [ ] Отправка на `eurocoinfinance@gmail.com` и копия подписчику
+- [ ] Отправка на `support@euro-coin.eu` и копия подписчику
 
 ## 🔧 Технические детали
 
@@ -59,7 +59,7 @@ ALTER TABLE newsletter_subscribers ADD COLUMN verified BOOLEAN DEFAULT FALSE;
 
 - Использовать Nodemailer или SendGrid
 - Конфигурация SMTP через Gmail SMTP
-- Отправка с `eurocoinfinance@gmail.com`
+- Отправка с `support@euro-coin.eu`
 
 ### Безопасность
 

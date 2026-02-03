@@ -92,15 +92,34 @@ export function OAuthButtons({ callbackUrl = "/", disabled = false }: OAuthButto
         provider: "google",
       });
 
-      // Use NextAuth signIn function directly (recommended approach)
-      // signIn redirects automatically, so we don't need to handle the result
-      await signIn("google", {
+      // Use NextAuth signIn function with redirect: false to handle result manually
+      // This gives us more control over the redirect process
+      const result = await signIn("google", {
         callbackUrl: callbackUrl || "/",
-        redirect: true, // Let NextAuth handle the redirect
+        redirect: false, // Handle redirect manually for better control
       });
 
-      // Note: If redirect is true, signIn will redirect and this code won't execute
-      // If there's an error, it will be caught in the catch block below
+      console.log("[OAuth] Sign-in result:", {
+        ok: result?.ok,
+        status: result?.status,
+        error: result?.error,
+        url: result?.url,
+      });
+
+      // If sign-in successful, redirect to callback URL or home
+      if (result?.ok) {
+        const redirectUrl = result.url || callbackUrl || "/";
+        console.log("[OAuth] Sign-in successful, redirecting to:", redirectUrl);
+
+        // Use window.location.href for guaranteed redirect
+        window.location.href = redirectUrl;
+      } else {
+        // If sign-in failed, show error
+        const errorMessage = result?.error || t("login.oauth.googleError");
+        console.error("[OAuth] Sign-in failed:", errorMessage);
+        toast.error(errorMessage);
+        setIsGoogleLoading(false);
+      }
     } catch (error) {
       console.error("[OAuth] Google sign-in error:", error);
 

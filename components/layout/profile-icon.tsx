@@ -9,11 +9,13 @@ import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/use-translation";
 import Image from "next/image";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 export function ProfileIcon() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
-  const { connect, isConnecting } = useWalletConnection();
+  const { connect, disconnect, isConnecting } = useWalletConnection();
   const { isAuthenticated, authType, email, name, image } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -57,22 +59,33 @@ export function ProfileIcon() {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ redirect: true, callbackUrl: '/login' });
+      if (authType === "wallet" || isConnected) {
+        await disconnect();
+        Cookies.remove("metamask_connected");
+        toast.success(t("wallet.disconnected"));
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+      } else {
+        await signOut({ redirect: true, callbackUrl: "/login" });
+      }
       setIsOpen(false);
     } catch (error) {
       console.error("Failed to sign out:", error);
+      const message = error instanceof Error ? error.message : t("auth.signOutError");
+      toast.error(message);
     }
   };
 
   const getAuthLabel = () => {
-    if (authType === 'wallet') return 'MetaMask';
-    if (authType === 'email') {
+    if (authType === "wallet") return "MetaMask";
+    if (authType === "email") {
       // Determine OAuth provider from email domain or name
-      if (email?.includes('@gmail.com') || name?.includes('Google')) return 'Google';
-      if (email?.includes('@github') || name?.includes('GitHub')) return 'GitHub';
-      return 'Email';
+      if (email?.includes("@gmail.com") || name?.includes("Google")) return "Google";
+      if (email?.includes("@github") || name?.includes("GitHub")) return "GitHub";
+      return "Email";
     }
-    return '';
+    return "";
   };
 
   return (
@@ -80,7 +93,7 @@ export function ProfileIcon() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-8 w-8 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface"
         aria-label="Profile"
       >
         <svg
@@ -100,37 +113,37 @@ export function ProfileIcon() {
       </button>
 
       {isOpen && (
-        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-10 z-50 min-w-[240px] rounded-lg border border-outline bg-surface p-3 shadow-lg">
+        <div className="absolute right-0 top-10 z-50 min-w-[240px] rounded-lg border border-outline bg-surface p-3 shadow-lg dark:border-dark-outline dark:bg-dark-surface">
           {isAuthenticated ? (
             <>
-              <div className="dark:text-dark-foreground dark:bg-dark-surfaceAlt mb-3 flex items-center gap-3 rounded-md bg-surfaceAlt px-3 py-2 text-sm">
+              <div className="mb-3 flex items-center gap-3 rounded-md bg-surfaceAlt px-3 py-2 text-sm dark:bg-dark-surfaceAlt dark:text-dark-foreground">
                 {/* Avatar */}
-                {authType === 'wallet' && address ? (
-                  <div className="dark:bg-dark-surface flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface text-accent font-medium">
+                {authType === "wallet" && address ? (
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface font-medium text-accent dark:bg-dark-surface">
                     {address.slice(2, 4).toUpperCase()}
                   </div>
                 ) : image ? (
                   <Image
                     src={image}
-                    alt={name || email || 'User'}
+                    alt={name || email || "User"}
                     width={40}
                     height={40}
                     className="rounded-full"
                   />
                 ) : (
-                  <div className="dark:bg-dark-surface flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface text-accent font-medium">
-                    {name?.charAt(0).toUpperCase() || email?.charAt(0).toUpperCase() || '?'}
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface font-medium text-accent dark:bg-dark-surface">
+                    {name?.charAt(0).toUpperCase() || email?.charAt(0).toUpperCase() || "?"}
                   </div>
                 )}
 
                 {/* User Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="dark:text-dark-foreground font-medium text-foreground truncate">
-                    {authType === 'wallet' && address
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium text-foreground dark:text-dark-foreground">
+                    {authType === "wallet" && address
                       ? formatAddress(address)
-                      : name || email?.split('@')[0] || 'User'}
+                      : name || email?.split("@")[0] || "User"}
                   </div>
-                  <div className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
+                  <div className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
                     {getAuthLabel()}
                   </div>
                 </div>
@@ -140,7 +153,7 @@ export function ProfileIcon() {
               <button
                 type="button"
                 onClick={handleProfileClick}
-                className="dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt w-full rounded-md px-3 py-2 text-left text-sm font-medium transition hover:bg-surfaceAlt mb-2"
+                className="mb-2 w-full rounded-md px-3 py-2 text-left text-sm font-medium transition hover:bg-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt"
               >
                 {t("profile.title")}
               </button>
@@ -149,7 +162,7 @@ export function ProfileIcon() {
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt w-full rounded-md px-3 py-2 text-left text-sm font-medium transition hover:bg-surfaceAlt text-red-600 dark:text-red-400"
+                className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-surfaceAlt dark:text-dark-foreground dark:text-red-400 dark:hover:bg-dark-surfaceAlt"
               >
                 Sign Out
               </button>

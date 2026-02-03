@@ -17,7 +17,7 @@
 
 ```bash
 # Email configuration
-EMAIL_USER=eurocoinfinance@gmail.com
+EMAIL_USER=support@euro-coin.eu
 EMAIL_PASSWORD=your_app_password_here
 
 # Newsletter auth
@@ -173,7 +173,7 @@ language VARCHAR(10) - Язык (ru/en)
 - Код подтверждения действителен 5 минут
 - Email уникальны - нельзя подписаться дважды
 - Админ получает статистику отправки (отправлено/ошибок)
-- Все email отправляются от `eurocoinfinance@gmail.com`
+- Все email отправляются от `support@euro-coin.eu`
 
 
 

@@ -165,6 +165,38 @@ function calculateAvailableAmount(balanceRow: Record<string, unknown>): bigint {
   return available > BigInt(0) ? available : BigInt(0);
 }
 
+async function fetchWalletByUserId(
+  userId: string,
+  client?: PoolClient,
+): Promise<InternalWalletRecord | null> {
+  const executor = client ?? null;
+
+  const result = await (executor
+    ? executor.query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [userId])
+    : query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [userId]));
+
+  if (!result.rows || result.rows.length === 0) {
+    return null;
+  }
+
+  return mapWalletRow(result.rows[0] as Record<string, unknown>);
+}
+
+export async function getWalletByUserId(
+  userId: string,
+  client?: PoolClient,
+): Promise<InternalWalletRecord | null> {
+  try {
+    return await fetchWalletByUserId(userId, client);
+  } catch (error) {
+    console.error("[internal-balance-queries] Failed to load wallet by userId:", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
 async function ensureInternalWalletRecord(
   identifier: BalanceIdentifier,
   client?: PoolClient,
@@ -179,13 +211,9 @@ async function ensureInternalWalletRecord(
     ? identifier.defaultWithdrawAddress
     : null;
 
-  let existing;
+  let existingWallet: InternalWalletRecord | null = null;
   try {
-    existing = await (executor
-      ? executor.query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [
-          identifier.userId,
-        ])
-      : query("SELECT * FROM internal_wallets WHERE user_id = $1 LIMIT 1", [identifier.userId]));
+    existingWallet = await fetchWalletByUserId(identifier.userId, executor ?? undefined);
   } catch (queryError) {
     console.error("[internal-balance-queries] Failed to query internal_wallets:", {
       userId: identifier.userId,
@@ -196,9 +224,8 @@ async function ensureInternalWalletRecord(
     );
   }
 
-  if (existing.rows.length > 0) {
-    const walletRow = existing.rows[0] as Record<string, unknown>;
-    const currentAddress = walletRow.wallet_address as string | null;
+  if (existingWallet) {
+    const currentAddress = existingWallet.walletAddress;
 
     if (walletAddress && walletAddress !== currentAddress) {
       const updated = await (executor
@@ -207,19 +234,19 @@ async function ensureInternalWalletRecord(
              SET wallet_address = $1, updated_at = CURRENT_TIMESTAMP
              WHERE id = $2
              RETURNING *`,
-            [walletAddress, walletRow.id as string],
+            [walletAddress, existingWallet.id],
           )
         : query(
             `UPDATE internal_wallets
              SET wallet_address = $1, updated_at = CURRENT_TIMESTAMP
              WHERE id = $2
              RETURNING *`,
-            [walletAddress, walletRow.id as string],
+            [walletAddress, existingWallet.id],
           ));
       return mapWalletRow(updated.rows[0] as Record<string, unknown>);
     }
 
-    return mapWalletRow(walletRow);
+    return existingWallet;
   }
 
   let inserted;
@@ -253,6 +280,13 @@ async function ensureInternalWalletRecord(
   }
 
   return mapWalletRow(inserted.rows[0] as Record<string, unknown>);
+}
+
+export async function getOrCreateWallet(
+  identifier: BalanceIdentifier,
+  client?: PoolClient,
+): Promise<InternalWalletRecord> {
+  return ensureInternalWalletRecord(identifier, client);
 }
 
 async function ensureInternalBalanceRecord(
@@ -806,7 +840,7 @@ export async function updateWithdrawRequestFee(
     }
 
     const current = mapWithdrawRow(requestResult.rows[0] as Record<string, unknown>);
-    
+
     // Can only update fee if request is pending or approved
     if (current.status !== "pending" && current.status !== "approved") {
       throw new Error("WITHDRAW_REQUEST_FINALIZED");
@@ -818,10 +852,7 @@ export async function updateWithdrawRequestFee(
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $2
        RETURNING *`,
-      [
-        params.feeAmount ?? null,
-        params.requestId,
-      ],
+      [params.feeAmount ?? null, params.requestId],
     );
 
     await client.query("COMMIT");

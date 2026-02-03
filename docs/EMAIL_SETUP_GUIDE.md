@@ -70,7 +70,7 @@ const transporter = nodemailer.createTransport({
 4. Добавить в `.env.local`:
 
 ```bash
-EMAIL_USER=eurocoinfinance@gmail.com
+EMAIL_USER=support@euro-coin.eu
 EMAIL_PASSWORD=xxxx xxxx xxxx xxxx  # App Password (без пробелов)
 ```
 
@@ -240,7 +240,7 @@ LIMIT 10;
 ### Обязательные:
 ```bash
 # Email Configuration
-EMAIL_USER=eurocoinfinance@gmail.com
+EMAIL_USER=support@euro-coin.eu
 EMAIL_PASSWORD=your_app_password_here
 
 # Database

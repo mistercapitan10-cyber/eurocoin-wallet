@@ -43,6 +43,7 @@ export interface ExchangeRequestNotification {
   email: string;
   tokenAmount: string;
   fiatAmount: string;
+  userId?: string;
 }
 
 /**
@@ -64,6 +65,7 @@ export async function notifyNewExchangeRequest(
 
 📋 *ID заявки:* EX\\-${escapeMarkdown(request.id)}
 💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress)}\`
+  🆔 *ID пользователя:* ${request.userId ? `\`${escapeMarkdown(request.userId)}\`` : "_не указан_"}
 📧 *Email:* ${escapeMarkdown(request.email)}
 💰 *Сумма токенов:* ${escapeMarkdown(request.tokenAmount)}
 💵 *Сумма фиата:* ${escapeMarkdown(request.fiatAmount)}
@@ -115,12 +117,14 @@ export async function notifyNewInternalRequest(
       return; // Skip if chat ID not configured
     }
 
-    // Show wallet address for wallet users, userId for email users
-    const userIdentifier = request.walletAddress
+    const walletLine = request.walletAddress
       ? `💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress)}\``
-      : request.userId
-        ? `🆔 *ID пользователя:* \`${escapeMarkdown(request.userId)}\`${request.email ? `\n📧 *Email:* ${escapeMarkdown(request.email)}` : ""}`
-        : "";
+      : null;
+    const userIdLine = `🆔 *ID пользователя:* ${
+      request.userId ? `\`${escapeMarkdown(request.userId)}\`` : "_не указан_"
+    }`;
+    const emailLine = request.email ? `📧 *Email:* ${escapeMarkdown(request.email)}` : null;
+    const userIdentifier = [walletLine, userIdLine, emailLine].filter(Boolean).join("\n");
 
     const message = `
 🔔 *Новая внутренняя заявка*
@@ -198,9 +202,7 @@ export async function notifyNewWithdrawRequest(
         Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${payload.id}`),
         Markup.button.callback("📋 Детали", `withdraw_details_${payload.id}`),
       ],
-      [
-        Markup.button.callback("💬 Сообщение", `msg_${payload.walletAddress}`),
-      ],
+      [Markup.button.callback("💬 Сообщение", `msg_${payload.walletAddress}`)],
     ]);
 
     await bot.telegram.sendMessage(adminChatId, message, {
