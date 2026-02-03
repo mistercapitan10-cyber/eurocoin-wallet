@@ -137,7 +137,7 @@ export function UserRequests({ walletAddress, userEmail }: UserRequestsProps) {
 
   return (
     <>
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>{t("profile.myRequests.title")}</CardTitle>
           <CardDescription>{t("profile.myRequests.subtitle")}</CardDescription>

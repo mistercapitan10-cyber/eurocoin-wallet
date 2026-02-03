@@ -37,8 +37,8 @@ export default function ProfilePage() {
       <>
         <PageTitle title="Profile" description="Your wallet profile and requests" />
         <main className="min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12 dark:from-dark-background dark:to-dark-backgroundAlt">
-          <div className="mx-auto max-w-2xl px-6">
-            <Card>
+          <div className="mx-auto w-full max-w-6xl px-6 md:px-10">
+            <Card className="w-full">
               <CardHeader>
                 <CardTitle>{t("wallet.statusDisconnected")}</CardTitle>
                 <CardDescription>{t("profile.connectWallet")}</CardDescription>
@@ -57,7 +57,7 @@ export default function ProfilePage() {
     <>
       <PageTitle title="Profile" description="Your wallet profile and requests" />
       <main className="min-h-screen bg-gradient-to-br from-background to-backgroundAlt py-12 dark:from-dark-background dark:to-dark-backgroundAlt">
-        <div className="mx-auto max-w-2xl px-6">
+        <div className="mx-auto w-full max-w-6xl px-6 md:px-10">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground dark:text-dark-foreground">
               {t("profile.title")}
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 
           <div className="space-y-6">
             {/* Account Card */}
-            <Card>
+            <Card className="w-full">
               <CardHeader>
                 <CardTitle>
                   {authType === "wallet" ? t("profile.connectedWallet.title") : "Connected Account"}
@@ -145,7 +145,7 @@ export default function ProfilePage() {
             </Card>
 
             {/* Additional Info */}
-            <Card>
+            <Card className="w-full">
               <CardHeader>
                 <CardTitle>{t("profile.accountDetails.title")}</CardTitle>
               </CardHeader>
