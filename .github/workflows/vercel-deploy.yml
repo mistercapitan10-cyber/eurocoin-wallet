@@ -1,0 +1,23 @@
+name: Vercel Deploy (Webhook)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Trigger Vercel Deploy Hook
+        run: |
+          curl -sS -X POST "https://api.vercel.com/v1/integrations/deploy/prj_C5kDXMeiMAV2KEz0b2cIEDrIooCS/D3E2qzqkX9" \
+            -H "Content-Type: application/json" \
+            -d "{}"
