@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 import { useAccount } from "wagmi";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
 import { InternalPayoutForm } from "@/components/forms/internal-payout-form";
-import { BalanceCard, PriceTicker, WalletStatistics } from "@/components/wallet";
+import { BalanceCard, WalletStatistics } from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
 import { InvestigationProgress } from "@/components/dashboard/investigation-progress";
@@ -123,13 +123,14 @@ export default function Home() {
           {/* Token Analytics Section */}
           <section id="token-balance" className="flex flex-col gap-6">
             <BalanceCard />
-            <PriceTicker />
           </section>
 
           {/* Exchange Section */}
+          {/*
           <section id="exchange">
             <ExchangeSection />
           </section>
+          */}
         </div>
 
         {/* FAQ Section */}

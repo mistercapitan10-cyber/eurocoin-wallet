@@ -6,8 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "react-toastify";
-import { useExchangeRate } from "@/hooks/use-exchange-rate";
-import { useTokenPrice } from "@/hooks/use-token-price";
+
 import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/hooks/use-auth";
 import { convertFilesToBase64 } from "@/lib/utils/file-converter";
@@ -17,7 +16,7 @@ export function ExchangeSection() {
   const { authType, userId, email: userEmail } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const [tokenAmount, setTokenAmount] = useState("1000");
-  const [eurAmount, setEurAmount] = useState("920");
+  const [eurAmount, setEurAmount] = useState("985");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     walletAddress: "",
@@ -34,8 +33,6 @@ export function ExchangeSection() {
     }
   }, [authType, address, userEmail]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { USD_EUR, loading: rateLoading } = useExchangeRate();
-  const { priceUsd, isLoading: isPriceLoading } = useTokenPrice({ refetchInterval: 60_000 });
   const t = useTranslation();
 
   useEffect(() => {
@@ -45,20 +42,15 @@ export function ExchangeSection() {
   }, []);
 
   useEffect(() => {
-    if (!isMounted || rateLoading || isPriceLoading || priceUsd === null) return;
+    if (!isMounted) return;
 
-    // Calculate EUR amount based on token amount and real EURC price
-    // Use dynamic EURC price from CoinGecko
     const tokens = parseFloat(tokenAmount) || 0;
-    const tokenPriceUsd = priceUsd; // Real EURC price in USD
-    const rate = USD_EUR; // Real USD/EUR rate
     const commission = 0.015; // 1.5% commission
-    // Calculate: tokens * EURC_price_in_USD * USD_to_EUR_rate * (1 - commission)
-    const euros = tokens * tokenPriceUsd * rate * (1 - commission);
+    const euros = tokens * (1 - commission); // 1 TOKEN = 1 EUR, with commission
     setTimeout(() => {
       setEurAmount(Math.round(euros).toLocaleString("ru-RU"));
     }, 100);
-  }, [tokenAmount, isMounted, USD_EUR, rateLoading, priceUsd, isPriceLoading]);
+  }, [tokenAmount, isMounted]);
 
   const handleTokenAmountChange = (value: string) => {
     // Remove non-numeric characters except dots
@@ -67,11 +59,10 @@ export function ExchangeSection() {
   };
 
   const copyTemplate = () => {
-    const tokenPriceUsd = priceUsd || 1; // Fallback to 1 if price not loaded yet
     const template = `Заявка на обмен токенов:
 Сумма: ${tokenAmount} TOKEN
 Получить: ~${eurAmount} EUR
-Курс: ${(tokenPriceUsd * USD_EUR).toFixed(2)} EUR за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)
+Курс: 1 EUR за 1 TOKEN
 Комиссия: 1.5%
 Адрес кошелька: ${formData.walletAddress || "не указан"}
 Email: ${formData.email || "не указан"}`;
@@ -89,13 +80,11 @@ Email: ${formData.email || "не указан"}`;
     }
 
     setIsSubmitting(true);
-    const tokenPriceUsd = priceUsd || 1; // Fallback to 1 if price not loaded yet
 
     try {
       // Convert files to base64 if they exist
-      const filesData = attachedFiles.length > 0
-        ? await convertFilesToBase64(attachedFiles)
-        : undefined;
+      const filesData =
+        attachedFiles.length > 0 ? await convertFilesToBase64(attachedFiles) : undefined;
 
       const response = await fetch("/api/submit-exchange-request", {
         method: "POST",
@@ -109,7 +98,7 @@ Email: ${formData.email || "не указан"}`;
           email: formData.email,
           comment: formData.comment,
           commission: "1.5%",
-          rate: `${(tokenPriceUsd * USD_EUR).toFixed(2)} EUR за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)`,
+          rate: "1 EUR за 1 TOKEN",
           userId: userId || undefined, // Include userId for OAuth users
           files: filesData,
         }),
@@ -127,7 +116,7 @@ Email: ${formData.email || "не указан"}`;
       window.dispatchEvent(
         new CustomEvent("new-request-submitted", {
           detail: { requestId: data.requestId, type: "exchange" },
-        })
+        }),
       );
 
       // Reset form - keep wallet address for MetaMask users
@@ -151,12 +140,12 @@ Email: ${formData.email || "не указан"}`;
         <Card className="shadow-card-elevated">
           <CardHeader>
             <div className="mb-8 text-center">
-              <div className="dark:bg-dark-surfaceAlt mx-auto mb-4 h-8 w-64 animate-pulse rounded bg-surfaceAlt" />
-              <div className="dark:bg-dark-surfaceAlt h-4 w-full animate-pulse rounded bg-surfaceAlt" />
+              <div className="mx-auto mb-4 h-8 w-64 animate-pulse rounded bg-surfaceAlt dark:bg-dark-surfaceAlt" />
+              <div className="h-4 w-full animate-pulse rounded bg-surfaceAlt dark:bg-dark-surfaceAlt" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="dark:bg-dark-surfaceAlt h-96 animate-pulse rounded-lg bg-surfaceAlt" />
+            <div className="h-96 animate-pulse rounded-lg bg-surfaceAlt dark:bg-dark-surfaceAlt" />
           </CardContent>
         </Card>
       </section>
@@ -183,10 +172,10 @@ Email: ${formData.email || "не указан"}`;
           {/* Exchange Calculator */}
           <div className="mx-auto max-w-2xl space-y-6">
             <div className="text-center">
-              <h3 className="dark:text-dark-foreground mb-2 text-2xl font-bold text-foreground">
+              <h3 className="mb-2 text-2xl font-bold text-foreground dark:text-dark-foreground">
                 {t("exchange.calculatorTitle")}
               </h3>
-              <p className="dark:text-dark-foregroundMuted text-foregroundMuted">
+              <p className="text-foregroundMuted dark:text-dark-foregroundMuted">
                 {t("exchange.calculatorDescription")}
               </p>
             </div>
@@ -194,7 +183,7 @@ Email: ${formData.email || "не указан"}`;
             {/* Input Fields */}
             <div className="space-y-4">
               <div>
-                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                <label className="mb-2 block text-sm font-medium text-foreground dark:text-dark-foreground">
                   {t("exchange.fields.tokenAmount")}
                 </label>
                 <div className="relative">
@@ -202,17 +191,17 @@ Email: ${formData.email || "не указан"}`;
                     type="text"
                     value={tokenAmount}
                     onChange={(e) => handleTokenAmountChange(e.target.value)}
-                    className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-lg font-semibold text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    className="w-full rounded-lg border border-outline bg-surface px-4 py-3 text-lg font-semibold text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                     placeholder={t("exchange.placeholders.tokenAmount")}
                   />
-                  <span className="dark:text-dark-foregroundMuted absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted dark:text-dark-foregroundMuted">
                     {t("exchange.fields.tokenUnit")}
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                <label className="mb-2 block text-sm font-medium text-foreground dark:text-dark-foreground">
                   {t("exchange.fields.receiveEur")}
                 </label>
                 <div className="relative">
@@ -220,9 +209,9 @@ Email: ${formData.email || "не указан"}`;
                     type="text"
                     value={`~ ${eurAmount}`}
                     readOnly
-                    className="dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foreground w-full rounded-lg border border-outline bg-surfaceAlt px-4 py-3 text-lg font-semibold text-foreground"
+                    className="w-full rounded-lg border border-outline bg-surfaceAlt px-4 py-3 text-lg font-semibold text-foreground dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foreground"
                   />
-                  <span className="dark:text-dark-foregroundMuted absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted dark:text-dark-foregroundMuted">
                     {t("exchange.fields.eurUnit")}
                   </span>
                 </div>
@@ -230,32 +219,20 @@ Email: ${formData.email || "не указан"}`;
             </div>
 
             {/* Exchange Details */}
-            <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt space-y-3 rounded-lg border border-outline bg-surfaceAlt p-4">
+            <div className="space-y-3 rounded-lg border border-outline bg-surfaceAlt p-4 dark:border-dark-outline dark:bg-dark-surfaceAlt">
               <div className="flex justify-between text-sm">
-                <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
+                <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
                   {t("exchange.details.exchangeRate")}
                 </span>
-                <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {rateLoading || isPriceLoading || priceUsd === null
-                    ? t("exchange.details.rateLoading")
-                    : `${((priceUsd || 1) * USD_EUR).toFixed(2)} ${t("exchange.details.rateFormat")}`}
+                <span className="font-medium text-foreground dark:text-dark-foreground">
+                  1 EUR за 1 TOKEN
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  {t("exchange.details.equivalent")}
-                </span>
-                <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {isPriceLoading || priceUsd === null
-                    ? "Loading..."
-                    : `1 TOKEN = $${(priceUsd || 1).toFixed(2)}`}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
+                <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
                   {t("exchange.details.processingTime")}
                 </span>
-                <span className="dark:text-dark-foreground font-medium text-foreground">
+                <span className="font-medium text-foreground dark:text-dark-foreground">
                   {t("exchange.details.processingValue")}
                 </span>
               </div>
@@ -264,47 +241,47 @@ Email: ${formData.email || "не указан"}`;
             {/* Form Fields */}
             <div className="space-y-4">
               <div>
-                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                <label className="mb-2 block text-sm font-medium text-foreground dark:text-dark-foreground">
                   {t("exchange.fields.walletAddress")}
                 </label>
                 <input
                   type="text"
                   value={formData.walletAddress}
                   onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
-                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                   placeholder={t("exchange.placeholders.walletAddress")}
                   disabled={authType === "wallet"}
                   required
                 />
                 {authType === "wallet" && address && (
-                  <p className="dark:text-dark-foregroundMuted mt-1 text-xs text-foregroundMuted">
+                  <p className="mt-1 text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
                     {t("exchange.fields.walletAddressAutoFilled")}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                <label className="mb-2 block text-sm font-medium text-foreground dark:text-dark-foreground">
                   {t("exchange.fields.email")}
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                   placeholder={t("exchange.placeholders.email")}
                   required
                 />
               </div>
 
               <div>
-                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                <label className="mb-2 block text-sm font-medium text-foreground dark:text-dark-foreground">
                   {t("exchange.fields.comment")}
                 </label>
                 <textarea
                   value={formData.comment}
                   onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  className="w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                   placeholder={t("exchange.placeholders.comment")}
                   rows={3}
                 />
@@ -312,7 +289,7 @@ Email: ${formData.email || "не указан"}`;
 
               {/* File Upload */}
               <div>
-                <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
+                <label className="mb-2 block text-sm font-medium text-foreground dark:text-dark-foreground">
                   Attach Files (Optional)
                 </label>
                 <FileUploader

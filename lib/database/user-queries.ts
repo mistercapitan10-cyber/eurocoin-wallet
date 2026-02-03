@@ -45,8 +45,8 @@ export async function upsertWalletUser(
       updatedAt: now,
     };
 
-    const cleanEmail = input.email && input.email.trim() !== '' ? input.email : null;
-    const cleanName = input.name && input.name.trim() !== '' ? input.name : null;
+    const cleanEmail = input.email && input.email.trim() !== "" ? input.email : null;
+    const cleanName = input.name && input.name.trim() !== "" ? input.name : null;
 
     if (cleanEmail && cleanEmail !== existingByWallet.email) {
       updateFields.email = cleanEmail;
@@ -84,7 +84,7 @@ export async function upsertWalletUser(
         updatedAt: now,
       };
 
-      const cleanName = input.name && input.name.trim() !== '' ? input.name : null;
+      const cleanName = input.name && input.name.trim() !== "" ? input.name : null;
       if (cleanName) {
         updateFields.name = cleanName;
       }
@@ -101,19 +101,16 @@ export async function upsertWalletUser(
 
   const insertValues: UserInsert = {
     walletAddress,
-    email: input.email && input.email.trim() !== '' ? input.email : null,
-    name: input.name && input.name.trim() !== '' ? input.name : null,
+    email: input.email && input.email.trim() !== "" ? input.email : null,
+    name: input.name && input.name.trim() !== "" ? input.name : null,
     authType: "wallet",
     createdAt: now,
     updatedAt: now,
   };
 
-  const [created] = await db
-    .insert(users)
-    .values(insertValues)
-    .returning({
-      id: users.id,
-    });
+  const [created] = await db.insert(users).values(insertValues).returning({
+    id: users.id,
+  });
 
   return {
     id: created.id,
@@ -136,7 +133,7 @@ export async function getUserByWalletAddress(
     });
 
     const normalizedAddress = walletAddress.toLowerCase() as `0x${string}`;
-    
+
     // Try direct SQL query first as fallback
     try {
       const { query } = await import("./db");
@@ -145,10 +142,13 @@ export async function getUserByWalletAddress(
         'SELECT id, name, email, "emailVerified", image, auth_type as "authType", wallet_address as "walletAddress", created_at as "createdAt", updated_at as "updatedAt" FROM users WHERE LOWER(wallet_address) = $1 LIMIT 1',
         [normalizedAddress],
       );
-      
+
       if (result.rows.length > 0) {
         const user = result.rows[0] as UserSelect;
-        console.log("[user-queries] User found via direct SQL:", { userId: user.id, email: user.email });
+        console.log("[user-queries] User found via direct SQL:", {
+          userId: user.id,
+          email: user.email,
+        });
         return user;
       } else {
         console.log("[user-queries] User not found via direct SQL for wallet:", normalizedAddress);
@@ -162,11 +162,7 @@ export async function getUserByWalletAddress(
 
     // Try Drizzle ORM query
     console.log("[user-queries] Attempting Drizzle ORM query");
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.walletAddress, normalizedAddress))
-      .limit(1);
+    const [user] = await db.select().from(users).where(eq(users.walletAddress, normalizedAddress));
 
     if (user) {
       console.log("[user-queries] User found via Drizzle:", { userId: user.id, email: user.email });
@@ -174,7 +170,7 @@ export async function getUserByWalletAddress(
       console.log("[user-queries] User not found via Drizzle for wallet:", normalizedAddress);
     }
 
-  return user ?? null;
+    return user ?? null;
   } catch (error) {
     console.error("[user-queries] Error in getUserByWalletAddress:", {
       walletAddress,
@@ -205,7 +201,10 @@ export async function getUserById(userId: string): Promise<UserSelect | null> {
 
       if (result.rows.length > 0) {
         const user = result.rows[0] as UserSelect;
-        console.log("[user-queries] User found via direct SQL:", { userId: user.id, email: user.email });
+        console.log("[user-queries] User found via direct SQL:", {
+          userId: user.id,
+          email: user.email,
+        });
         return user;
       } else {
         console.log("[user-queries] User not found via direct SQL for ID:", userId);
@@ -218,11 +217,14 @@ export async function getUserById(userId: string): Promise<UserSelect | null> {
     }
 
     // Try Drizzle ORM query
+
     const [user] = await db
+
       .select()
+
       .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
+
+      .where(eq(users.id, userId));
 
     if (user) {
       console.log("[user-queries] User found via Drizzle:", { userId: user.id, email: user.email });
@@ -240,4 +242,3 @@ export async function getUserById(userId: string): Promise<UserSelect | null> {
     throw error;
   }
 }
-

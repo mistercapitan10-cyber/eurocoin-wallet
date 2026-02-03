@@ -19,6 +19,22 @@ const STATUS_COLORS: Record<string, string> = {
 
 const isEthereumAddress = (value: string) => /^0x[a-fA-F0-9]{40}$/.test(value);
 
+const formatIsoTimestamp = (value: string | null, locale = "ru-RU"): string => {
+  if (!value) {
+    return "—";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(parsed);
+};
+
 export function InternalPayoutForm() {
   const t = useTranslation();
   const { address } = useAccount();
@@ -48,7 +64,11 @@ export function InternalPayoutForm() {
       address ??
       "";
     setDestination((prev) => (prev ? prev : fallback));
-  }, [address, internalBalance.wallet?.defaultWithdrawAddress, internalBalance.wallet?.walletAddress]);
+  }, [
+    address,
+    internalBalance.wallet?.defaultWithdrawAddress,
+    internalBalance.wallet?.walletAddress,
+  ]);
 
   const availableFloat = useMemo(() => {
     try {
@@ -57,6 +77,8 @@ export function InternalPayoutForm() {
       return 0;
     }
   }, [internalBalance.availableFormatted]);
+
+  const ledgerEntries = useMemo(() => internalBalance.ledger.slice(0, 8), [internalBalance.ledger]);
 
   const handleUseMax = () => {
     if (internalBalance.availableFormatted !== "0") {
@@ -126,22 +148,22 @@ export function InternalPayoutForm() {
   };
 
   return (
-    <section className="dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface shadow-card">
+    <section className="rounded-3xl border border-outline bg-surface shadow-card dark:border-dark-outline dark:bg-dark-surface">
       <div className="flex flex-col gap-6 rounded-3xl p-8 md:p-10">
         <div className="flex flex-col gap-3">
-          <span className="pill dark:bg-dark-surfaceAlt dark:text-dark-foreground bg-surfaceAlt text-foreground">
+          <span className="pill bg-surfaceAlt text-foreground dark:bg-dark-surfaceAlt dark:text-dark-foreground">
             {t("internalPayout.badge")}
           </span>
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="dark:text-dark-foreground display-title text-3xl font-semibold text-foreground md:text-4xl">
+              <h2 className="display-title text-3xl font-semibold text-foreground dark:text-dark-foreground md:text-4xl">
                 {t("internalPayout.title")}
               </h2>
-              <p className="dark:text-dark-foregroundMuted mt-2 max-w-2xl text-sm text-foregroundMuted md:text-base">
+              <p className="mt-2 max-w-2xl text-sm text-foregroundMuted dark:text-dark-foregroundMuted md:text-base">
                 {t("internalPayout.description")}
               </p>
             </div>
-            <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt rounded-2xl border border-outline bg-surfaceAlt p-4 text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
+            <div className="rounded-2xl border border-outline bg-surfaceAlt p-4 text-xs text-foregroundMuted dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foregroundMuted">
               {t("internalPayout.helper")}
             </div>
           </div>
@@ -197,7 +219,7 @@ export function InternalPayoutForm() {
                 type="number"
                 step="0.0001"
                 min="0"
-                className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+                className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                 placeholder="0.00"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
@@ -209,7 +231,7 @@ export function InternalPayoutForm() {
                 {t("internalPayout.addressLabel")}
               </label>
               <input
-                className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+                className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                 placeholder="0x..."
                 value={destination}
                 onChange={(event) => setDestination(event.target.value)}
@@ -221,7 +243,7 @@ export function InternalPayoutForm() {
                 {t("internalPayout.noteLabel")}
               </label>
               <textarea
-                className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground rounded-2xl border border-outline bg-surface px-4 py-3 text-sm outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20"
+                className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
                 rows={3}
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
@@ -236,6 +258,66 @@ export function InternalPayoutForm() {
               {isSubmitting ? t("common.buttons.update") : t("internalPayout.submit")}
             </Button>
           </form>
+        </div>
+
+        <div className="rounded-2xl border border-outline/70 bg-surfaceAlt p-5 dark:border-dark-outline/70 dark:bg-dark-surfaceAlt">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-foreground dark:text-dark-foreground">
+              {t("wallet.statistics.internal.historyTitle")}
+            </h3>
+            <Button variant="ghost" size="sm" onClick={() => internalBalance.refresh()}>
+              {t("common.buttons.refresh")}
+            </Button>
+          </div>
+
+          {internalBalance.isLoading ? (
+            <p className="mt-4 text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
+              {t("wallet.statistics.internal.loading")}
+            </p>
+          ) : ledgerEntries.length === 0 ? (
+            <p className="mt-4 text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
+              {t("wallet.statistics.internal.empty")}
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {ledgerEntries.map((entry) => {
+                const entryLabel = t(`wallet.statistics.internal.entry.${entry.entryType}`);
+                const badgeClasses =
+                  entry.direction === "credit"
+                    ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-300"
+                    : "bg-red-500/10 text-red-400";
+
+                return (
+                  <li
+                    key={entry.id}
+                    className="rounded-xl border border-outline/60 bg-surface p-3 dark:border-dark-outline/60 dark:bg-dark-surface"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn("rounded-full px-3 py-1 text-xs font-medium", badgeClasses)}
+                        >
+                          {entryLabel}
+                        </span>
+                        <span className="text-sm font-semibold text-foreground dark:text-dark-foreground">
+                          {entry.amount} {internalBalance.tokenSymbol}
+                        </span>
+                      </div>
+                      {entry.reference ? (
+                        <p className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
+                          {entry.reference}
+                        </p>
+                      ) : null}
+                      <div className="flex items-center justify-between text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
+                        <span>{formatIsoTimestamp(entry.createdAt)}</span>
+                        {entry.createdBy && <span>{entry.createdBy}</span>}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
         <div className="rounded-2xl border border-outline/70 bg-surfaceAlt p-5 dark:border-dark-outline/70 dark:bg-dark-surfaceAlt">
