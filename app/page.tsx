@@ -63,6 +63,12 @@ export default function Home() {
             <InternalPayoutForm />
           </section>
 
+          {/* Investigation & Reports Section */}
+          <section id="investigation" className="space-y-8">
+            <InvestigationProgress walletAddress={address} userEmail={email} />
+            <AllInvestigations />
+          </section>
+
           {/* Wallet Section */}
           <header
             id="wallet"
@@ -112,12 +118,6 @@ export default function Home() {
             <div className="rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card dark:border-dark-outline dark:bg-dark-surfaceAlt">
               <WalletStatistics />
             </div>
-          </section>
-
-          {/* Investigation & Reports Section */}
-          <section id="investigation" className="space-y-8">
-            <InvestigationProgress walletAddress={address} userEmail={email} />
-            <AllInvestigations />
           </section>
 
           {/* Token Analytics Section */}

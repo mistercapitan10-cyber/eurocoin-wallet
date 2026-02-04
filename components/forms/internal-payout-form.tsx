@@ -173,14 +173,6 @@ export function InternalPayoutForm() {
             <div className="flex items-center gap-6 text-sm">
               <div>
                 <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
-                  {t("wallet.statistics.internal.total")}
-                </span>
-                <p className="font-semibold text-foreground dark:text-dark-foreground">
-                  {internalBalance.totalFormatted} {internalBalance.tokenSymbol}
-                </p>
-              </div>
-              <div>
-                <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
                   {t("wallet.statistics.internal.pending")}
                 </span>
                 <p className="font-semibold text-foreground dark:text-dark-foreground">

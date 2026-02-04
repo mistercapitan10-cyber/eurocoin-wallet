@@ -27,6 +27,11 @@ export function EuroCoinInfoSection() {
       label: t("eurocoin.info.features.symbol.label"),
       value: t("eurocoin.info.features.symbol.value"),
     },
+    {
+      key: "rate",
+      label: t("eurocoin.info.features.rate.label"),
+      value: t("eurocoin.info.features.rate.value"),
+    },
   ];
 
   return (

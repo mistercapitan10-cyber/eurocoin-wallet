@@ -79,6 +79,7 @@ export function InternalRequestForm() {
     { value: "aml", label: t("internalForm.departments.aml") },
     { value: "investment", label: t("internalForm.departments.investment") },
     { value: "support", label: t("internalForm.departments.support") },
+    { value: "cyber", label: t("internalForm.departments.cyber") },
     { value: "legal", label: t("internalForm.departments.legal") },
   ];
 

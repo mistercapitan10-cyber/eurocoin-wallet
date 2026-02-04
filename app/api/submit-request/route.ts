@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
       aml: "AML/KYC Department",
       investment: "Investment Team",
       support: "Customer Support",
+      cyber: "Cyber Department",
       legal: "Legal Department",
     };
 

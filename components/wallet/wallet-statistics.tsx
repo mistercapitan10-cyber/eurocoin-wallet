@@ -90,7 +90,7 @@ export function WalletStatistics() {
         </div>
       )}
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-xl border border-outline bg-surface p-4 dark:border-dark-outline dark:bg-dark-surfaceAlt">
           <p className="mb-1 text-xs uppercase tracking-[0.25em] text-foregroundMuted dark:text-dark-foregroundMuted">
             {t("wallet.statistics.totalSpent")}
@@ -99,17 +99,6 @@ export function WalletStatistics() {
             {isLoading
               ? t("wallet.statistics.loading")
               : `${formatNumber(totalSpent)} ${tokenSymbol}`}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-outline bg-surface p-4 dark:border-dark-outline dark:bg-dark-surfaceAlt">
-          <p className="mb-1 text-xs uppercase tracking-[0.25em] text-foregroundMuted dark:text-dark-foregroundMuted">
-            {t("wallet.statistics.receivedAmount")}
-          </p>
-          <p className="text-2xl font-bold text-emerald-500 dark:text-emerald-300">
-            {isLoading
-              ? t("wallet.statistics.loading")
-              : `${formatNumber(totalReceived)} ${tokenSymbol}`}
           </p>
         </div>
 
@@ -222,15 +211,7 @@ export function WalletStatistics() {
             </span>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-            <div className="flex flex-col rounded-xl border border-dashed border-outline/80 p-3 dark:border-dark-outline/80">
-              <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
-                {t("wallet.statistics.internal.total")}
-              </span>
-              <span className="font-semibold text-foreground dark:text-dark-foreground">
-                {internalBalance.totalFormatted} {internalBalance.tokenSymbol}
-              </span>
-            </div>
+          <div className="mt-4 grid grid-cols-1 gap-4 text-sm">
             <div className="flex flex-col rounded-xl border border-dashed border-outline/80 p-3 dark:border-dark-outline/80">
               <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
                 {t("wallet.statistics.internal.pending")}

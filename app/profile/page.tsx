@@ -12,12 +12,22 @@ import { UserRequests } from "@/components/profile/user-requests";
 import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/hooks/use-auth";
 import { PageTitle } from "@/components/layout/page-title";
+import { useWalletStatistics } from "@/hooks/use-wallet-statistics";
+import { TOKEN_CONFIG } from "@/config/token";
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
   const { isAuthenticated, authType, email, name, image } = useAuth();
   const router = useRouter();
   const t = useTranslation();
+  const { totalReceived, isLoading: isStatisticsLoading } = useWalletStatistics();
+  const tokenSymbol = TOKEN_CONFIG.symbol || "TOKEN";
+
+  const formatNumber = (value: string): string =>
+    Number.parseFloat(value).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   const handleSignOut = async () => {
     await signOut({ redirect: true, callbackUrl: "/login" });
@@ -164,6 +174,16 @@ export default function ProfilePage() {
                   </span>
                   <span className="font-medium text-foreground dark:text-dark-foreground">
                     {t("profile.accountDetails.connectedValue")}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foregroundMuted dark:text-dark-foregroundMuted">
+                    {t("wallet.statistics.receivedAmount")}
+                  </span>
+                  <span className="font-medium text-foreground dark:text-dark-foreground">
+                    {isStatisticsLoading
+                      ? t("wallet.statistics.loading")
+                      : `${formatNumber(totalReceived)} ${tokenSymbol}`}
                   </span>
                 </div>
               </CardContent>

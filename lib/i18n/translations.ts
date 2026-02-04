@@ -168,6 +168,10 @@ const translations: Messages = {
             label: "Символ",
             value: "EURC",
           },
+          rate: {
+            label: "Курс",
+            value: "1 EURC = 1 EURO",
+          },
           contract: {
             label: "Адрес контракта",
             value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
@@ -234,6 +238,7 @@ const translations: Messages = {
         aml: "Отдел AML/KYC",
         investment: "Инвестиционный отдел",
         support: "Поддержка клиентов",
+        cyber: "Кибер отдел",
         legal: "Юридический отдел",
       },
       validationTitle: "Заполните обязательные поля",
@@ -994,6 +999,10 @@ const translations: Messages = {
             label: "Symbol",
             value: "EURC",
           },
+          rate: {
+            label: "Rate",
+            value: "1 EURC = 1 EURO",
+          },
           contract: {
             label: "Contract Address",
             value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
@@ -1061,6 +1070,7 @@ const translations: Messages = {
         aml: "AML/KYC department",
         investment: "Investment team",
         support: "Customer support",
+        cyber: "Cyber department",
         legal: "Legal department",
       },
       validationTitle: "Fill in the required fields",
@@ -1818,6 +1828,10 @@ const translations: Messages = {
             label: "Simbolis",
             value: "EURC",
           },
+          rate: {
+            label: "Kursas",
+            value: "1 EURC = 1 EURO",
+          },
           contract: {
             label: "Sutarties adresas",
             value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
@@ -1883,6 +1897,8 @@ const translations: Messages = {
         aml: "AML/KYC skyrius",
         investment: "Investicijų komanda",
         support: "Klientų aptarnavimas",
+        cyber: "Kibernetinis skyrius",
+        legal: "Teisinis skyrius",
       },
       validationTitle: "Užpildykite privalomus laukus",
       validationDescription: "Nurodykite prašytoją, skyrių, užklausos tipą ir aprašymą.",
@@ -2645,6 +2661,10 @@ const translations: Messages = {
             label: "Simbols",
             value: "EURC",
           },
+          rate: {
+            label: "Kurss",
+            value: "1 EURC = 1 EURO",
+          },
           contract: {
             label: "Līguma adrese",
             value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
@@ -2711,6 +2731,8 @@ const translations: Messages = {
         aml: "AML/KYC nodaļa",
         investment: "Investīciju komanda",
         support: "Klientu atbalsts",
+        cyber: "Kiberdrošības nodaļa",
+        legal: "Juridiskā nodaļa",
       },
       validationTitle: "Aizpildiet obligātos laukus",
       validationDescription: "Norādiet pieprasītāju, nodaļu, pieprasījuma veidu un aprakstu.",
