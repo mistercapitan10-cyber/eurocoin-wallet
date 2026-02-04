@@ -66,12 +66,56 @@ export function InternalRequestForm() {
     }
   }, [form.requester, requesterStorageKey]);
 
-  const requestTypes = [
-    { value: "refund", label: t("internalForm.requestTypes.refund") },
-    { value: "payout", label: t("internalForm.requestTypes.payout") },
-    { value: "apiBtcStandard", label: t("internalForm.requestTypes.apiBtcStandard") },
-    { value: "apiBtcProfessional", label: t("internalForm.requestTypes.apiBtcProfessional") },
-    { value: "coldWallet", label: t("internalForm.requestTypes.coldWallet") },
+  const requestTypeGroups = [
+    {
+      label: t("internalForm.requestTypeGroups.operations"),
+      options: [
+        { value: "refund", label: t("internalForm.requestTypes.refund") },
+        { value: "payout", label: t("internalForm.requestTypes.payout") },
+      ],
+    },
+    {
+      label: t("internalForm.requestTypeGroups.wallets"),
+      options: [
+        { value: "coldWallet", label: t("internalForm.requestTypes.coldWallet") },
+        { value: "coldWalletLedger", label: t("internalForm.requestTypes.coldWalletLedger") },
+      ],
+    },
+    {
+      label: t("internalForm.requestTypeGroups.apiBtc"),
+      options: [
+        { value: "apiBtcStandard", label: t("internalForm.requestTypes.apiBtcStandard") },
+        { value: "apiBtcProfessional", label: t("internalForm.requestTypes.apiBtcProfessional") },
+      ],
+    },
+    {
+      label: t("internalForm.requestTypeGroups.apiEth"),
+      options: [
+        { value: "apiEthStandard", label: t("internalForm.requestTypes.apiEthStandard") },
+        { value: "apiEthProfessional", label: t("internalForm.requestTypes.apiEthProfessional") },
+      ],
+    },
+    {
+      label: t("internalForm.requestTypeGroups.apiSol"),
+      options: [
+        { value: "apiSolStandard", label: t("internalForm.requestTypes.apiSolStandard") },
+        { value: "apiSolProfessional", label: t("internalForm.requestTypes.apiSolProfessional") },
+      ],
+    },
+    {
+      label: t("internalForm.requestTypeGroups.apiXrp"),
+      options: [
+        { value: "apiXrpStandard", label: t("internalForm.requestTypes.apiXrpStandard") },
+        { value: "apiXrpProfessional", label: t("internalForm.requestTypes.apiXrpProfessional") },
+      ],
+    },
+    {
+      label: t("internalForm.requestTypeGroups.apiUsdt"),
+      options: [
+        { value: "apiUsdtStandard", label: t("internalForm.requestTypes.apiUsdtStandard") },
+        { value: "apiUsdtProfessional", label: t("internalForm.requestTypes.apiUsdtProfessional") },
+      ],
+    },
   ];
 
   const departments = [
@@ -245,10 +289,14 @@ export function InternalRequestForm() {
               onChange={(event) => handleChange("requestType", event.target.value)}
             >
               <option value="">{t("internalForm.placeholders.type")}</option>
-              {requestTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
+              {requestTypeGroups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
