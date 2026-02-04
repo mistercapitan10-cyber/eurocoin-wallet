@@ -72,6 +72,9 @@ export function InternalRequestForm() {
     { value: "balance", label: t("internalForm.requestTypes.balance") },
     { value: "report", label: t("internalForm.requestTypes.report") },
     { value: "refund", label: t("internalForm.requestTypes.refund") },
+    { value: "apiBtcStandard", label: t("internalForm.requestTypes.apiBtcStandard") },
+    { value: "apiBtcProfessional", label: t("internalForm.requestTypes.apiBtcProfessional") },
+    { value: "coldWallet", label: t("internalForm.requestTypes.coldWallet") },
   ];
 
   const departments = [

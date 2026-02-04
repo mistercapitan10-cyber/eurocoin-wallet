@@ -232,6 +232,9 @@ const translations: Messages = {
         balance: "Проверка баланса",
         report: "Запрос отчёта",
         refund: "Возврат средств",
+        apiBtcStandard: "Подключение API BTC (Standard)",
+        apiBtcProfessional: "Подключение API BTC (Professional)",
+        coldWallet: "Подключение холодного кошелька",
       },
       departments: {
         finance: "Финансовый отдел",
@@ -1064,6 +1067,9 @@ const translations: Messages = {
         balance: "Balance review",
         report: "Report request",
         refund: "Refund request",
+        apiBtcStandard: "BTC API connection (Standard)",
+        apiBtcProfessional: "BTC API connection (Professional)",
+        coldWallet: "Cold wallet connection",
       },
       departments: {
         finance: "Finance department",
@@ -1891,6 +1897,9 @@ const translations: Messages = {
         withdraw: "Žetonų išėmimas",
         balance: "Balanso peržiūra",
         report: "Ataskaitos užklausa",
+        apiBtcStandard: "BTC API prijungimas (Standard)",
+        apiBtcProfessional: "BTC API prijungimas (Professional)",
+        coldWallet: "Šaltojo piniginės prijungimas",
       },
       departments: {
         finance: "Finansų skyrius",
@@ -2725,6 +2734,9 @@ const translations: Messages = {
         withdraw: "Žetonu izņemšana",
         balance: "Bilances pārskats",
         report: "Ziņojuma pieprasījums",
+        apiBtcStandard: "BTC API pieslēgšana (Standard)",
+        apiBtcProfessional: "BTC API pieslēgšana (Professional)",
+        coldWallet: "Aukstā maka pieslēgšana",
       },
       departments: {
         finance: "Finanšu nodaļa",
