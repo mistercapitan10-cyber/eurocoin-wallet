@@ -67,11 +67,8 @@ export function InternalRequestForm() {
   }, [form.requester, requesterStorageKey]);
 
   const requestTypes = [
-    { value: "topUp", label: t("internalForm.requestTypes.topUp") },
-    { value: "withdraw", label: t("internalForm.requestTypes.withdraw") },
-    { value: "balance", label: t("internalForm.requestTypes.balance") },
-    { value: "report", label: t("internalForm.requestTypes.report") },
     { value: "refund", label: t("internalForm.requestTypes.refund") },
+    { value: "payout", label: t("internalForm.requestTypes.payout") },
     { value: "apiBtcStandard", label: t("internalForm.requestTypes.apiBtcStandard") },
     { value: "apiBtcProfessional", label: t("internalForm.requestTypes.apiBtcProfessional") },
     { value: "coldWallet", label: t("internalForm.requestTypes.coldWallet") },
