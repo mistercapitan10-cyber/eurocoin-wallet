@@ -13,6 +13,11 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:install": "playwright install",
     "db:init": "tsx scripts/init-database.ts",
     "db:test": "tsx scripts/test-database.ts",
     "db:migrate": "tsx scripts/migrate-database.ts",
@@ -20,6 +25,8 @@
     "db:test-current-stage": "tsx scripts/test-current-stage.ts",
     "db:newsletter": "tsx scripts/apply-newsletter-schema.ts",
     "test:email": "tsx scripts/test-email-send.ts",
+    "test:withdraw-flow": "tsx scripts/test-withdraw-flow.ts",
+    "test:seed-user": "tsx scripts/seed-test-user.ts",
     "auth:migrate": "tsx scripts/apply-auth-migration.ts",
     "auth:create-tables": "tsx scripts/create-nextauth-tables.ts",
     "auth:fix-userid": "tsx scripts/fix-userid-columns.ts",
@@ -73,10 +80,12 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "^16.1.6",
+    "@playwright/test": "^1.50.1",
     "postcss": "^8.5.6",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.5.13",
     "tailwindcss": "^3.4.18",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^0.34.6"
   }
 }

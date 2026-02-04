@@ -2006,7 +2006,11 @@ if (bot) {
       const chatId = ctx.from.id;
       const balanceCreditData = pendingBalanceCredit.get(chatId);
 
-      if (!balanceCreditData || (!balanceCreditData.walletAddress && !balanceCreditData.userId) || !balanceCreditData.amount) {
+      if (
+        !balanceCreditData ||
+        (!balanceCreditData.walletAddress && !balanceCreditData.userId) ||
+        !balanceCreditData.amount
+      ) {
         await ctx.reply("❌ Данные начисления не найдены. Начните заново с /credit");
         pendingBalanceCredit.delete(chatId);
         return;
@@ -2247,6 +2251,7 @@ if (bot) {
         processing: "🔄 В обработке",
         completed: "✅ Завершено",
         rejected: "❌ Отклонено",
+        failed: "⚠️ Ошибка",
       };
 
       const statusLabel = statusLabels[request.status] || request.status;

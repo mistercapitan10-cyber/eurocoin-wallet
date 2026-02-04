@@ -15,6 +15,7 @@ const STATUS_COLORS: Record<string, string> = {
   processing: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300",
   completed: "bg-emerald-500/10 text-emerald-500 dark:text-emerald-300",
   rejected: "bg-red-500/10 text-red-500 dark:text-red-400",
+  failed: "bg-orange-500/10 text-orange-600 dark:text-orange-300",
 };
 
 const isEthereumAddress = (value: string) => /^0x[a-fA-F0-9]{40}$/.test(value);
@@ -56,19 +57,6 @@ export function InternalPayoutForm() {
     LIMIT_DAILY_EXCEEDED: "internalPayout.validation.dailyLimit",
     LIMIT_MONTHLY_EXCEEDED: "internalPayout.validation.monthlyLimit",
   } as const;
-
-  useEffect(() => {
-    const fallback =
-      internalBalance.wallet?.defaultWithdrawAddress ??
-      internalBalance.wallet?.walletAddress ??
-      address ??
-      "";
-    setDestination((prev) => (prev ? prev : fallback));
-  }, [
-    address,
-    internalBalance.wallet?.defaultWithdrawAddress,
-    internalBalance.wallet?.walletAddress,
-  ]);
 
   const availableFloat = useMemo(() => {
     try {

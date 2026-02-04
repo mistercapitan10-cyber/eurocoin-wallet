@@ -11,6 +11,22 @@ export async function initializeDatabase() {
   try {
     console.log("Initializing database schema...");
 
+    const checkUsersTable = await query(`
+      SELECT 1 FROM information_schema.tables
+      WHERE table_name = 'users'
+    `);
+
+    if (checkUsersTable.rows.length === 0) {
+      console.log("Applying migration: users table");
+
+      const usersMigration = await readMigrationFile("002-add-users-table.sql");
+      await query(usersMigration);
+
+      console.log("✅ Migration completed: users table created");
+    } else {
+      console.log("✅ Migration already applied: users table exists");
+    }
+
     // Read schema file
     const schemaPath = path.join(process.cwd(), "lib/database/schema.sql");
     const schema = fs.readFileSync(schemaPath, "utf-8");
@@ -183,6 +199,23 @@ async function applyMigrations() {
       console.log("✅ Migration completed: request_files foreign keys fixed");
     } else {
       console.log("✅ Migration already applied: foreign keys already removed");
+    }
+
+    // Migration: Ensure users table exists
+    const checkUsersTable = await query(`
+      SELECT 1 FROM information_schema.tables
+      WHERE table_name = 'users'
+    `);
+
+    if (checkUsersTable.rows.length === 0) {
+      console.log("Applying migration: users table");
+
+      const usersMigration = await readMigrationFile("002-add-users-table.sql");
+      await query(usersMigration);
+
+      console.log("✅ Migration completed: users table created");
+    } else {
+      console.log("✅ Migration already applied: users table exists");
     }
 
     // Migration: Internal balance tables

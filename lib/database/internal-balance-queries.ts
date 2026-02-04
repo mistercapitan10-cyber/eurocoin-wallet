@@ -9,8 +9,14 @@ const DEFAULT_TOKEN_DECIMALS =
     : 18;
 const DEFAULT_LEDGER_LIMIT = 10;
 
-export type LedgerEntryType = "credit" | "debit" | "adjustment" | "payout";
-export type WithdrawStatus = "pending" | "approved" | "processing" | "completed" | "rejected";
+export type LedgerEntryType = "credit" | "debit" | "adjustment" | "payout" | "refund";
+export type WithdrawStatus =
+  | "pending"
+  | "approved"
+  | "processing"
+  | "completed"
+  | "rejected"
+  | "failed";
 
 export interface InternalWalletRecord {
   id: string;
@@ -703,16 +709,41 @@ export async function updateWithdrawRequestStatus(
       return current;
     }
 
-    if (current.status === "rejected" || current.status === "completed") {
+    if (
+      current.status === "rejected" ||
+      current.status === "completed" ||
+      current.status === "failed"
+    ) {
       throw new Error("WITHDRAW_REQUEST_FINALIZED");
+    }
+
+    if (current.status === "approved" && params.status === "rejected") {
+      throw new Error("USE_FAILED_STATUS_AFTER_APPROVED");
+    }
+
+    if (
+      current.status === "pending" &&
+      params.status !== "approved" &&
+      params.status !== "rejected"
+    ) {
+      throw new Error("INVALID_WITHDRAW_STATUS_TRANSITION");
+    }
+
+    if (
+      current.status === "processing" &&
+      params.status !== "completed" &&
+      params.status !== "failed"
+    ) {
+      throw new Error("INVALID_WITHDRAW_STATUS_TRANSITION");
     }
 
     let updatedBalanceRow: Record<string, unknown> | null = null;
     const shouldReleasePending = params.status === "rejected";
-    const shouldFinalizePayout = params.status === "completed";
+    let shouldFinalizePayout = params.status === "approved" || params.status === "completed";
+    const shouldRefundBalance = params.status === "failed";
     let ledgerRow: InternalLedgerRecord | null = null;
 
-    if (shouldReleasePending || shouldFinalizePayout) {
+    if (shouldReleasePending || shouldFinalizePayout || shouldRefundBalance) {
       const balanceResult = await client.query(
         `SELECT *
          FROM internal_balances
@@ -729,7 +760,28 @@ export async function updateWithdrawRequestStatus(
       const balanceId = balanceRow.id as string;
       const amountBigInt = BigInt(current.amount);
 
-      if (shouldFinalizePayout) {
+      let skipBalanceUpdate = false;
+      let shouldRunFinalize = shouldFinalizePayout;
+
+      if (params.status === "completed") {
+        const payoutLedgerResult = await client.query(
+          `SELECT 1
+           FROM internal_ledger
+           WHERE wallet_id = $1
+             AND token_symbol = $2
+             AND entry_type = 'payout'
+             AND (reference = $3 OR metadata->>'withdrawId' = $4)
+           LIMIT 1`,
+          [current.walletId, current.tokenSymbol, `Withdraw ${current.id}`, current.id],
+        );
+
+        if (payoutLedgerResult.rows.length > 0) {
+          skipBalanceUpdate = true;
+          shouldRunFinalize = false;
+        }
+      }
+
+      if (!skipBalanceUpdate && shouldRunFinalize) {
         const availableBalance = BigInt(toNumericString(balanceRow.balance));
         if (availableBalance < amountBigInt) {
           throw new Error("BALANCE_TOO_LOW");
@@ -766,7 +818,63 @@ export async function updateWithdrawRequestStatus(
           ],
         );
         ledgerRow = mapLedgerRow(ledgerResult.rows[0] as Record<string, unknown>);
-      } else {
+      } else if (!skipBalanceUpdate && shouldRefundBalance) {
+        const payoutLedgerResult = await client.query(
+          `SELECT 1
+           FROM internal_ledger
+           WHERE wallet_id = $1
+             AND token_symbol = $2
+             AND entry_type = 'payout'
+             AND (reference = $3 OR metadata->>'withdrawId' = $4)
+           LIMIT 1`,
+          [current.walletId, current.tokenSymbol, `Withdraw ${current.id}`, current.id],
+        );
+        const hasPayoutLedger = payoutLedgerResult.rows.length > 0;
+
+        if (hasPayoutLedger) {
+          updatedBalanceRow = (
+            await client.query(
+              `UPDATE internal_balances
+               SET balance = balance + $1,
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE id = $2
+               RETURNING *`,
+              [current.amount, balanceId],
+            )
+          ).rows[0] as Record<string, unknown>;
+
+          const ledgerResult = await client.query(
+            `INSERT INTO internal_ledger
+               (wallet_id, token_symbol, entry_type, amount, balance_after, reference, metadata, created_by)
+             VALUES ($1, $2, 'refund', $3, $4, $5, $6, $7)
+             RETURNING *`,
+            [
+              current.walletId,
+              current.tokenSymbol,
+              current.amount,
+              toNumericString(updatedBalanceRow.balance),
+              `Withdraw ${current.id} failed`,
+              JSON.stringify({
+                withdrawId: current.id,
+                txHash: params.txHash ?? current.txHash,
+              }),
+              params.reviewerId ?? "system",
+            ],
+          );
+          ledgerRow = mapLedgerRow(ledgerResult.rows[0] as Record<string, unknown>);
+        } else {
+          updatedBalanceRow = (
+            await client.query(
+              `UPDATE internal_balances
+               SET pending_onchain = GREATEST(pending_onchain - $1, 0),
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE id = $2
+               RETURNING *`,
+              [current.amount, balanceId],
+            )
+          ).rows[0] as Record<string, unknown>;
+        }
+      } else if (!skipBalanceUpdate) {
         updatedBalanceRow = (
           await client.query(
             `UPDATE internal_balances
@@ -909,7 +1017,7 @@ export async function getWithdrawVolumeSince(userId: string, since: Date): Promi
      FROM withdraw_requests wr
      JOIN internal_wallets iw ON wr.wallet_id = iw.id
      WHERE iw.user_id = $1
-       AND wr.status != 'rejected'
+       AND wr.status NOT IN ('rejected', 'failed')
        AND wr.created_at >= $2`,
     [userId, since],
   );

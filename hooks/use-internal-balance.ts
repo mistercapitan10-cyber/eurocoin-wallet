@@ -6,7 +6,7 @@ import { formatUnits } from "viem";
 import { TOKEN_CONFIG } from "@/config/token";
 import { useAuth } from "@/hooks/use-auth";
 
-type LedgerEntryType = "credit" | "debit" | "adjustment" | "payout";
+type LedgerEntryType = "credit" | "debit" | "adjustment" | "payout" | "refund";
 
 interface ApiBalanceResponse {
   tokenSymbol: string;

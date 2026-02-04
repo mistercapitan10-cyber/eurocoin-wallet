@@ -207,26 +207,26 @@ async function processQueue() {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`[treasury] Failed to process request ${request.id}:`, errorMessage);
 
-      // Determine rejection reason
-      let rejectionNote = "auto rejection due to processor failure";
+      // Determine failure reason
+      let failureNote = "auto failure due to processor error";
       if (errorMessage.includes("Insufficient treasury balance")) {
-        rejectionNote = `auto rejection: insufficient treasury balance - ${errorMessage}`;
+        failureNote = `auto failure: insufficient treasury balance - ${errorMessage}`;
       } else if (errorMessage.includes("insufficient funds")) {
-        rejectionNote = `auto rejection: insufficient funds for gas - ${errorMessage}`;
+        failureNote = `auto failure: insufficient funds for gas - ${errorMessage}`;
       }
 
       await updateWithdrawRequestStatus({
         requestId: request.id,
-        status: "rejected",
+        status: "failed",
         reviewerId: WORKER_ID,
-        notes: rejectionNote,
+        notes: failureNote,
       }).catch((rejectError: unknown) => {
         console.error("[treasury] Failed to rollback request:", rejectError);
       });
 
       await notifyWithdrawStatusChange({
         id: request.id,
-        status: "rejected",
+        status: "failed",
         amount: ethers.formatUnits(request.amount, tokenDecimals),
         tokenSymbol: request.tokenSymbol,
         destinationAddress: request.destinationAddress,

@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateWithdrawRequestStatus, updateWithdrawRequestFee } from "@/lib/database/internal-balance-queries";
+import {
+  updateWithdrawRequestStatus,
+  updateWithdrawRequestFee,
+} from "@/lib/database/internal-balance-queries";
 import type { WithdrawStatus } from "@/lib/database/internal-balance-queries";
 
-const ALLOWED_STATUSES: WithdrawStatus[] = ["approved", "processing", "completed", "rejected"];
+const ALLOWED_STATUSES: WithdrawStatus[] = [
+  "approved",
+  "processing",
+  "completed",
+  "rejected",
+  "failed",
+];
 
 function ensureAdminToken(request: NextRequest): NextResponse | null {
   const secret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
@@ -21,7 +30,11 @@ function ensureAdminToken(request: NextRequest): NextResponse | null {
   return null;
 }
 
-function serialize(record: Awaited<ReturnType<typeof updateWithdrawRequestStatus>> | Awaited<ReturnType<typeof updateWithdrawRequestFee>>) {
+function serialize(
+  record:
+    | Awaited<ReturnType<typeof updateWithdrawRequestStatus>>
+    | Awaited<ReturnType<typeof updateWithdrawRequestFee>>,
+) {
   return {
     id: record.id,
     walletId: record.walletId,
@@ -59,10 +72,9 @@ export async function PATCH(
 
     // Handle fee update separately
     if (payload.feeAmount !== undefined && payload.status === undefined) {
-      const feeAmount = payload.feeAmount === null || payload.feeAmount === "" 
-        ? null 
-        : payload.feeAmount;
-      
+      const feeAmount =
+        payload.feeAmount === null || payload.feeAmount === "" ? null : payload.feeAmount;
+
       const record = await updateWithdrawRequestFee({
         requestId,
         feeAmount,
@@ -77,7 +89,10 @@ export async function PATCH(
     }
 
     if (payload.status === "completed" && !payload.txHash) {
-      return NextResponse.json({ error: "txHash is required to complete withdraw" }, { status: 400 });
+      return NextResponse.json(
+        { error: "txHash is required to complete withdraw" },
+        { status: 400 },
+      );
     }
 
     const record = await updateWithdrawRequestStatus({
@@ -94,6 +109,8 @@ export async function PATCH(
     const statusMap: Record<string, number> = {
       WITHDRAW_REQUEST_NOT_FOUND: 404,
       WITHDRAW_REQUEST_FINALIZED: 409,
+      INVALID_WITHDRAW_STATUS_TRANSITION: 409,
+      USE_FAILED_STATUS_AFTER_APPROVED: 409,
       BALANCE_TOO_LOW: 409,
     };
     return NextResponse.json({ error: message }, { status: statusMap[message] ?? 500 });
