@@ -290,6 +290,9 @@ const translations: Messages = {
       useMax: "Заполнить максимум",
       success: "Заявка создана. Казначейство подготовит транзакцию после проверки.",
       error: "Не удалось создать заявку. Попробуйте позже.",
+      cancelSuccess: "Заявка отменена, резерв баланса снят.",
+      cancelError: "Не удалось отменить заявку.",
+      cancelNotAllowed: "Отменить можно только заявку со статусом ожидания.",
       validation: {
         amount: "Укажите сумму больше нуля.",
         destination: "Укажите адрес кошелька.",
@@ -308,6 +311,10 @@ const translations: Messages = {
           status: "Статус",
           created: "Создано",
           txHash: "Tx hash",
+          actions: "Действия",
+        },
+        actions: {
+          cancel: "Отменить",
         },
         status: {
           pending: "На рассмотрении",
@@ -315,6 +322,7 @@ const translations: Messages = {
           processing: "Выполняется",
           completed: "Завершено",
           rejected: "Отклонено",
+          cancelled: "Отменено",
           failed: "Ошибка",
         },
       },
@@ -1679,6 +1687,9 @@ const translations: Messages = {
       useMax: "Use maximum",
       success: "Request created. Treasury will prepare the transaction after verification.",
       error: "Failed to create request. Please try again later.",
+      cancelSuccess: "Request cancelled and reserved balance released.",
+      cancelError: "Failed to cancel the request.",
+      cancelNotAllowed: "Only pending requests can be cancelled.",
       validation: {
         amount: "Specify an amount greater than zero.",
         destination: "Specify the wallet address.",
@@ -1697,6 +1708,10 @@ const translations: Messages = {
           status: "Status",
           created: "Created",
           txHash: "Tx hash",
+          actions: "Actions",
+        },
+        actions: {
+          cancel: "Cancel",
         },
         status: {
           pending: "Pending",
@@ -1704,6 +1719,7 @@ const translations: Messages = {
           processing: "Processing",
           completed: "Completed",
           rejected: "Rejected",
+          cancelled: "Cancelled",
           failed: "Failed",
         },
       },
@@ -1995,6 +2011,9 @@ const translations: Messages = {
       useMax: "Naudoti maksimumą",
       success: "Užklausa sukurta. Iždo komanda paruoš transakciją po patikros.",
       error: "Nepavyko sukurti užklausos. Bandykite dar kartą.",
+      cancelSuccess: "Užklausa atšaukta, rezervas atlaisvintas.",
+      cancelError: "Nepavyko atšaukti užklausos.",
+      cancelNotAllowed: "Atšaukti galima tik laukiančią užklausą.",
       validation: {
         amount: "Įveskite sumą, didesnę nei nulis.",
         destination: "Įveskite piniginės adresą.",
@@ -2013,6 +2032,10 @@ const translations: Messages = {
           status: "Būsena",
           created: "Sukurta",
           txHash: "Tx hash",
+          actions: "Veiksmai",
+        },
+        actions: {
+          cancel: "Atšaukti",
         },
         status: {
           pending: "Vykdoma",
@@ -2020,6 +2043,7 @@ const translations: Messages = {
           processing: "Vykdoma grandinėje",
           completed: "Užbaigta",
           rejected: "Atmesta",
+          cancelled: "Atšaukta",
           failed: "Klaida",
         },
       },
@@ -2851,6 +2875,9 @@ const translations: Messages = {
       useMax: "Maksimālā summa",
       success: "Pieprasījums izveidots. Kasieris sagatavos transakciju pēc pārbaudes.",
       error: "Neizdevās izveidot pieprasījumu. Mēģiniet vēlreiz.",
+      cancelSuccess: "Pieprasījums atcelts, rezerve atbrīvota.",
+      cancelError: "Neizdevās atcelt pieprasījumu.",
+      cancelNotAllowed: "Atcelt var tikai gaidošu pieprasījumu.",
       validation: {
         amount: "Ievadiet summu, kas lielāka par nulli.",
         destination: "Norādiet maku.",
@@ -2869,6 +2896,10 @@ const translations: Messages = {
           status: "Statuss",
           created: "Izveidots",
           txHash: "Tx hash",
+          actions: "Darbības",
+        },
+        actions: {
+          cancel: "Atcelt",
         },
         status: {
           pending: "Tiek izskatīts",
@@ -2876,6 +2907,7 @@ const translations: Messages = {
           processing: "Apstrādē",
           completed: "Pabeigts",
           rejected: "Noraidīts",
+          cancelled: "Atcelts",
           failed: "Kļūda",
         },
       },

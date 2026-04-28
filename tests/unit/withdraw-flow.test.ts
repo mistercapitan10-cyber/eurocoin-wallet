@@ -3,7 +3,7 @@ import type { QueryCall } from "./types";
 
 type QueryResult = { rows: Array<Record<string, unknown>> };
 
-const queryMock = vi.fn<(...args: QueryCall) => Promise<QueryResult>>();
+const queryMock = vi.fn();
 const getClientMock = vi.fn();
 
 vi.mock("@/config/token", () => ({
@@ -23,7 +23,7 @@ import { updateWithdrawRequestStatus } from "@/lib/database/internal-balance-que
 
 const makeClient = () => {
   const client = {
-    query: vi.fn<(...args: QueryCall) => Promise<QueryResult>>(),
+    query: vi.fn(),
     release: vi.fn(),
   };
   return client;
@@ -108,7 +108,7 @@ describe("updateWithdrawRequestStatus", () => {
     });
 
     expect(client.query).toHaveBeenCalled();
-    const updateBalanceCall = client.query.mock.calls.find((call: QueryCall) =>
+    const updateBalanceCall = (client.query.mock.calls as QueryCall[]).find((call) =>
       String(call[0]).includes("UPDATE internal_balances"),
     );
     expect(updateBalanceCall).toBeTruthy();
@@ -135,10 +135,42 @@ describe("updateWithdrawRequestStatus", () => {
       txHash: "0xdeadbeef",
     });
 
-    const updateBalanceCall = client.query.mock.calls.find((call: QueryCall) =>
+    const updateBalanceCall = (client.query.mock.calls as QueryCall[]).find((call) =>
       String(call[0]).includes("UPDATE internal_balances"),
     );
     expect(updateBalanceCall).toBeUndefined();
+  });
+
+  it("releases pending amount on cancelled", async () => {
+    const client = makeClient();
+    getClientMock.mockResolvedValue(client);
+
+    const withdrawRow = makeWithdrawRow({ status: "pending" });
+    const balanceRow = makeBalanceRow();
+    const updatedBalanceRow = {
+      ...balanceRow,
+      pending_onchain: "0",
+    };
+
+    client.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [withdrawRow] })
+      .mockResolvedValueOnce({ rows: [balanceRow] })
+      .mockResolvedValueOnce({ rows: [updatedBalanceRow] })
+      .mockResolvedValueOnce({ rows: [{ ...withdrawRow, status: "cancelled" }] });
+
+    await updateWithdrawRequestStatus({
+      requestId: "req-1",
+      status: "cancelled",
+      reviewerId: "user-1",
+    });
+
+    const updateBalanceCall = (client.query.mock.calls as QueryCall[]).find(
+      (call) =>
+        String(call[0]).includes("UPDATE internal_balances") &&
+        String(call[0]).includes("pending_onchain = GREATEST"),
+    );
+    expect(updateBalanceCall).toBeTruthy();
   });
 
   it("refunds balance when failed after payout", async () => {
@@ -182,8 +214,8 @@ describe("updateWithdrawRequestStatus", () => {
       reviewerId: null,
     });
 
-    const refundCall = client.query.mock.calls.find(
-      (call: QueryCall) =>
+    const refundCall = (client.query.mock.calls as QueryCall[]).find(
+      (call) =>
         String(call[0]).includes("entry_type, amount, balance_after") &&
         String(call[0]).includes("refund"),
     );

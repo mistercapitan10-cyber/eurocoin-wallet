@@ -15,6 +15,7 @@ const STATUS_COLORS: Record<string, string> = {
   processing: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300",
   completed: "bg-emerald-500/10 text-emerald-500 dark:text-emerald-300",
   rejected: "bg-red-500/10 text-red-500 dark:text-red-400",
+  cancelled: "bg-slate-500/10 text-slate-600 dark:text-slate-300",
   failed: "bg-orange-500/10 text-orange-600 dark:text-orange-300",
 };
 
@@ -46,6 +47,7 @@ export function InternalPayoutForm() {
   const [destination, setDestination] = useState("");
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cancellingRequestId, setCancellingRequestId] = useState<string | null>(null);
 
   const errorTranslations = {
     AUTH_REQUIRED: "internalPayout.error",
@@ -132,6 +134,44 @@ export function InternalPayoutForm() {
       toast.error(t("internalPayout.error"));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelRequest = async (requestId: string) => {
+    setCancellingRequestId(requestId);
+
+    try {
+      const params = new URLSearchParams();
+      const walletAddress = internalBalance.wallet?.walletAddress ?? address ?? null;
+      if (walletAddress) {
+        params.set("walletAddress", walletAddress);
+      }
+
+      const response = await fetch(
+        `/api/internal-balance/withdraw/${requestId}${params.size ? `?${params.toString()}` : ""}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const errorCode = payload?.error as string | undefined;
+        const messageKey =
+          errorCode === "WITHDRAW_REQUEST_CANNOT_BE_CANCELLED"
+            ? "internalPayout.cancelNotAllowed"
+            : "internalPayout.cancelError";
+        toast.error(t(messageKey));
+        return;
+      }
+
+      toast.success(t("internalPayout.cancelSuccess"));
+      await Promise.all([internalBalance.refresh(), withdrawRequests.refresh()]);
+    } catch (cancelError) {
+      console.error("[internal-payout] cancel error", cancelError);
+      toast.error(t("internalPayout.cancelError"));
+    } finally {
+      setCancellingRequestId(null);
     }
   };
 
@@ -327,6 +367,7 @@ export function InternalPayoutForm() {
                     <th className="pb-3 pr-4">{t("internalPayout.table.columns.destination")}</th>
                     <th className="pb-3 pr-4">{t("internalPayout.table.columns.status")}</th>
                     <th className="pb-3 pr-4">{t("internalPayout.table.columns.txHash")}</th>
+                    <th className="pb-3 pr-4">{t("internalPayout.table.columns.actions")}</th>
                     <th className="pb-3">{t("internalPayout.table.columns.created")}</th>
                   </tr>
                 </thead>
@@ -361,6 +402,24 @@ export function InternalPayoutForm() {
                           </a>
                         ) : (
                           "—"
+                        )}
+                      </td>
+                      <td className="py-3 pr-4">
+                        {request.status === "pending" ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleCancelRequest(request.id)}
+                            disabled={cancellingRequestId === request.id}
+                          >
+                            {cancellingRequestId === request.id
+                              ? t("common.buttons.update")
+                              : t("internalPayout.table.actions.cancel")}
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
+                            —
+                          </span>
                         )}
                       </td>
                       <td className="py-3 text-xs text-foregroundMuted dark:text-dark-foregroundMuted">

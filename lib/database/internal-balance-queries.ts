@@ -16,6 +16,7 @@ export type WithdrawStatus =
   | "processing"
   | "completed"
   | "rejected"
+  | "cancelled"
   | "failed";
 
 export interface InternalWalletRecord {
@@ -648,7 +649,9 @@ export async function listWithdrawRequests(
 
 export async function getWithdrawRequestById(
   requestId: string,
-): Promise<(WithdrawRequestRecord & { walletAddress?: string | null }) | null> {
+): Promise<
+  (WithdrawRequestRecord & { walletAddress?: string | null; userId?: string | null }) | null
+> {
   const result = await query(
     `SELECT wr.*, iw.user_id, iw.wallet_address
      FROM withdraw_requests wr
@@ -667,6 +670,7 @@ export async function getWithdrawRequestById(
 
   return {
     ...withdrawRecord,
+    userId: (row.user_id as string) ?? null,
     walletAddress: (row.wallet_address as string) ?? null,
   };
 }
@@ -711,20 +715,25 @@ export async function updateWithdrawRequestStatus(
 
     if (
       current.status === "rejected" ||
+      current.status === "cancelled" ||
       current.status === "completed" ||
       current.status === "failed"
     ) {
       throw new Error("WITHDRAW_REQUEST_FINALIZED");
     }
 
-    if (current.status === "approved" && params.status === "rejected") {
+    if (
+      current.status === "approved" &&
+      (params.status === "rejected" || params.status === "cancelled")
+    ) {
       throw new Error("USE_FAILED_STATUS_AFTER_APPROVED");
     }
 
     if (
       current.status === "pending" &&
       params.status !== "approved" &&
-      params.status !== "rejected"
+      params.status !== "rejected" &&
+      params.status !== "cancelled"
     ) {
       throw new Error("INVALID_WITHDRAW_STATUS_TRANSITION");
     }
@@ -738,7 +747,7 @@ export async function updateWithdrawRequestStatus(
     }
 
     let updatedBalanceRow: Record<string, unknown> | null = null;
-    const shouldReleasePending = params.status === "rejected";
+    const shouldReleasePending = params.status === "rejected" || params.status === "cancelled";
     let shouldFinalizePayout = params.status === "approved" || params.status === "completed";
     const shouldRefundBalance = params.status === "failed";
     let ledgerRow: InternalLedgerRecord | null = null;
@@ -1017,7 +1026,7 @@ export async function getWithdrawVolumeSince(userId: string, since: Date): Promi
      FROM withdraw_requests wr
      JOIN internal_wallets iw ON wr.wallet_id = iw.id
      WHERE iw.user_id = $1
-       AND wr.status NOT IN ('rejected', 'failed')
+       AND wr.status NOT IN ('rejected', 'cancelled', 'failed')
        AND wr.created_at >= $2`,
     [userId, since],
   );
