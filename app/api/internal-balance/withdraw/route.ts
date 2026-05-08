@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseUnits, formatUnits } from "viem";
+import { parseUnits } from "viem";
 import { auth } from "@/lib/auth";
 import {
   createWithdrawRequestRecord,
@@ -177,8 +177,9 @@ export async function POST(request: NextRequest) {
     void notifyNewWithdrawRequest({
       id: creation.request.id,
       walletAddress: creation.wallet.walletAddress ?? "—",
+      userId: creation.wallet.userId,
       destinationAddress: destination,
-      amount: formatUnits(amount, TOKEN_DECIMALS),
+      amount: amount.toString(),
       tokenSymbol: creation.request.tokenSymbol,
     }).catch(() => {});
 

@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { QueryCall } from "./types";
 
-type QueryResult = { rows: Array<Record<string, unknown>> };
-
 const queryMock = vi.fn();
 const getClientMock = vi.fn();
 
@@ -19,7 +17,11 @@ vi.mock("@/lib/database/db", () => ({
   getClient: (...args: QueryCall) => getClientMock(...args),
 }));
 
-import { updateWithdrawRequestStatus } from "@/lib/database/internal-balance-queries";
+import {
+  refundActiveWithdrawRequestsForUser,
+  refundWithdrawRequestToBalance,
+  updateWithdrawRequestStatus,
+} from "@/lib/database/internal-balance-queries";
 
 const makeClient = () => {
   const client = {
@@ -55,6 +57,13 @@ const makeBalanceRow = (overrides: Partial<Record<string, unknown>> = {}) => ({
   updated_at: new Date(),
   ...overrides,
 });
+
+const makeWithdrawWithUserRow = (overrides: Partial<Record<string, unknown>> = {}) =>
+  makeWithdrawRow({
+    user_id: "user-1",
+    wallet_address: "0x1234567890123456789012345678901234567890",
+    ...overrides,
+  });
 
 describe("updateWithdrawRequestStatus", () => {
   beforeEach(() => {
@@ -220,5 +229,116 @@ describe("updateWithdrawRequestStatus", () => {
         String(call[0]).includes("refund"),
     );
     expect(refundCall).toBeTruthy();
+  });
+
+  it("skips refund helper for finalized requests", async () => {
+    queryMock.mockResolvedValueOnce({
+      rows: [makeWithdrawWithUserRow({ status: "completed" })],
+    });
+
+    const result = await refundWithdrawRequestToBalance({
+      requestId: "req-1",
+      reviewerId: null,
+    });
+
+    expect(result.action).toBe("skipped");
+    expect(result.reason).toBe("WITHDRAW_REQUEST_ALREADY_FINALIZED");
+    expect(getClientMock).not.toHaveBeenCalled();
+  });
+
+  it("refunds all active withdraw requests for a user", async () => {
+    const pendingRow = makeWithdrawWithUserRow({
+      id: "req-pending",
+      status: "pending",
+      amount: "1000000000000000000",
+    });
+    const approvedRow = makeWithdrawWithUserRow({
+      id: "req-approved",
+      status: "approved",
+      amount: "2000000000000000000",
+    });
+
+    queryMock
+      .mockResolvedValueOnce({ rows: [pendingRow, approvedRow] })
+      .mockResolvedValueOnce({ rows: [pendingRow] })
+      .mockResolvedValueOnce({ rows: [approvedRow] });
+
+    const pendingClient = makeClient();
+    const approvedClient = makeClient();
+    getClientMock.mockResolvedValueOnce(pendingClient).mockResolvedValueOnce(approvedClient);
+
+    const pendingBalanceRow = makeBalanceRow({
+      balance: "10000000000000000000",
+      pending_onchain: "3000000000000000000",
+    });
+    const pendingUpdatedBalanceRow = {
+      ...pendingBalanceRow,
+      pending_onchain: "2000000000000000000",
+    };
+
+    pendingClient.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [pendingRow] })
+      .mockResolvedValueOnce({ rows: [pendingBalanceRow] })
+      .mockResolvedValueOnce({ rows: [pendingUpdatedBalanceRow] })
+      .mockResolvedValueOnce({ rows: [{ ...pendingRow, status: "cancelled" }] });
+
+    const approvedBalanceRow = makeBalanceRow({
+      balance: "9000000000000000000",
+      pending_onchain: "0",
+    });
+    const approvedRefundedBalanceRow = {
+      ...approvedBalanceRow,
+      balance: "11000000000000000000",
+    };
+
+    approvedClient.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [approvedRow] })
+      .mockResolvedValueOnce({ rows: [approvedBalanceRow] })
+      .mockResolvedValueOnce({ rows: [{ exists: 1 }] })
+      .mockResolvedValueOnce({ rows: [approvedRefundedBalanceRow] })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "ledger-refund",
+            wallet_id: "wallet-1",
+            token_symbol: "EURC",
+            entry_type: "refund",
+            amount: "2000000000000000000",
+            balance_after: "11000000000000000000",
+            reference: "Withdraw req-approved failed",
+            metadata: { withdrawId: "req-approved" },
+            created_by: "system",
+            created_at: new Date(),
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [{ ...approvedRow, status: "failed" }] });
+
+    const results = await refundActiveWithdrawRequestsForUser({
+      userId: "user-1",
+      reviewerId: null,
+    });
+
+    expect(results).toHaveLength(2);
+    expect(results[0]).toMatchObject({
+      requestId: "req-pending",
+      previousStatus: "pending",
+      status: "cancelled",
+      action: "cancelled",
+    });
+    expect(results[1]).toMatchObject({
+      requestId: "req-approved",
+      previousStatus: "approved",
+      status: "failed",
+      action: "failed",
+    });
+
+    const refundLedgerCall = (approvedClient.query.mock.calls as QueryCall[]).find(
+      (call) => String(call[0]).includes("entry_type, amount, balance_after") &&
+        String(call[0]).includes("refund"),
+    );
+    expect(refundLedgerCall).toBeTruthy();
   });
 });

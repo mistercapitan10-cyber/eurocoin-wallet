@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Markup } from "telegraf";
+import { formatUnits } from "viem";
 import {
   getAllExchangeRequests,
   getAllInternalRequests,
@@ -12,9 +13,19 @@ import {
   createChatbotMessage,
   getChatbotSessionById,
 } from "@/lib/database/queries";
+import {
+  getInternalBalanceSnapshot,
+  getWithdrawRequestById,
+  listActiveWithdrawRequestsByUserId,
+  refundActiveWithdrawRequestsForUser,
+  refundWithdrawRequestToBalance,
+  type WithdrawRefundResult,
+  type WithdrawRequestWithUser,
+} from "@/lib/database/internal-balance-queries";
 import { createSupportMessage, getLatestSessionByWallet } from "@/lib/database/support-queries";
 import { getUserById } from "@/lib/database/user-queries";
 import { query } from "@/lib/database/db";
+import { TOKEN_CONFIG } from "@/config/token";
 import {
   formatChatHistoryForTelegram,
   isValidWalletAddress,
@@ -174,12 +185,96 @@ function getStatusBadge(status: string): string {
 function getStatusName(status: string): string {
   const names = {
     pending: "В обработке",
+    approved: "Одобрена",
     processing: "Выполняется",
     completed: "Завершена",
     rejected: "Отклонена",
     cancelled: "Отменена",
+    failed: "Ошибка/возврат",
   };
   return names[status as keyof typeof names] || status;
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TOKEN_DECIMALS =
+  Number.isFinite(TOKEN_CONFIG.decimals) && Number(TOKEN_CONFIG.decimals) > 0
+    ? Number(TOKEN_CONFIG.decimals)
+    : 18;
+
+function formatTokenMinorAmount(amount: string, decimals = TOKEN_DECIMALS): string {
+  try {
+    return formatUnits(BigInt(amount), decimals);
+  } catch {
+    return amount;
+  }
+}
+
+function getAdminActor(ctx: Context): string {
+  const firstName = ctx.from?.first_name;
+  const username = ctx.from?.username;
+  const telegramId = ctx.from?.id;
+  const label = firstName || username || "admin";
+  return telegramId ? `${label} (Telegram ID: ${telegramId})` : label;
+}
+
+function formatWithdrawRequestDetails(request: WithdrawRequestWithUser): string {
+  const statusLabel = getStatusName(request.status);
+  const txLine = request.txHash ? `🔗 *Tx Hash:* \`${escapeMarkdown(request.txHash)}\`\n` : "";
+  const notesLine = request.notes ? `📝 *Примечания:* ${escapeMarkdown(request.notes)}\n` : "";
+  const userIdLine = request.userId
+    ? `🆔 *ID пользователя:* \`${escapeMarkdown(request.userId)}\`\n`
+    : "";
+  const feeLine = request.feeAmount
+    ? `💸 *Комиссия:* ${escapeMarkdown(formatTokenMinorAmount(request.feeAmount))} ${escapeMarkdown(
+        request.tokenSymbol,
+      )}\n`
+    : `💸 *Комиссия:* не установлена\n`;
+
+  return `
+📋 *Детали заявки на вывод*
+
+🧾 *ID:* WR\\-${escapeMarkdown(request.id)}
+${userIdLine}💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress || "N/A")}\`
+🎯 *Адрес вывода:* \`${escapeMarkdown(request.destinationAddress)}\`
+💰 *Сумма:* ${escapeMarkdown(formatTokenMinorAmount(request.amount))} ${escapeMarkdown(
+    request.tokenSymbol,
+  )}
+${feeLine}📊 *Статус:* ${escapeMarkdown(statusLabel)}
+${txLine}${notesLine}📅 *Создана:* ${escapeMarkdown(new Date(request.createdAt).toLocaleString("ru-RU"))}
+🕐 *Обновлена:* ${escapeMarkdown(new Date(request.updatedAt).toLocaleString("ru-RU"))}
+  `.trim();
+}
+
+function formatWithdrawRequestLine(request: WithdrawRequestWithUser): string {
+  return (
+    `WR-${request.id}\n` +
+    `Статус: ${getStatusName(request.status)}\n` +
+    `Сумма: ${formatTokenMinorAmount(request.amount)} ${request.tokenSymbol}\n` +
+    `Адрес: ${request.destinationAddress}\n` +
+    `Создана: ${new Date(request.createdAt).toLocaleString("ru-RU")}`
+  );
+}
+
+function formatRefundResults(results: WithdrawRefundResult[]): string {
+  if (results.length === 0) {
+    return "Нет активных заявок для возврата.";
+  }
+
+  return results
+    .map((result) => {
+      const amount = `${formatTokenMinorAmount(result.amount)} ${result.tokenSymbol}`;
+      if (result.action === "skipped") {
+        return `• WR-${result.requestId}: пропущена (${getStatusName(result.status)}), ${amount}`;
+      }
+      const action =
+        result.action === "cancelled"
+          ? "резерв освобожден"
+          : "отмечена failed, сумма возвращена";
+      return `• WR-${result.requestId}: ${getStatusName(result.previousStatus)} → ${getStatusName(
+        result.status,
+      )}, ${action}, ${amount}`;
+    })
+    .join("\n");
 }
 
 // =============================================================================
@@ -205,6 +300,7 @@ if (bot) {
         `/internal - показать внутренние заявки\n` +
         `/details <ID> - детали заявки\n` +
         `/credit - начислить баланс пользователю\n\n` +
+        `/refund <userId|WR_ID> - вернуть активный вывод на баланс\n\n` +
         `Пример: /details EX-1234567890\n\n` +
         `Используйте /help для подробной справки.`,
     );
@@ -299,6 +395,12 @@ if (bot) {
      5. Подтвердите начисление через кнопку
   ➡️ Баланс отображается в личном кабинете пользователя
   ➡️ Безопасное начисление с подтверждением перед выполнением
+
+/refund <userId|WR_ID> - Вернуть активный вывод на внутренний баланс
+  ➡️ По ID пользователя показывает все активные выводы и кнопку подтверждения возврата
+  ➡️ По ID заявки показывает детали и кнопку "Вернуть на баланс"
+  ➡️ Поддерживает только pending, approved и processing заявки
+  ➡️ Пример: /refund ee09fbea-b502-4280-b4e5-c52eb27a6839
 
 📧 *Команды для рассылки:*
 
@@ -598,6 +700,105 @@ if (bot) {
     } catch (error) {
       console.error("Error in /details command:", error);
       ctx.reply("❌ Ошибка при получении деталей заявки");
+    }
+  });
+
+  bot.command("refund", async (ctx) => {
+    if (!(await checkAccess(ctx))) return;
+
+    try {
+      const args = ctx.message.text.trim().split(/\s+/);
+      const input = args[1]?.trim();
+
+      if (!input) {
+        await ctx.reply(
+          "❌ Использование: /refund <userId|WR_ID>\n\n" +
+            "Пример по пользователю:\n" +
+            "`/refund ee09fbea-b502-4280-b4e5-c52eb27a6839`\n\n" +
+            "Пример по заявке:\n" +
+            "`/refund 123e4567-e89b-12d3-a456-426614174000`",
+          { parse_mode: "Markdown" },
+        );
+        return;
+      }
+
+      const normalizedInput = input.startsWith("WR-") ? input.slice(3) : input;
+
+      if (!UUID_REGEX.test(normalizedInput)) {
+        await ctx.reply(
+          "❌ Неверный формат. Передайте UUID пользователя или UUID withdraw-заявки.",
+        );
+        return;
+      }
+
+      const request = await getWithdrawRequestById(normalizedInput);
+      if (request) {
+        const canRefund =
+          request.status === "pending" ||
+          request.status === "approved" ||
+          request.status === "processing";
+        const keyboard = canRefund
+          ? Markup.inlineKeyboard([
+              [
+                Markup.button.callback(
+                  "↩️ Вернуть на баланс",
+                  `withdraw_refund_${request.id}`,
+                ),
+              ],
+            ])
+          : undefined;
+
+        await ctx.reply(formatWithdrawRequestDetails(request), {
+          parse_mode: "MarkdownV2",
+          ...(keyboard || {}),
+        });
+        return;
+      }
+
+      const requests = await listActiveWithdrawRequestsByUserId(normalizedInput);
+      if (requests.length === 0) {
+        await ctx.reply(
+          `📭 Активных заявок на вывод для пользователя \`${normalizedInput}\` не найдено.`,
+          { parse_mode: "Markdown" },
+        );
+        return;
+      }
+
+      const totalByToken = requests.reduce<Record<string, bigint>>((acc, item) => {
+        acc[item.tokenSymbol] = (acc[item.tokenSymbol] ?? BigInt(0)) + BigInt(item.amount);
+        return acc;
+      }, {});
+      const totals = Object.entries(totalByToken)
+        .map(([symbol, amount]) => `${formatTokenMinorAmount(amount.toString())} ${symbol}`)
+        .join(", ");
+      const list = requests
+        .map((item, index) => `${index + 1}. ${formatWithdrawRequestLine(item)}`)
+        .join("\n\n");
+
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            "↩️ Вернуть все активные",
+            `withdraw_refund_user_${normalizedInput}`,
+          ),
+        ],
+      ]);
+
+      await ctx.reply(
+        `↩️ *Возврат активных выводов*\n\n` +
+          `ID пользователя: \`${normalizedInput}\`\n` +
+          `Заявок: ${requests.length}\n` +
+          `Итого: ${totals}\n\n` +
+          `${list}\n\n` +
+          `Нажмите кнопку ниже, чтобы подтвердить возврат.`,
+        { parse_mode: "Markdown", ...keyboard },
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error in /refund command:", error);
+      await ctx.reply(
+        "❌ Ошибка при подготовке возврата: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   });
 
@@ -1642,7 +1843,8 @@ if (bot) {
           "/exchange - показать заявки на обмен\n" +
           "/internal - показать внутренние заявки\n" +
           "/details <ID> - детали заявки\n" +
-          "/chats - активные чат-сессии\n\n" +
+          "/chats - активные чат-сессии\n" +
+          "/refund <userId|WR_ID> - вернуть вывод на баланс\n\n" +
           "Для получения подробной справки используйте /help",
       );
     } catch (error) {
@@ -2225,6 +2427,225 @@ if (bot) {
     }
   });
 
+  bot.action(/^withdraw_refund_(?!confirm_|cancel_|user_)(.+)$/, async (ctx) => {
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const requestId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Подготовка возврата...").catch(() => {});
+
+    try {
+      const request = await getWithdrawRequestById(requestId);
+
+      if (!request) {
+        await ctx.reply("❌ Заявка не найдена");
+        return;
+      }
+
+      if (
+        request.status !== "pending" &&
+        request.status !== "approved" &&
+        request.status !== "processing"
+      ) {
+        await ctx.reply(
+          `ℹ️ Заявка WR-${requestId} уже в финальном статусе: ${getStatusName(request.status)}. Повторный возврат не выполнен.`,
+        );
+        return;
+      }
+
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            "✅ Подтвердить возврат",
+            `withdraw_refund_confirm_${request.id}`,
+          ),
+          Markup.button.callback("❌ Отменить", `withdraw_refund_cancel_${request.id}`),
+        ],
+      ]);
+
+      await ctx.reply(
+        `⚠️ *Подтвердите возврат на баланс*\n\n` +
+          `WR-${request.id}\n` +
+          `Пользователь: ${request.userId ? `\`${request.userId}\`` : "не указан"}\n` +
+          `Статус: ${getStatusName(request.status)}\n` +
+          `Сумма: ${formatTokenMinorAmount(request.amount)} ${request.tokenSymbol}\n\n` +
+          `После подтверждения pending будет отменен, а approved/processing будет переведен в failed с возвратом суммы.`,
+        { parse_mode: "Markdown", ...keyboard },
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error preparing withdraw refund:", error);
+      await ctx
+        .reply(
+          "❌ Ошибка при подготовке возврата: " +
+            (error instanceof Error ? error.message : String(error)),
+        )
+        .catch(() => {});
+    }
+  });
+
+  bot.action(/^withdraw_refund_confirm_(.+)$/, async (ctx) => {
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const requestId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Возврат на баланс...").catch(() => {});
+
+    try {
+      const result = await refundWithdrawRequestToBalance({
+        requestId,
+        reviewerId: null,
+        notes: `Возврат на баланс через Telegram бота: ${getAdminActor(ctx)}`,
+      });
+
+      let balanceLine = "";
+      if (result.request.userId) {
+        const snapshot = await getInternalBalanceSnapshot({
+          userId: result.request.userId,
+          walletAddress: result.request.walletAddress ?? null,
+        });
+        balanceLine = `\n\nДоступно сейчас: ${formatTokenMinorAmount(
+          (
+            BigInt(snapshot.balance.balance) -
+            BigInt(snapshot.balance.pendingOnchain) -
+            BigInt(snapshot.balance.lockedAmount)
+          ).toString(),
+          snapshot.decimals,
+        )} ${snapshot.tokenSymbol}`;
+      }
+
+      await ctx.reply(
+        `✅ Возврат обработан\n\n${formatRefundResults([result])}${balanceLine}`,
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error confirming withdraw refund:", error);
+      await ctx
+        .reply(
+          "❌ Ошибка при возврате: " +
+            (error instanceof Error ? error.message : String(error)),
+        )
+        .catch(() => {});
+    }
+  });
+
+  bot.action(/^withdraw_refund_user_(?!confirm_|cancel_)(.+)$/, async (ctx) => {
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const userId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Проверка активных заявок...").catch(() => {});
+
+    try {
+      if (!UUID_REGEX.test(userId)) {
+        await ctx.reply("❌ Неверный ID пользователя");
+        return;
+      }
+
+      const requests = await listActiveWithdrawRequestsByUserId(userId);
+      if (requests.length === 0) {
+        await ctx.reply(
+          `📭 Активных заявок на вывод для пользователя \`${userId}\` не найдено.`,
+          { parse_mode: "Markdown" },
+        );
+        return;
+      }
+
+      const total = requests.reduce((sum, item) => sum + BigInt(item.amount), BigInt(0));
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            "✅ Подтвердить возврат всех",
+            `withdraw_refund_user_confirm_${userId}`,
+          ),
+          Markup.button.callback("❌ Отменить", `withdraw_refund_user_cancel_${userId}`),
+        ],
+      ]);
+
+      await ctx.reply(
+        `⚠️ *Подтвердите массовый возврат*\n\n` +
+          `ID пользователя: \`${userId}\`\n` +
+          `Активных заявок: ${requests.length}\n` +
+          `Сумма: ${formatTokenMinorAmount(total.toString())} ${requests[0]?.tokenSymbol || TOKEN_CONFIG.symbol}\n\n` +
+          `Повторное подтверждение после успешного возврата не начислит деньги повторно: финальные заявки будут пропущены.`,
+        { parse_mode: "Markdown", ...keyboard },
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error preparing user withdraw refund:", error);
+      await ctx
+        .reply(
+          "❌ Ошибка при подготовке возврата: " +
+            (error instanceof Error ? error.message : String(error)),
+        )
+        .catch(() => {});
+    }
+  });
+
+  bot.action(/^withdraw_refund_user_confirm_(.+)$/, async (ctx) => {
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const userId = ctx.match[1];
+    await ctx.answerCbQuery("⏳ Возврат активных заявок...").catch(() => {});
+
+    try {
+      if (!UUID_REGEX.test(userId)) {
+        await ctx.reply("❌ Неверный ID пользователя");
+        return;
+      }
+
+      const results = await refundActiveWithdrawRequestsForUser({
+        userId,
+        reviewerId: null,
+        notes: `Массовый возврат на баланс через Telegram бота: ${getAdminActor(ctx)}`,
+      });
+
+      const walletAddress = results.find((result) => result.request.walletAddress)?.request
+        .walletAddress;
+      const snapshot = await getInternalBalanceSnapshot({
+        userId,
+        walletAddress: walletAddress ?? null,
+      });
+      const available =
+        BigInt(snapshot.balance.balance) -
+        BigInt(snapshot.balance.pendingOnchain) -
+        BigInt(snapshot.balance.lockedAmount);
+
+      await ctx.reply(
+        `✅ Возврат активных заявок обработан\n\n` +
+          `${formatRefundResults(results)}\n\n` +
+          `Доступно сейчас: ${formatTokenMinorAmount(
+            (available > BigInt(0) ? available : BigInt(0)).toString(),
+            snapshot.decimals,
+          )} ${snapshot.tokenSymbol}`,
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error confirming user withdraw refund:", error);
+      await ctx
+        .reply(
+          "❌ Ошибка при возврате: " +
+            (error instanceof Error ? error.message : String(error)),
+        )
+        .catch(() => {});
+    }
+  });
+
+  bot.action(/^withdraw_refund_(?:user_)?cancel_(.+)$/, async (ctx) => {
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    await ctx.answerCbQuery("Отменено").catch(() => {});
+    await ctx.reply("❌ Возврат отменен");
+  });
+
   // Handle withdraw details button
   bot.action(/^withdraw_details_(.+)$/, async (ctx) => {
     // 🔒 Authorization check
@@ -2237,7 +2658,6 @@ if (bot) {
     await ctx.answerCbQuery("⏳ Загрузка деталей...").catch(() => {});
 
     try {
-      const { getWithdrawRequestById } = await import("@/lib/database/internal-balance-queries");
       const request = await getWithdrawRequestById(requestId);
 
       if (!request) {
@@ -2245,44 +2665,16 @@ if (bot) {
         return;
       }
 
-      const statusLabels: Record<string, string> = {
-        pending: "⏳ Ожидает",
-        approved: "✅ Одобрено",
-        processing: "🔄 В обработке",
-        completed: "✅ Завершено",
-        rejected: "❌ Отклонено",
-        failed: "⚠️ Ошибка",
-      };
-
-      const statusLabel = statusLabels[request.status] || request.status;
-
-      const txLine = request.txHash ? `🔗 *Tx Hash:* \`${request.txHash}\`\n` : "";
-      const notesLine = request.notes ? `📝 *Примечания:* ${escapeMarkdown(request.notes)}\n` : "";
-      const feeLine = request.feeAmount
-        ? `💸 *Комиссия:* ${escapeMarkdown(request.feeAmount)} ${escapeMarkdown(request.tokenSymbol)}\n`
-        : `💸 *Комиссия:* не установлена\n`;
-
-      const message = `
-📋 *Детали заявки на вывод*
-
-🧾 *ID:* WR\\-${escapeMarkdown(request.id)}
-💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress || "N/A")}\`
-🎯 *Адрес вывода:* \`${escapeMarkdown(request.destinationAddress)}\`
-💰 *Сумма:* ${escapeMarkdown(request.amount)} ${escapeMarkdown(request.tokenSymbol)}
-${feeLine}📊 *Статус:* ${statusLabel}
-${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLocaleString("ru-RU")}
-🕐 *Обновлена:* ${new Date(request.updatedAt).toLocaleString("ru-RU")}
-      `.trim();
-
       const keyboard = Markup.inlineKeyboard([
         [
           Markup.button.callback("✅ Одобрить", `withdraw_approve_${request.id}`),
           Markup.button.callback("❌ Отклонить", `withdraw_reject_${request.id}`),
         ],
         [Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${request.id}`)],
+        [Markup.button.callback("↩️ Вернуть на баланс", `withdraw_refund_${request.id}`)],
       ]);
 
-      await ctx.reply(message, {
+      await ctx.reply(formatWithdrawRequestDetails(request), {
         parse_mode: "MarkdownV2",
         ...keyboard,
       });
@@ -2310,7 +2702,6 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
     await ctx.answerCbQuery("⏳ Загрузка...").catch(() => {});
 
     try {
-      const { getWithdrawRequestById } = await import("@/lib/database/internal-balance-queries");
       const request = await getWithdrawRequestById(requestId);
 
       if (!request) {

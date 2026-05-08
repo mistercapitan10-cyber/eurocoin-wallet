@@ -75,6 +75,11 @@ export interface WithdrawRequestRecord {
   updatedAt: Date;
 }
 
+export type WithdrawRequestWithUser = WithdrawRequestRecord & {
+  walletAddress?: string | null;
+  userId?: string | null;
+};
+
 export interface BalanceIdentifier {
   userId: string;
   walletAddress?: string | null;
@@ -649,9 +654,7 @@ export async function listWithdrawRequests(
 
 export async function getWithdrawRequestById(
   requestId: string,
-): Promise<
-  (WithdrawRequestRecord & { walletAddress?: string | null; userId?: string | null }) | null
-> {
+): Promise<WithdrawRequestWithUser | null> {
   const result = await query(
     `SELECT wr.*, iw.user_id, iw.wallet_address
      FROM withdraw_requests wr
@@ -673,6 +676,130 @@ export async function getWithdrawRequestById(
     userId: (row.user_id as string) ?? null,
     walletAddress: (row.wallet_address as string) ?? null,
   };
+}
+
+const ACTIVE_WITHDRAW_STATUSES: WithdrawStatus[] = ["pending", "approved", "processing"];
+const FINAL_WITHDRAW_STATUSES: WithdrawStatus[] = [
+  "completed",
+  "rejected",
+  "cancelled",
+  "failed",
+];
+
+export async function listActiveWithdrawRequestsByUserId(
+  userId: string,
+  options?: { limit?: number },
+): Promise<WithdrawRequestWithUser[]> {
+  const limit = options?.limit ?? 25;
+  const result = await query(
+    `SELECT wr.*, iw.user_id, iw.wallet_address
+     FROM withdraw_requests wr
+     JOIN internal_wallets iw ON wr.wallet_id = iw.id
+     WHERE iw.user_id = $1
+       AND wr.status = ANY($2)
+     ORDER BY wr.created_at DESC
+     LIMIT $3`,
+    [userId, ACTIVE_WITHDRAW_STATUSES, limit],
+  );
+
+  return result.rows.map((row) => {
+    const withdrawRecord = mapWithdrawRow(row);
+    return {
+      ...withdrawRecord,
+      userId: (row.user_id as string) ?? null,
+      walletAddress: (row.wallet_address as string) ?? null,
+    };
+  });
+}
+
+export interface WithdrawRefundResult {
+  requestId: string;
+  previousStatus: WithdrawStatus;
+  status: WithdrawStatus;
+  action: "cancelled" | "failed" | "skipped";
+  amount: string;
+  tokenSymbol: string;
+  reason?: string;
+  request: WithdrawRequestWithUser;
+}
+
+export async function refundWithdrawRequestToBalance(params: {
+  requestId: string;
+  reviewerId?: string | null;
+  notes?: string | null;
+}): Promise<WithdrawRefundResult> {
+  const current = await getWithdrawRequestById(params.requestId);
+
+  if (!current) {
+    throw new Error("WITHDRAW_REQUEST_NOT_FOUND");
+  }
+
+  if (FINAL_WITHDRAW_STATUSES.includes(current.status)) {
+    return {
+      requestId: current.id,
+      previousStatus: current.status,
+      status: current.status,
+      action: "skipped",
+      amount: current.amount,
+      tokenSymbol: current.tokenSymbol,
+      reason: "WITHDRAW_REQUEST_ALREADY_FINALIZED",
+      request: current,
+    };
+  }
+
+  const notes =
+    params.notes ??
+    (current.status === "pending"
+      ? "Refunded to internal balance by admin"
+      : "Marked failed and refunded to internal balance by admin");
+
+  const nextStatus: Exclude<WithdrawStatus, "pending"> =
+    current.status === "pending" ? "cancelled" : "failed";
+
+  const updated = await updateWithdrawRequestStatus({
+    requestId: current.id,
+    status: nextStatus,
+    reviewerId: params.reviewerId ?? null,
+    notes,
+  });
+
+  return {
+    requestId: updated.id,
+    previousStatus: current.status,
+    status: updated.status,
+    action: nextStatus,
+    amount: updated.amount,
+    tokenSymbol: updated.tokenSymbol,
+    request: {
+      ...updated,
+      userId: current.userId,
+      walletAddress: current.walletAddress,
+    },
+  };
+}
+
+export async function refundActiveWithdrawRequestsForUser(params: {
+  userId: string;
+  reviewerId?: string | null;
+  notes?: string | null;
+  limit?: number;
+}): Promise<WithdrawRefundResult[]> {
+  const requests = await listActiveWithdrawRequestsByUserId(params.userId, {
+    limit: params.limit,
+  });
+
+  const results: WithdrawRefundResult[] = [];
+  for (const request of requests) {
+    results.push(
+      await refundWithdrawRequestToBalance({
+        requestId: request.id,
+        reviewerId: params.reviewerId ?? null,
+        notes: params.notes,
+      }),
+    );
+  }
+
+  return results;
 }
 
 interface WithdrawStatusUpdateParams {
@@ -748,7 +875,7 @@ export async function updateWithdrawRequestStatus(
 
     let updatedBalanceRow: Record<string, unknown> | null = null;
     const shouldReleasePending = params.status === "rejected" || params.status === "cancelled";
-    let shouldFinalizePayout = params.status === "approved" || params.status === "completed";
+    const shouldFinalizePayout = params.status === "approved" || params.status === "completed";
     const shouldRefundBalance = params.status === "failed";
     let ledgerRow: InternalLedgerRecord | null = null;
 

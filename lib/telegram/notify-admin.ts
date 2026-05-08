@@ -1,4 +1,6 @@
 import { Markup } from "telegraf";
+import { formatUnits } from "viem";
+import { TOKEN_CONFIG } from "@/config/token";
 import { getBot } from "./bot";
 
 function getAdminChatId(): string | null {
@@ -166,9 +168,18 @@ ${userIdentifier ? `${userIdentifier}\n` : ""}💼 *Отдел:* ${escapeMarkdow
 export interface WithdrawRequestNotification {
   id: string;
   walletAddress: string;
+  userId?: string | null;
   amount: string;
   tokenSymbol: string;
   destinationAddress: string;
+}
+
+function formatTokenMinorAmount(amount: string, decimals = TOKEN_CONFIG.decimals): string {
+  try {
+    return formatUnits(BigInt(amount), decimals);
+  } catch {
+    return amount;
+  }
 }
 
 export async function notifyNewWithdrawRequest(
@@ -182,15 +193,18 @@ export async function notifyNewWithdrawRequest(
       return;
     }
 
-    const requestId = `WR-${payload.id}`;
+    const amount = formatTokenMinorAmount(payload.amount);
+    const userIdLine = payload.userId
+      ? `🆔 *ID пользователя:* \`${escapeMarkdown(payload.userId)}\`\n`
+      : "";
 
     const message = `
 🏦 *Новая заявка на вывод*
 
 🧾 *ID:* WR\\-${escapeMarkdown(payload.id)}
 💼 *Кошелек:* \`${escapeMarkdown(payload.walletAddress)}\`
-🎯 *Адрес вывода:* \`${escapeMarkdown(payload.destinationAddress)}\`
-💰 *Сумма:* ${escapeMarkdown(payload.amount)} ${escapeMarkdown(payload.tokenSymbol)}
+${userIdLine}🎯 *Адрес вывода:* \`${escapeMarkdown(payload.destinationAddress)}\`
+💰 *Сумма:* ${escapeMarkdown(amount)} ${escapeMarkdown(payload.tokenSymbol)}
     `.trim();
 
     const keyboard = Markup.inlineKeyboard([
@@ -202,6 +216,7 @@ export async function notifyNewWithdrawRequest(
         Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${payload.id}`),
         Markup.button.callback("📋 Детали", `withdraw_details_${payload.id}`),
       ],
+      [Markup.button.callback("↩️ Вернуть на баланс", `withdraw_refund_${payload.id}`)],
       [Markup.button.callback("💬 Сообщение", `msg_${payload.walletAddress}`)],
     ]);
 
