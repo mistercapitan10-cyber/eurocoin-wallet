@@ -300,7 +300,7 @@ if (bot) {
         `/internal - показать внутренние заявки\n` +
         `/details <ID> - детали заявки\n` +
         `/credit - начислить баланс пользователю\n\n` +
-        `/refund <userId|WR_ID> - вернуть активный вывод на баланс\n\n` +
+        `/refund <userId|WR ID> - вернуть активный вывод на баланс\n\n` +
         `Пример: /details EX-1234567890\n\n` +
         `Используйте /help для подробной справки.`,
     );
@@ -396,7 +396,7 @@ if (bot) {
   ➡️ Баланс отображается в личном кабинете пользователя
   ➡️ Безопасное начисление с подтверждением перед выполнением
 
-/refund <userId|WR_ID> - Вернуть активный вывод на внутренний баланс
+/refund <userId|WR ID> - Вернуть активный вывод на внутренний баланс
   ➡️ По ID пользователя показывает все активные выводы и кнопку подтверждения возврата
   ➡️ По ID заявки показывает детали и кнопку "Вернуть на баланс"
   ➡️ Поддерживает только pending, approved и processing заявки
@@ -712,12 +712,11 @@ if (bot) {
 
       if (!input) {
         await ctx.reply(
-          "❌ Использование: /refund <userId|WR_ID>\n\n" +
+          "❌ Использование: /refund <userId|WR ID>\n\n" +
             "Пример по пользователю:\n" +
-            "`/refund ee09fbea-b502-4280-b4e5-c52eb27a6839`\n\n" +
+            "/refund ee09fbea-b502-4280-b4e5-c52eb27a6839\n\n" +
             "Пример по заявке:\n" +
-            "`/refund 123e4567-e89b-12d3-a456-426614174000`",
-          { parse_mode: "Markdown" },
+            "/refund 123e4567-e89b-12d3-a456-426614174000",
         );
         return;
       }
@@ -758,8 +757,7 @@ if (bot) {
       const requests = await listActiveWithdrawRequestsByUserId(normalizedInput);
       if (requests.length === 0) {
         await ctx.reply(
-          `📭 Активных заявок на вывод для пользователя \`${normalizedInput}\` не найдено.`,
-          { parse_mode: "Markdown" },
+          `📭 Активных заявок на вывод для пользователя ${normalizedInput} не найдено.`,
         );
         return;
       }
@@ -785,13 +783,13 @@ if (bot) {
       ]);
 
       await ctx.reply(
-        `↩️ *Возврат активных выводов*\n\n` +
-          `ID пользователя: \`${normalizedInput}\`\n` +
+        `↩️ Возврат активных выводов\n\n` +
+          `ID пользователя: ${normalizedInput}\n` +
           `Заявок: ${requests.length}\n` +
           `Итого: ${totals}\n\n` +
           `${list}\n\n` +
           `Нажмите кнопку ниже, чтобы подтвердить возврат.`,
-        { parse_mode: "Markdown", ...keyboard },
+        keyboard,
       );
     } catch (error) {
       console.error("[telegram-webhook] Error in /refund command:", error);
@@ -1844,7 +1842,7 @@ if (bot) {
           "/internal - показать внутренние заявки\n" +
           "/details <ID> - детали заявки\n" +
           "/chats - активные чат-сессии\n" +
-          "/refund <userId|WR_ID> - вернуть вывод на баланс\n\n" +
+          "/refund <userId|WR ID> - вернуть вывод на баланс\n\n" +
           "Для получения подробной справки используйте /help",
       );
     } catch (error) {
@@ -2466,13 +2464,13 @@ if (bot) {
       ]);
 
       await ctx.reply(
-        `⚠️ *Подтвердите возврат на баланс*\n\n` +
+          `⚠️ Подтвердите возврат на баланс\n\n` +
           `WR-${request.id}\n` +
-          `Пользователь: ${request.userId ? `\`${request.userId}\`` : "не указан"}\n` +
+          `Пользователь: ${request.userId || "не указан"}\n` +
           `Статус: ${getStatusName(request.status)}\n` +
           `Сумма: ${formatTokenMinorAmount(request.amount)} ${request.tokenSymbol}\n\n` +
           `После подтверждения pending будет отменен, а approved/processing будет переведен в failed с возвратом суммы.`,
-        { parse_mode: "Markdown", ...keyboard },
+        keyboard,
       );
     } catch (error) {
       console.error("[telegram-webhook] Error preparing withdraw refund:", error);
@@ -2549,8 +2547,7 @@ if (bot) {
       const requests = await listActiveWithdrawRequestsByUserId(userId);
       if (requests.length === 0) {
         await ctx.reply(
-          `📭 Активных заявок на вывод для пользователя \`${userId}\` не найдено.`,
-          { parse_mode: "Markdown" },
+          `📭 Активных заявок на вывод для пользователя ${userId} не найдено.`,
         );
         return;
       }
@@ -2567,12 +2564,12 @@ if (bot) {
       ]);
 
       await ctx.reply(
-        `⚠️ *Подтвердите массовый возврат*\n\n` +
-          `ID пользователя: \`${userId}\`\n` +
+        `⚠️ Подтвердите массовый возврат\n\n` +
+          `ID пользователя: ${userId}\n` +
           `Активных заявок: ${requests.length}\n` +
           `Сумма: ${formatTokenMinorAmount(total.toString())} ${requests[0]?.tokenSymbol || TOKEN_CONFIG.symbol}\n\n` +
           `Повторное подтверждение после успешного возврата не начислит деньги повторно: финальные заявки будут пропущены.`,
-        { parse_mode: "Markdown", ...keyboard },
+        keyboard,
       );
     } catch (error) {
       console.error("[telegram-webhook] Error preparing user withdraw refund:", error);
